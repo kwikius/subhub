@@ -63,7 +63,9 @@
 		<Unit filename="libraries/ap_gps/src/GPS_detect_state.h" />
 		<Unit filename="libraries/ap_gps/src/Makefile" />
 		<Unit filename="libraries/ap_math/ap_math.hpp" />
+		<Unit filename="libraries/ap_math/src/Makefile" />
 		<Unit filename="libraries/ap_math/src/ap_math.cpp" />
+		<Unit filename="libraries/ap_math/src/edc.cpp" />
 		<Unit filename="libraries/ap_serialport/serialport.hpp" />
 		<Unit filename="libraries/gps/gps.hpp" />
 		<Unit filename="libraries/gps/src/Makefile" />
