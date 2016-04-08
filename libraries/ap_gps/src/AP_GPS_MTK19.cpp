@@ -23,11 +23,14 @@
 //   Note that this driver supports both the 1.6 and 1.9 protocol varients
 //
 
+#include <ap_serialport/serialport.hpp>
+#include <ap_common/ap_common.hpp>
+#include <ap_math/ap_math.hpp>
+#include <quan/stm32/millis.hpp>
 #include "AP_GPS_MTK19.h"
+#include "AP_GPS_MTK.h"
 
-extern const AP_HAL::HAL& hal;
-
-AP_GPS_MTK19::AP_GPS_MTK19(AP_GPS &_gps, AP_GPS::GPS_State &_state, AP_HAL::UARTDriver *_port) :
+AP_GPS_MTK19::AP_GPS_MTK19(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port),
     _step(0),
     _payload_counter(0),
@@ -136,13 +139,13 @@ restart:
             }
 
             if (_mtk_revision == MTK_GPS_REVISION_V16) {
-                state.location.lat  = _buffer.msg.latitude  * 10;  // V16, V17,V18 doc says *10e7 but device says otherwise
-                state.location.lng  = _buffer.msg.longitude * 10;  // V16, V17,V18 doc says *10e7 but device says otherwise
+               state.location.lat  = AP_GPS::lat_lon_type{ _buffer.msg.latitude  * 10};  // V16, V17,V18 doc says *10e7 but device says otherwise
+               state.location.lon  = AP_GPS::lat_lon_type{_buffer.msg.longitude * 10};  // V16, V17,V18 doc says *10e7 but device says otherwise
             } else {
-				state.location.lat  = _buffer.msg.latitude;
-				state.location.lng  = _buffer.msg.longitude;
-			}
-            state.location.alt      = _buffer.msg.altitude;
+               state.location.lat  = AP_GPS::lat_lon_type{_buffer.msg.latitude};
+               state.location.lon  = AP_GPS::lat_lon_type{_buffer.msg.longitude};
+			   }
+            state.location.alt      = AP_GPS::altitude_type{_buffer.msg.altitude};
             state.ground_speed      = _buffer.msg.ground_speed*0.01f;
             state.ground_course_cd  = wrap_360_cd(_buffer.msg.ground_course);
             state.num_sats          = _buffer.msg.satellites;
@@ -159,7 +162,7 @@ restart:
                                         (unsigned)_mtk_revision);                                        
 #endif
                     make_gps_time(_buffer.msg.utc_date, bcd_time_ms);
-                    state.last_gps_time_ms = AP_HAL::millis();
+                    state.last_gps_time_ms = quan::stm32::millis().numeric_value();
                 }
                 // the _fix_counter is to reduce the cost of the GPS
                 // BCD time conversion by only doing it every 10s

@@ -1,16 +1,12 @@
 include ../../../common/stm32f0_make_flags.mk
 
-src_objects = AP_GPS.o AP_GPS_UBLOX.o AP_GPS_GSOF.o AP_GPS_MTK.o \
-AP_GPS_MTK19.o AP_GPS_NMEA.o AP_GPS_SBF.o \
-AP_GPS_SIRF.o  GPS_Backend.o 
+object_files = ap_math.o edc.o
 
-objects = $(patsubst %.o,obj/%.o,$(src_objects))
+objects = $(patsubst %.o,obj/%.o,$(object_files))
 
 # project archive dir
-OUTPUT_ARCHIVE_FILE = ../../../lib/ap_gps.a
+OUTPUT_ARCHIVE_FILE = ../../../lib/ap_math.a
 
-CFLAGS += -fmax-errors=1
- 
 all : test
 
 test : $(OUTPUT_ARCHIVE_FILE)

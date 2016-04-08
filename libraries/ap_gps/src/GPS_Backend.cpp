@@ -14,11 +14,13 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "AP_GPS.h"
+#include <ap_math/ap_math.hpp>
+#include <quan/stm32/millis.hpp>
 
-extern const AP_HAL::HAL& hal;
+#include "../AP_GPS.h"
+#include "GPS_Backend.h"
 
-AP_GPS_Backend::AP_GPS_Backend(AP_GPS &_gps, AP_GPS::GPS_State &_state, AP_HAL::UARTDriver *_port) :
+AP_GPS_Backend::AP_GPS_Backend(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port) :
     port(_port),
     gps(_gps),
     state(_state)
@@ -71,7 +73,7 @@ uint64_t AP_GPS::time_epoch_usec(uint8_t instance)
     const uint64_t unix_offset = 17000ULL*86400ULL + 52*10*7000ULL*86400ULL - 15000ULL;
     uint64_t fix_time_ms = unix_offset + istate.time_week*ms_per_week + istate.time_week_ms;
     // add in the milliseconds since the last fix
-    return (fix_time_ms + (AP_HAL::millis() - istate.last_gps_time_ms)) * 1000ULL;
+    return (fix_time_ms + (quan::stm32::millis().numeric_value() - istate.last_gps_time_ms)) * 1000ULL;
 }
 
 
@@ -123,8 +125,8 @@ void AP_GPS_Backend::fill_3d_velocity(void)
 {
     float gps_heading = ToRad(state.ground_course_cd * 0.01f);
 
-    state.velocity.x = state.ground_speed * cosf(gps_heading);
-    state.velocity.y = state.ground_speed * sinf(gps_heading);
-    state.velocity.z = 0;
+    state.velocity.x = AP_GPS::velocity_type{state.ground_speed * cosf(gps_heading)};
+    state.velocity.y = AP_GPS::velocity_type{state.ground_speed * sinf(gps_heading)};
+    state.velocity.z = AP_GPS::velocity_type{0};
     state.have_vertical_velocity = false;
 }

@@ -19,11 +19,12 @@
 //  Code by Michael Oborne
 //
 
-#include "AP_GPS.h"
-#include "AP_GPS_SBF.h"
-#include <DataFlash/DataFlash.h>
+#include <cstring>
+#include <ap_math/ap_math.hpp>
+#include <ap_serialport/serialport.hpp>
+#include <quan/stm32/millis.hpp>
 
-extern const AP_HAL::HAL& hal;
+#include "AP_GPS_SBF.h"
 
 #define SBF_DEBUGGING 0
 
@@ -40,7 +41,7 @@ do {                                            \
 #endif
 
 AP_GPS_SBF::AP_GPS_SBF(AP_GPS &_gps, AP_GPS::GPS_State &_state,
-                       AP_HAL::UARTDriver *_port) :
+                       SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port)
 {	
     sbf_msg.sbf_state = sbf_msg_parser_t::PREAMBLE1;
@@ -53,7 +54,7 @@ AP_GPS_SBF::AP_GPS_SBF(AP_GPS &_gps, AP_GPS::GPS_State &_state,
 bool
 AP_GPS_SBF::read(void)
 {
-	uint32_t now = AP_HAL::millis();
+	uint32_t now = quan::stm32::millis().numeric_value();
 	
 	if (_init_blob_index < (sizeof(_initialisation_blob) / sizeof(_initialisation_blob[0]))) {
 		if (now > _init_blob_time) {
@@ -152,6 +153,8 @@ AP_GPS_SBF::parse(uint8_t temp)
 void
 AP_GPS_SBF::log_ExtEventPVTGeodetic(const msg4007 &temp)
 {
+
+#if 0
     if (gps._DataFlash == NULL || !gps._DataFlash->logging_started()) {
         return;
     }
@@ -176,6 +179,7 @@ AP_GPS_SBF::log_ExtEventPVTGeodetic(const msg4007 &temp)
     };
 
     gps._DataFlash->WriteBlock(&header, sizeof(header));
+#endif
 }
 
 bool
@@ -199,22 +203,21 @@ AP_GPS_SBF::process_message(void)
             state.time_week_ms = (uint32_t)(temp.TOW);
         }
 		
-		state.last_gps_time_ms = AP_HAL::millis();
-
+		  state.last_gps_time_ms = quan::stm32::millis().numeric_value();
         state.hdop = last_hdop;
 
         // Update velocity state (dont use −2·10^10)
         if (temp.Vn > -200000) {
-            state.velocity.x = (float)(temp.Vn);
-            state.velocity.y = (float)(temp.Ve);
-            state.velocity.z = (float)(-temp.Vu);
+            state.velocity.x = AP_GPS::velocity_type{temp.Vn};
+            state.velocity.y = AP_GPS::velocity_type{temp.Ve};
+            state.velocity.z = AP_GPS::velocity_type{-temp.Vu};
 			
-			state.have_vertical_velocity = true;
+			   state.have_vertical_velocity = true;
 
-            float ground_vector_sq = state.velocity[0] * state.velocity[0] + state.velocity[1] * state.velocity[1];
+            float ground_vector_sq = state.velocity[0].numeric_value() * state.velocity[0].numeric_value() 
+                  + state.velocity[1].numeric_value() * state.velocity[1].numeric_value();
             state.ground_speed = (float)safe_sqrt(ground_vector_sq);
-
-            state.ground_course_cd = (int32_t)(100 * ToDeg(atan2f(state.velocity[1], state.velocity[0])));
+            state.ground_course_cd = (int32_t)(100 * ToDeg(atan2f(state.velocity[1].numeric_value(), state.velocity[0].numeric_value())));
             state.ground_course_cd = wrap_360_cd(state.ground_course_cd);
 			
 			state.horizontal_accuracy = (float)temp.HAccuracy * 0.01f;
@@ -225,9 +228,9 @@ AP_GPS_SBF::process_message(void)
 
         // Update position state (dont use −2·10^10)
         if (temp.Latitude > -200000) {
-            state.location.lat = (int32_t)(temp.Latitude * RAD_TO_DEG_DOUBLE * 1e7);
-            state.location.lng = (int32_t)(temp.Longitude * RAD_TO_DEG_DOUBLE * 1e7);
-            state.location.alt = (int32_t)((float)temp.Height * 1e2f);
+            state.location.lat = AP_GPS::lat_lon_type{temp.Latitude * RAD_TO_DEG_DOUBLE * 1e7};
+            state.location.lon = AP_GPS::lat_lon_type{temp.Longitude * RAD_TO_DEG_DOUBLE * 1e7};
+            state.location.alt = AP_GPS::altitude_type{(float)temp.Height * 1e2f};
         }
 
         if (temp.NrSV != 255) {
@@ -287,9 +290,8 @@ AP_GPS_SBF::process_message(void)
 void
 AP_GPS_SBF::inject_data(uint8_t *data, uint8_t len)
 {
-
     if (port->txspace() > len) {
-        last_injected_data_ms = AP_HAL::millis();
+        last_injected_data_ms = quan::stm32::millis().numeric_value();
         port->write(data, len);
     } else {
         Debug("SBF: Not enough TXSPACE");

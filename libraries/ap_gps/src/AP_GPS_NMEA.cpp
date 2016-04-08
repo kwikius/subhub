@@ -29,15 +29,18 @@
 /// TinyGPS parser by Mikal Hart.
 ///
 
-#include <AP_Common/AP_Common.h>
 
-#include <ctype.h>
-#include <stdint.h>
-#include <stdlib.h>
+
+#include <cctype>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring> 
+#include <ap_math/ap_math.hpp>
+#include <quan/stm32/millis.hpp>
+#include <ap_serialport/serialport.hpp>
 
 #include "AP_GPS_NMEA.h"
 
-extern const AP_HAL::HAL& hal;
 
 // optionally log all NMEA data for debug purposes
 // #define NMEA_LOG_PATH "nmea.log"
@@ -102,7 +105,7 @@ const char AP_GPS_NMEA::_gpvtg_string[] = "GPVTG";
 #define DIGIT_TO_VAL(_x)        (_x - '0')
 #define hexdigit(x) ((x)>9?'A'+(x):'0'+(x))
 
-AP_GPS_NMEA::AP_GPS_NMEA(AP_GPS &_gps, AP_GPS::GPS_State &_state, AP_HAL::UARTDriver *_port) :
+AP_GPS_NMEA::AP_GPS_NMEA(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port),
     _parity(0),
     _is_checksum_term(false),
@@ -261,7 +264,7 @@ bool AP_GPS_NMEA::_have_new_message()
         _last_GPGGA_ms == 0) {
         return false;
     }
-    uint32_t now = AP_HAL::millis();
+    uint32_t now = quan::stm32::millis().numeric_value();
     if (now - _last_GPRMC_ms > 150 ||
         now - _last_GPGGA_ms > 150) {
         return false;
@@ -292,20 +295,20 @@ bool AP_GPS_NMEA::_term_complete()
                 case _GPS_SENTENCE_GPRMC:
                     //time                        = _new_time;
                     //date                        = _new_date;
-                    state.location.lat     = _new_latitude;
-                    state.location.lng     = _new_longitude;
+                    state.location.lat     = AP_GPS::lat_lon_type{_new_latitude};
+                    state.location.lon     = AP_GPS::lat_lon_type{_new_longitude};
                     state.ground_speed     = _new_speed*0.01f;
                     state.ground_course_cd = wrap_360_cd(_new_course);
                     make_gps_time(_new_date, _new_time * 10);
-                    state.last_gps_time_ms = AP_HAL::millis();
+                    state.last_gps_time_ms = quan::stm32::millis().numeric_value();
                     // To-Do: add support for proper reporting of 2D and 3D fix
                     state.status           = AP_GPS::GPS_OK_FIX_3D;
                     fill_3d_velocity();
                     break;
                 case _GPS_SENTENCE_GPGGA:
-                    state.location.alt  = _new_altitude;
-                    state.location.lat  = _new_latitude;
-                    state.location.lng  = _new_longitude;
+                    state.location.alt  = AP_GPS::altitude_type{_new_altitude};
+                    state.location.lat  = AP_GPS::lat_lon_type{_new_latitude};
+                    state.location.lon  = AP_GPS::lat_lon_type{_new_longitude};
                     state.num_sats      = _new_satellite_count;
                     state.hdop          = _new_hdop;
                     // To-Do: add support for proper reporting of 2D and 3D fix
@@ -337,15 +340,15 @@ bool AP_GPS_NMEA::_term_complete()
     if (_term_number == 0) {
         if (!strcmp(_term, _gprmc_string)) {
             _sentence_type = _GPS_SENTENCE_GPRMC;
-            _last_GPRMC_ms = AP_HAL::millis();
+            _last_GPRMC_ms = quan::stm32::millis().numeric_value();
         } else if (!strcmp(_term, _gpgga_string)) {
             _sentence_type = _GPS_SENTENCE_GPGGA;
-            _last_GPGGA_ms = AP_HAL::millis();
+            _last_GPGGA_ms = quan::stm32::millis().numeric_value();
         } else if (!strcmp(_term, _gpvtg_string)) {
             _sentence_type = _GPS_SENTENCE_GPVTG;
             // VTG may not contain a data qualifier, presume the solution is good
             // unless it tells us otherwise.
-            _last_GPVTG_ms = AP_HAL::millis();
+            _last_GPVTG_ms = quan::stm32::millis().numeric_value();
             _gps_data_good = true;
         } else {
             _sentence_type = _GPS_SENTENCE_OTHER;

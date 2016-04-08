@@ -48,6 +48,7 @@
 #define __AP_GPS_NMEA_H__
 
 #include "../AP_GPS.h"
+#include "GPS_Backend.h"
 
 /// NMEA parser
 ///
@@ -61,7 +62,7 @@ public:
     /// accordingly.
     bool        read();
 
-	static bool _detect(struct NMEA_detect_state &state, uint8_t data);
+	 static bool _detect(struct NMEA_detect_state &state, uint8_t data);
 
 private:
     /// Coding for the GPS sentences that the parser handles

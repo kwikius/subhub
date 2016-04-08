@@ -22,6 +22,7 @@
 #ifndef __AP_GPS_SBF_H__
 #define __AP_GPS_SBF_H__
 
+#include <ap_common/ap_common.hpp>
 #include "../AP_GPS.h"
 #include "GPS_Backend.h"
 

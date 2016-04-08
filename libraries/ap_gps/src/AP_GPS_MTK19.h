@@ -23,9 +23,11 @@
 #ifndef AP_GPS_MTK19_h
 #define AP_GPS_MTK19_h
 
+#include <ap_common/ap_common.hpp>
+
+#include "AP_GPS_MTK_Common.h"
 #include "../AP_GPS.h"
 #include "GPS_Backend.h"
-#include "AP_GPS_MTK_Common.h"
 
 #define MTK_GPS_REVISION_V16  16
 #define MTK_GPS_REVISION_V19  19
@@ -50,17 +52,17 @@ private:
         uint32_t utc_date;
         uint32_t utc_time;
         uint16_t hdop;
-    };
+    } ;
     enum diyd_mtk_fix_type {
         FIX_NONE = 1,
         FIX_2D = 2,
         FIX_3D = 3,
-		FIX_2D_SBAS = 6,
+		  FIX_2D_SBAS = 6,
         FIX_3D_SBAS = 7
     };
 
     enum diyd_mtk_protocol_bytes {
-	    PREAMBLE1_V16 = 0xd0,
+	     PREAMBLE1_V16 = 0xd0,
         PREAMBLE1_V19 = 0xd1,
         PREAMBLE2     = 0xdd,
     };

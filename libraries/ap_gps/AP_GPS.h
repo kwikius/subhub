@@ -57,9 +57,10 @@ public:
     }
 
     typedef quan::angle_<int32_t>::deg10e7                   lat_lon_type;
-    typedef quan::length_<int32_t>::mm                       altitude_type;
+    typedef quan::length_<int32_t>::cm                       altitude_type; // n.b the AP type is differnt to the quan osd type
     typedef quan::uav::position<lat_lon_type,altitude_type>  position_type; 
-    typedef quan::three_d::vect<quan::velocity::m_per_s>     velocity3d_type;
+    typedef quan::velocity::m_per_s                          velocity_type;
+    typedef quan::three_d::vect<velocity_type>               velocity3d_type;
     typedef quan::three_d::vect<quan::length_<int32_t>::mm>  position_error_type; 
     //typedef position_type Location;
 

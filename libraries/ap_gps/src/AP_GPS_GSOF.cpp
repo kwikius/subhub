@@ -19,11 +19,14 @@
 //  Code by Michael Oborne
 //
 
-#include "AP_GPS.h"
-#include "AP_GPS_GSOF.h"
-#include <DataFlash/DataFlash.h>
 
-extern const AP_HAL::HAL& hal;
+#include "AP_GPS_GSOF.h"
+#include <ap_serialport/serialport.hpp>
+#include <quan/stm32/millis.hpp>
+#include <ap_math/ap_math.hpp>
+//#include <DataFlash/DataFlash.h>
+
+//extern const AP_HAL::HAL& hal;
 
 #define gsof_DEBUGGING 0
 
@@ -40,7 +43,7 @@ do {                                            \
 #endif
 
 AP_GPS_GSOF::AP_GPS_GSOF(AP_GPS &_gps, AP_GPS::GPS_State &_state,
-                         AP_HAL::UARTDriver *_port) :
+                         SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port)
 {
     gsof_msg.gsof_state = gsof_msg_parser_t::STARTTX;
@@ -50,7 +53,7 @@ AP_GPS_GSOF::AP_GPS_GSOF(AP_GPS &_gps, AP_GPS::GPS_State &_state,
     // baud request for port 3
     requestBaud(3);
 
-    uint32_t now = AP_HAL::millis();
+    uint32_t now = quan::stm32::millis().numeric_value();
     gsofmsg_time = now + 110;
 }
 
@@ -59,7 +62,7 @@ AP_GPS_GSOF::AP_GPS_GSOF(AP_GPS &_gps, AP_GPS::GPS_State &_state,
 bool
 AP_GPS_GSOF::read(void)
 {
-    uint32_t now = AP_HAL::millis();
+    uint32_t now = quan::stm32::millis().numeric_value();
 
     if (gsofmsgreq_index < (sizeof(gsofmsgreq))) {
         if (now > gsofmsg_time) {
@@ -296,9 +299,9 @@ AP_GPS_GSOF::process_message(void)
             }
             else if (output_type == 2) // position
             {
-                state.location.lat = (int32_t)(RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a)) * 1e7);
-                state.location.lng = (int32_t)(RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a + 8)) * 1e7);
-                state.location.alt = (int32_t)(SwapDouble(gsof_msg.data, a + 16) * 1e2);
+                state.location.lat = AP_GPS::lat_lon_type{RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a)) * 1e7}; // deg1e7
+                state.location.lon = AP_GPS::lat_lon_type{RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a + 8)) * 1e7}; // deg1e7
+                state.location.alt = AP_GPS::altitude_type{SwapDouble(gsof_msg.data, a + 16) * 1e2}; //cm
 
                 state.last_gps_time_ms = state.time_week_ms;
 
@@ -312,7 +315,7 @@ AP_GPS_GSOF::process_message(void)
                     state.ground_speed = SwapFloat(gsof_msg.data, a + 1);
                     state.ground_course_cd = (int32_t)(ToDeg(SwapFloat(gsof_msg.data, a + 5)) * 100);
                     fill_3d_velocity();
-                    state.velocity.z = -SwapFloat(gsof_msg.data, a + 9);
+                    state.velocity.z = AP_GPS::velocity_type{-SwapFloat(gsof_msg.data, a + 9)};
                     state.have_vertical_velocity = true;
                 }
                 valid++;
@@ -349,7 +352,7 @@ AP_GPS_GSOF::inject_data(uint8_t *data, uint8_t len)
 {
 
     if (port->txspace() > len) {
-        last_injected_data_ms = AP_HAL::millis();
+        last_injected_data_ms = quan::stm32::millis().numeric_value();
         port->write(data, len);
     } else {
         Debug("GSOF: Not enough TXSPACE");

@@ -1,5 +1,5 @@
 
-main.elf:     file format elf32-littlearm
+bin/main.elf:     file format elf32-littlearm
 
 
 Disassembly of section .text:
@@ -1506,7 +1506,7 @@ Disassembly of section .text:
  8000c5e:	6083      	str	r3, [r0, #8]
  8000c60:	4770      	bx	lr
 
-08000c62 <_ZNK6my_gps12get_velocityEv>:
+08000c62 <_ZNK6my_gps14get_velocity3dEv>:
  8000c62:	2300      	movs	r3, #0
  8000c64:	6003      	str	r3, [r0, #0]
  8000c66:	6043      	str	r3, [r0, #4]

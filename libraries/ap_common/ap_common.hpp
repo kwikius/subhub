@@ -1,6 +1,8 @@
 #ifndef SUBHUB_AP_COMMON_HPP_INCLUDED
 #define SUBHUB_AP_COMMON_HPP_INCLUDED
 
+#include <cstddef>
+
 #define PACKED __attribute__((__packed__))
 
 #define FORMAT(a,b) __attribute__((format(printf, a, b)))

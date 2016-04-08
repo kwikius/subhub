@@ -28,6 +28,7 @@
 #include "../AP_GPS.h"
 #include "AP_GPS_MTK_Common.h"
 #include <ap_common/ap_common.hpp>
+#include "GPS_Backend.h"
 
 class AP_GPS_MTK : public AP_GPS_Backend {
 public:

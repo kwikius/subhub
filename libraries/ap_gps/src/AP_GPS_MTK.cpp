@@ -21,14 +21,16 @@
 //	GPS configuration : Custom protocol per "DIYDrones Custom Binary Sentence Specification V1.1"
 //
 
-#include "AP_GPS.h"
+
 #include "AP_GPS_MTK.h"
+#include <ap_math/ap_math.hpp>
+#include <ap_serialport/serialport.hpp>
 
 // initialisation blobs to send to the GPS to try to get it into the
 // right mode
 const char AP_GPS_MTK::_initialisation_blob[] = MTK_OUTPUT_5HZ SBAS_ON WAAS_ON MTK_NAVTHRES_OFF;
 
-AP_GPS_MTK::AP_GPS_MTK(AP_GPS &_gps, AP_GPS::GPS_State &_state, AP_HAL::UARTDriver *_port) :
+AP_GPS_MTK::AP_GPS_MTK(AP_GPS &_gps, AP_GPS::GPS_State &_state,SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port),
     _step(0),
     _payload_counter(0)
@@ -143,9 +145,9 @@ restart:
             }else{
                 state.status = AP_GPS::NO_FIX;
             }
-            state.location.lat  = swap_int32(_buffer.msg.latitude)  * 10;
-            state.location.lng  = swap_int32(_buffer.msg.longitude) * 10;
-            state.location.alt  = swap_int32(_buffer.msg.altitude);
+            state.location.lat  = AP_GPS::lat_lon_type{swap_int32(_buffer.msg.latitude)  * 10};
+            state.location.lon  = AP_GPS::lat_lon_type{swap_int32(_buffer.msg.longitude) * 10};
+            state.location.alt  = AP_GPS::altitude_type{swap_int32(_buffer.msg.altitude)};
             state.ground_speed      = swap_int32(_buffer.msg.ground_speed) * 0.01f;
             state.ground_course_cd  = wrap_360_cd(swap_int32(_buffer.msg.ground_course) / 10000);
             state.num_sats          = _buffer.msg.satellites;

@@ -1,5 +1,9 @@
 include ../../../common/stm32f0_make_flags.mk
 
+CPLUS_INCLUDE_PATH=
+C_INCLUDE_PATH=
+LIBRARY_PATH=
+
 src_objects = gps.o
 
 objects = $(patsubst %.o,obj/%.o,$(src_objects))

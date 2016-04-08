@@ -19,8 +19,12 @@
 //	Code by Michael Smith.
 //
 
-#include "AP_GPS_SIRF.h"
+
 #include <stdint.h>
+#include <ap_math/ap_math.hpp>
+#include <ap_serialport/serialport.hpp>
+
+#include "AP_GPS_SIRF.h"
 
 // Initialisation messages
 //
@@ -33,7 +37,7 @@ const uint8_t AP_GPS_SIRF::_initialisation_blob[] = {
     0xa0, 0xa2, 0x00, 0x08, 0xa6, 0x00, 0x29, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0, 0xb0, 0xb3 
 };
 
-AP_GPS_SIRF::AP_GPS_SIRF(AP_GPS &_gps, AP_GPS::GPS_State &_state, AP_HAL::UARTDriver *_port) :
+AP_GPS_SIRF::AP_GPS_SIRF(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port),
     _step(0),
     _gather(false),
@@ -182,9 +186,9 @@ AP_GPS_SIRF::_parse_gps(void)
         }else{
             state.status = AP_GPS::GPS_OK_FIX_2D;
         }
-        state.location.lat      = swap_int32(_buffer.nav.latitude);
-        state.location.lng      = swap_int32(_buffer.nav.longitude);
-        state.location.alt      = swap_int32(_buffer.nav.altitude_msl);
+        state.location.lat      = AP_GPS::lat_lon_type{swap_int32(_buffer.nav.latitude)};
+        state.location.lon      = AP_GPS::lat_lon_type{swap_int32(_buffer.nav.longitude)};
+        state.location.alt      = AP_GPS::altitude_type{swap_int32(_buffer.nav.altitude_msl)};
         state.ground_speed      = swap_int32(_buffer.nav.ground_speed)*0.01f;
         state.ground_course_cd  = wrap_360_cd(swap_int16(_buffer.nav.ground_course));
         state.num_sats          = _buffer.nav.satellites;

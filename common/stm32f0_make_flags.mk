@@ -10,7 +10,7 @@ LD      = $(TOOLCHAIN_PREFIX)bin/arm-none-eabi-g++
 CP      = $(TOOLCHAIN_PREFIX)bin/arm-none-eabi-objcopy
 OD      = $(TOOLCHAIN_PREFIX)bin/arm-none-eabi-objdump
 AR      = $(TOOLCHAIN_PREFIX)bin/arm-none-eabi-ar
-
+SIZ     = $(TOOLCHAIN_PREFIX)bin/arm-none-eabi-size
 
   
 INCLUDES = /opt/stm32f0/STM32F0xx_StdPeriph_Lib_V1.1.0/Libraries/CMSIS/Include \
@@ -28,7 +28,7 @@ PROCESSOR_FLAGS = -mcpu=cortex-m0 -mthumb -mfloat-abi=soft
 
 INIT_LIBS = $(INIT_LIB_PREFIX)crti.o $(INIT_LIB_PREFIX)crtn.o
 
-CFLAG_EXTRAS = -fno-math-errno -Os
+CFLAG_EXTRAS = -Wno-psabi -fno-math-errno -Os
 # for float printf format etc
 # CFLAG_EXTRAS += -Wl,-u,vsprintf -lm
 
