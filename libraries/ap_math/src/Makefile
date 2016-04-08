@@ -1,4 +1,4 @@
-include ../../../common/stm32f0_make_flags.mk
+include ../../../common/mk/stm32f0_make_flags.mk
 
 object_files = ap_math.o edc.o
 
