@@ -19,32 +19,14 @@
 //  Code by Michael Oborne
 //
 
-
 #include "AP_GPS_GSOF.h"
 #include <ap_serialport/serialport.hpp>
 #include <quan/stm32/millis.hpp>
 #include <ap_math/ap_math.hpp>
-//#include <DataFlash/DataFlash.h>
 
-//extern const AP_HAL::HAL& hal;
-
-#define gsof_DEBUGGING 0
-
-#if gsof_DEBUGGING
-# define Debug(fmt, args ...)                  \
-do {                                            \
-    hal.console->printf("%s:%d: " fmt "\n",     \
-                        __FUNCTION__, __LINE__, \
-                        ## args);               \
-    hal.scheduler->delay(1);                    \
-} while(0)
-#else
-# define Debug(fmt, args ...)
-#endif
-
-AP_GPS_GSOF::AP_GPS_GSOF(AP_GPS &_gps, AP_GPS::GPS_State &_state,
-                         SerialPort *_port) :
-    AP_GPS_Backend(_gps, _state, _port)
+apm::AP_GPS_GSOF::AP_GPS_GSOF(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state,
+                         apm::SerialPort *_port) :
+    apm::AP_GPS_Backend(_gps, _state, _port)
 {
     gsof_msg.gsof_state = gsof_msg_parser_t::STARTTX;
 
@@ -59,8 +41,7 @@ AP_GPS_GSOF::AP_GPS_GSOF(AP_GPS &_gps, AP_GPS::GPS_State &_state,
 
 // Process all bytes available from the stream
 //
-bool
-AP_GPS_GSOF::read(void)
+bool apm::AP_GPS_GSOF::read(void)
 {
     uint32_t now = quan::stm32::millis().numeric_value();
 
@@ -82,8 +63,7 @@ AP_GPS_GSOF::read(void)
     return ret;
 }
 
-bool
-AP_GPS_GSOF::parse(uint8_t temp)
+bool apm::AP_GPS_GSOF::parse(uint8_t temp)
 {
     switch (gsof_msg.gsof_state)
     {
@@ -138,8 +118,7 @@ AP_GPS_GSOF::parse(uint8_t temp)
     return false;
 }
 
-void
-AP_GPS_GSOF::requestBaud(uint8_t portindex)
+void apm::AP_GPS_GSOF::requestBaud(uint8_t portindex)
 {
     uint8_t buffer[19] = {0x02,0x00,0x64,0x0d,0x00,0x00,0x00, // application file record
                           0x03, 0x00, 0x01, 0x00, // file control information block
@@ -159,8 +138,7 @@ AP_GPS_GSOF::requestBaud(uint8_t portindex)
     port->write((const uint8_t*)buffer, sizeof(buffer));
 }
 
-void
-AP_GPS_GSOF::requestGSOF(uint8_t messagetype, uint8_t portindex)
+void apm::AP_GPS_GSOF::requestGSOF(uint8_t messagetype, uint8_t portindex)
 {
     uint8_t buffer[21] = {0x02,0x00,0x64,0x0f,0x00,0x00,0x00, // application file record
                           0x03,0x00,0x01,0x00, // file control information block
@@ -181,8 +159,7 @@ AP_GPS_GSOF::requestGSOF(uint8_t messagetype, uint8_t portindex)
     port->write((const uint8_t*)buffer, sizeof(buffer));
 }
 
-double
-AP_GPS_GSOF::SwapDouble(uint8_t* src, uint32_t pos)
+double apm::AP_GPS_GSOF::SwapDouble(uint8_t* src, uint32_t pos)
 {
     union {
         double d;
@@ -200,8 +177,7 @@ AP_GPS_GSOF::SwapDouble(uint8_t* src, uint32_t pos)
     return doubleu.d;
 }
 
-float
-AP_GPS_GSOF::SwapFloat(uint8_t* src, uint32_t pos)
+float apm::AP_GPS_GSOF::SwapFloat(uint8_t* src, uint32_t pos)
 {
     union {
         float f;
@@ -215,8 +191,7 @@ AP_GPS_GSOF::SwapFloat(uint8_t* src, uint32_t pos)
     return floatu.f;
 }
 
-uint32_t
-AP_GPS_GSOF::SwapUint32(uint8_t* src, uint32_t pos)
+uint32_t apm::AP_GPS_GSOF::SwapUint32(uint8_t* src, uint32_t pos)
 {
     union {
         uint32_t u;
@@ -230,8 +205,7 @@ AP_GPS_GSOF::SwapUint32(uint8_t* src, uint32_t pos)
     return uint32u.u;
 }
 
-uint16_t
-AP_GPS_GSOF::SwapUint16(uint8_t* src, uint32_t pos)
+uint16_t apm::AP_GPS_GSOF::SwapUint16(uint8_t* src, uint32_t pos)
 {
     union {
         uint16_t u;
@@ -243,20 +217,12 @@ AP_GPS_GSOF::SwapUint16(uint8_t* src, uint32_t pos)
     return uint16u.u;
 }
 
-bool
-AP_GPS_GSOF::process_message(void)
+bool apm::AP_GPS_GSOF::process_message(void)
 {
     //http://www.trimble.com/OEM_ReceiverHelp/V4.81/en/default.html#welcome.html
 
     if (gsof_msg.packettype == 0x40) { // GSOF
-#if gsof_DEBUGGING
-        uint8_t trans_number = gsof_msg.data[0];
-        uint8_t pageidx = gsof_msg.data[1];
-        uint8_t maxpageidx = gsof_msg.data[2];
 
-        Debug("GSOF page: %u of %u (trans_number=%u)",
-              pageidx, maxpageidx, trans_number);
-#endif
 
         int valid = 0;
 
@@ -347,14 +313,13 @@ AP_GPS_GSOF::process_message(void)
     return false;
 }
 
-void
-AP_GPS_GSOF::inject_data(uint8_t *data, uint8_t len)
+void apm::AP_GPS_GSOF::inject_data(uint8_t *data, uint8_t len)
 {
 
     if (port->txspace() > len) {
         last_injected_data_ms = quan::stm32::millis().numeric_value();
         port->write(data, len);
     } else {
-        Debug("GSOF: Not enough TXSPACE");
+       // Debug("GSOF: Not enough TXSPACE");
     }
 }

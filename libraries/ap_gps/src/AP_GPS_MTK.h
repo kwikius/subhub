@@ -30,57 +30,61 @@
 #include <ap_common/ap_common.hpp>
 #include "GPS_Backend.h"
 
-class AP_GPS_MTK : public AP_GPS_Backend {
-public:
-    AP_GPS_MTK(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port);
+namespace apm{
 
-    bool read(void);
+   class AP_GPS_MTK : public AP_GPS_Backend {
+   public:
+       AP_GPS_MTK(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port);
 
-    static bool _detect(struct MTK_detect_state &state, uint8_t data);
-    static void send_init_blob(uint8_t instance, AP_GPS &gps);
+       bool read(void);
 
-private:
-    struct PACKED diyd_mtk_msg {
-        int32_t latitude;
-        int32_t longitude;
-        int32_t altitude;
-        int32_t ground_speed;
-        int32_t ground_course;
-        uint8_t satellites;
-        uint8_t fix_type;
-        uint32_t utc_time;
-    };
-    enum diyd_mtk_fix_type {
-        FIX_NONE = 1,
-        FIX_2D = 2,
-        FIX_3D = 3
-    };
+       static bool _detect(struct MTK_detect_state &state, uint8_t data);
+       static void send_init_blob(uint8_t instance, AP_GPS &gps);
 
-    enum diyd_mtk_protocol_bytes {
-        PREAMBLE1 = 0xb5,
-        PREAMBLE2 = 0x62,
-        MESSAGE_CLASS = 1,
-        MESSAGE_ID = 5
-    };
+   private:
+       struct PACKED diyd_mtk_msg {
+           int32_t latitude;
+           int32_t longitude;
+           int32_t altitude;
+           int32_t ground_speed;
+           int32_t ground_course;
+           uint8_t satellites;
+           uint8_t fix_type;
+           uint32_t utc_time;
+       };
+       enum diyd_mtk_fix_type {
+           FIX_NONE = 1,
+           FIX_2D = 2,
+           FIX_3D = 3
+       };
 
-    // Packet checksum accumulators
-    uint8_t         _ck_a;
-    uint8_t         _ck_b;
+       enum diyd_mtk_protocol_bytes {
+           PREAMBLE1 = 0xb5,
+           PREAMBLE2 = 0x62,
+           MESSAGE_CLASS = 1,
+           MESSAGE_ID = 5
+       };
 
-    // State machine state
-    uint8_t         _step;
-    uint8_t         _payload_counter;
+       // Packet checksum accumulators
+       uint8_t         _ck_a;
+       uint8_t         _ck_b;
 
-    // Receive buffer
-    union PACKED {
-        diyd_mtk_msg msg;
-        uint8_t bytes[];
-    } _buffer;
+       // State machine state
+       uint8_t         _step;
+       uint8_t         _payload_counter;
 
-    // Buffer parse & GPS state update
-    void        _parse_gps();
+       // Receive buffer
+       union PACKED {
+           diyd_mtk_msg msg;
+           uint8_t bytes[];
+       } _buffer;
 
-    static const char _initialisation_blob[];
-};
+       // Buffer parse & GPS state update
+       void        _parse_gps();
+
+       static const char _initialisation_blob[];
+   };
+
+} // apm
 
 #endif  // __AP_GPS_MTK_H__

@@ -92,21 +92,21 @@
     "$PUBX,40,vtg,0,1,0,0,0,0*7F\r\n"   /* VTG on at one per fix */ \
     "$PUBX,40,rmc,0,0,0,0,0,0*67\r\n"   /* RMC off (XXX suppress other message types?) */
 
-const char AP_GPS_NMEA::_initialisation_blob[] = SIRF_INIT_MSG MTK_INIT_MSG UBLOX_INIT_MSG;
+const char apm::AP_GPS_NMEA::_initialisation_blob[] = SIRF_INIT_MSG MTK_INIT_MSG UBLOX_INIT_MSG;
 
 // NMEA message identifiers ////////////////////////////////////////////////////
 //
-const char AP_GPS_NMEA::_gprmc_string[] = "GPRMC";
-const char AP_GPS_NMEA::_gpgga_string[] = "GPGGA";
-const char AP_GPS_NMEA::_gpvtg_string[] = "GPVTG";
+const char apm::AP_GPS_NMEA::_gprmc_string[] = "GPRMC";
+const char apm::AP_GPS_NMEA::_gpgga_string[] = "GPGGA";
+const char apm::AP_GPS_NMEA::_gpvtg_string[] = "GPVTG";
 
 // Convenience macros //////////////////////////////////////////////////////////
 //
 #define DIGIT_TO_VAL(_x)        (_x - '0')
 #define hexdigit(x) ((x)>9?'A'+(x):'0'+(x))
 
-AP_GPS_NMEA::AP_GPS_NMEA(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port) :
-    AP_GPS_Backend(_gps, _state, _port),
+apm::AP_GPS_NMEA::AP_GPS_NMEA(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state, apm::SerialPort *_port) 
+:AP_GPS_Backend(_gps, _state, _port),
     _parity(0),
     _is_checksum_term(false),
     _sentence_type(0),
@@ -119,7 +119,7 @@ AP_GPS_NMEA::AP_GPS_NMEA(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_p
     memset(_term, 0, sizeof(_term));
 }
 
-bool AP_GPS_NMEA::read(void)
+bool apm::AP_GPS_NMEA::read(void)
 {
     int16_t numc;
     bool parsed = false;
@@ -143,7 +143,7 @@ bool AP_GPS_NMEA::read(void)
     return parsed;
 }
 
-bool AP_GPS_NMEA::_decode(char c)
+bool apm::AP_GPS_NMEA::_decode(char c)
 {
     bool valid_sentence = false;
 
@@ -184,7 +184,7 @@ bool AP_GPS_NMEA::_decode(char c)
 //
 // internal utilities
 //
-int16_t AP_GPS_NMEA::_from_hex(char a)
+int16_t apm::AP_GPS_NMEA::_from_hex(char a)
 {
     if (a >= 'A' && a <= 'F')
         return a - 'A' + 10;
@@ -194,7 +194,7 @@ int16_t AP_GPS_NMEA::_from_hex(char a)
         return a - '0';
 }
 
-uint32_t AP_GPS_NMEA::_parse_decimal_100()
+uint32_t apm::AP_GPS_NMEA::_parse_decimal_100()
 {
     char *p = _term;
     uint32_t ret = 100UL * atol(p);
@@ -213,7 +213,7 @@ uint32_t AP_GPS_NMEA::_parse_decimal_100()
 /*
   parse a NMEA latitude/longitude degree value. The result is in degrees*1e7
  */
-uint32_t AP_GPS_NMEA::_parse_degrees()
+uint32_t apm::AP_GPS_NMEA::_parse_degrees()
 {
     char *p, *q;
     uint8_t deg = 0, min = 0;
@@ -258,7 +258,7 @@ uint32_t AP_GPS_NMEA::_parse_degrees()
 /*
   see if we have a new set of NMEA messages
  */
-bool AP_GPS_NMEA::_have_new_message()
+bool apm::AP_GPS_NMEA::_have_new_message()
 {
     if (_last_GPRMC_ms == 0 ||
         _last_GPGGA_ms == 0) {
@@ -284,7 +284,7 @@ bool AP_GPS_NMEA::_have_new_message()
 
 // Processes a just-completed term
 // Returns true if new sentence has just passed checksum test and is validated
-bool AP_GPS_NMEA::_term_complete()
+bool apm::AP_GPS_NMEA::_term_complete()
 {
     // handle the last term in a message
     if (_is_checksum_term) {
@@ -431,8 +431,7 @@ bool AP_GPS_NMEA::_term_complete()
   detect a NMEA GPS. Adds one byte, and returns true if the stream
   matches a NMEA string
  */
-bool
-AP_GPS_NMEA::_detect(struct NMEA_detect_state &state, uint8_t data)
+bool apm::AP_GPS_NMEA::_detect(struct NMEA_detect_state &state, uint8_t data)
 {
 	switch (state.step) {
 	case 0:

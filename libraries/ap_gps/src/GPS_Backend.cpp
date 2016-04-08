@@ -20,7 +20,7 @@
 #include "../AP_GPS.h"
 #include "GPS_Backend.h"
 
-AP_GPS_Backend::AP_GPS_Backend(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port) :
+apm::AP_GPS_Backend::AP_GPS_Backend(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state, apm::SerialPort *_port) :
     port(_port),
     gps(_gps),
     state(_state)
@@ -30,7 +30,7 @@ AP_GPS_Backend::AP_GPS_Backend(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPo
     state.have_vertical_accuracy = false;
 }
 
-int32_t AP_GPS_Backend::swap_int32(int32_t v) const
+int32_t apm::AP_GPS_Backend::swap_int32(int32_t v) const
 {
     const uint8_t *b = (const uint8_t *)&v;
     union {
@@ -46,7 +46,7 @@ int32_t AP_GPS_Backend::swap_int32(int32_t v) const
     return u.v;
 }
 
-int16_t AP_GPS_Backend::swap_int16(int16_t v) const
+int16_t apm::AP_GPS_Backend::swap_int16(int16_t v) const
 {
     const uint8_t *b = (const uint8_t *)&v;
     union {
@@ -63,7 +63,7 @@ int16_t AP_GPS_Backend::swap_int16(int16_t v) const
 /**
    calculate current time since the unix epoch in microseconds
  */
-uint64_t AP_GPS::time_epoch_usec(uint8_t instance)
+uint64_t apm::AP_GPS::time_epoch_usec(uint8_t instance)
 {
     const GPS_State &istate = state[instance];
     if (istate.last_gps_time_ms == 0) {
@@ -81,7 +81,7 @@ uint64_t AP_GPS::time_epoch_usec(uint8_t instance)
    fill in time_week_ms and time_week from BCD date and time components
    assumes MTK19 millisecond form of bcd_time
  */
-void AP_GPS_Backend::make_gps_time(uint32_t bcd_date, uint32_t bcd_milliseconds)
+void apm::AP_GPS_Backend::make_gps_time(uint32_t bcd_date, uint32_t bcd_milliseconds)
 {
     uint8_t year, mon, day, hour, min, sec;
     uint16_t msec;
@@ -121,7 +121,7 @@ void AP_GPS_Backend::make_gps_time(uint32_t bcd_date, uint32_t bcd_milliseconds)
 /*
   fill in 3D velocity for a GPS that doesn't give vertical velocity numbers
  */
-void AP_GPS_Backend::fill_3d_velocity(void)
+void apm::AP_GPS_Backend::fill_3d_velocity(void)
 {
     float gps_heading = ToRad(state.ground_course_cd * 0.01f);
 

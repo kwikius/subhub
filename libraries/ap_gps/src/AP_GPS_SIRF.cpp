@@ -32,12 +32,12 @@
 //
 // XXX the bytes show up on the wire, but at least my test unit (EM-411) seems to ignore them.
 //
-const uint8_t AP_GPS_SIRF::_initialisation_blob[] = {
+const uint8_t apm::AP_GPS_SIRF::_initialisation_blob[] = {
     0xa0, 0xa2, 0x00, 0x08, 0xa6, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa8, 0xb0, 0xb3,
     0xa0, 0xa2, 0x00, 0x08, 0xa6, 0x00, 0x29, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0, 0xb0, 0xb3 
 };
 
-AP_GPS_SIRF::AP_GPS_SIRF(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port) :
+apm::AP_GPS_SIRF::AP_GPS_SIRF(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port),
     _step(0),
     _gather(false),
@@ -58,8 +58,7 @@ AP_GPS_SIRF::AP_GPS_SIRF(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_p
 // re-processing it from the top, this is unavoidable. The parser
 // attempts to avoid this when possible.
 //
-bool
-AP_GPS_SIRF::read(void)
+bool apm::AP_GPS_SIRF::read(void)
 {
     uint8_t data;
     int16_t numc;
@@ -172,8 +171,7 @@ AP_GPS_SIRF::read(void)
     return(parsed);
 }
 
-bool
-AP_GPS_SIRF::_parse_gps(void)
+bool apm::AP_GPS_SIRF::_parse_gps(void)
 {
     switch(_msg_id) {
     case MSG_GEONAV:
@@ -198,8 +196,7 @@ AP_GPS_SIRF::_parse_gps(void)
     return false;
 }
 
-void
-AP_GPS_SIRF::_accumulate(uint8_t val)
+void apm::AP_GPS_SIRF::_accumulate(uint8_t val)
 {
     _checksum = (_checksum + val) & 0x7fff;
 }
@@ -209,8 +206,7 @@ AP_GPS_SIRF::_accumulate(uint8_t val)
 /*
   detect a SIRF GPS
  */
-bool
-AP_GPS_SIRF::_detect(struct SIRF_detect_state &state, uint8_t data)
+bool apm::AP_GPS_SIRF::_detect(struct SIRF_detect_state &state, uint8_t data)
 {
 	switch (state.step) {
 	case 1:

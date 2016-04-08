@@ -14,12 +14,6 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include <AP_Common/AP_Common.h>
-//#include <AP_HAL/AP_HAL.h>
-//#include <AP_Math/AP_Math.h>
-//#include <AP_Notify/AP_Notify.h>
-//#include <AP_Progmem/AP_Progmem.h>
-
 #define GPS_BAUD_TIME_MS 1200
 //
 #include <cstring>
@@ -31,7 +25,6 @@
 #include "AP_GPS_NMEA.h"
 #include "AP_GPS_SIRF.h"
 #include "AP_GPS_SBP.h"
-//#include "AP_GPS_PX4.h"
 #include "AP_GPS_SBF.h"
 #include "AP_GPS_GSOF.h"
 
@@ -49,7 +42,7 @@ static inline uint32_t pgm_read_dword(const void *s) {
 //extern const AP_HAL::HAL& hal;
 #if 0
 // table of user settable parameters
-const AP_Param::GroupInfo AP_GPS::var_info[] = {
+const AP_Param::GroupInfo apm::AP_GPS::var_info[] = {
     // @Param: TYPE
     // @DisplayName: GPS type
     // @Description: GPS type
@@ -145,7 +138,7 @@ const AP_Param::GroupInfo AP_GPS::var_info[] = {
 #endif
 
 /// Startup initialisation.
-void AP_GPS::init(/*DataFlash_Class *dataflash, const AP_SerialManager& serial_manager */)
+void apm::AP_GPS::init(/*DataFlash_Class *dataflash, const AP_SerialManager& serial_manager */)
 {
 //    _DataFlash = dataflash;
 //    primary_instance = 0;
@@ -157,18 +150,18 @@ void AP_GPS::init(/*DataFlash_Class *dataflash, const AP_SerialManager& serial_m
 }
 
 // baudrates to try to detect GPSes with
-const uint32_t AP_GPS::_baudrates[] = {4800U, 38400U, 115200U, 57600U, 9600U, 230400U};
+const uint32_t apm::AP_GPS::_baudrates[] = {4800U, 38400U, 115200U, 57600U, 9600U, 230400U};
 
 // initialisation blobs to send to the GPS to try to get it into the
 // right mode
-const char AP_GPS::_initialisation_blob[] = UBLOX_SET_BINARY MTK_SET_BINARY SIRF_SET_BINARY;
-const char AP_GPS::_initialisation_raw_blob[] = UBLOX_SET_BINARY_RAW_BAUD MTK_SET_BINARY SIRF_SET_BINARY;
+const char apm::AP_GPS::_initialisation_blob[] = UBLOX_SET_BINARY MTK_SET_BINARY SIRF_SET_BINARY;
+const char apm::AP_GPS::_initialisation_raw_blob[] = UBLOX_SET_BINARY_RAW_BAUD MTK_SET_BINARY SIRF_SET_BINARY;
 
 /*
   send some more initialisation string bytes if there is room in the
   UART transmit buffer
  */
-void AP_GPS::send_blob_start(uint8_t instance, const char *_blob, uint16_t size)
+void apm::AP_GPS::send_blob_start(uint8_t instance, const char *_blob, uint16_t size)
 {
     initblob_state[instance].blob = _blob;
     initblob_state[instance].remaining = size;
@@ -178,7 +171,7 @@ void AP_GPS::send_blob_start(uint8_t instance, const char *_blob, uint16_t size)
   send some more initialisation string bytes if there is room in the
   UART transmit buffer
  */
-void AP_GPS::send_blob_update(uint8_t instance)
+void apm::AP_GPS::send_blob_update(uint8_t instance)
 {
     // exit immediately if no uart for this instance
     if (_port[instance] == NULL) {
@@ -206,21 +199,11 @@ void AP_GPS::send_blob_update(uint8_t instance)
   from NO_GPS to NO_FIX.
  */
 void
-AP_GPS::detect_instance(uint8_t instance)
+apm::AP_GPS::detect_instance(uint8_t instance)
 {
     AP_GPS_Backend *new_gps = NULL;
     struct detect_state *dstate = &detect_state[instance];
     uint32_t now = quan::stm32::millis().numeric_value();
-
-//#if CONFIG_HAL_BOARD == HAL_BOARD_PX4
-//    if (_type[instance] == GPS_TYPE_PX4) {
-//        // check for explicitely chosen PX4 GPS beforehand
-//        // it is not possible to autodetect it, nor does it require a real UART
-//        hal.console->print(" PX4 ");
-//        new_gps = new AP_GPS_PX4(*this, state[instance], _port[instance]);
-//        goto found_gps;
-//    }
-//#endif
 
     if (_port[instance] == NULL) {
         // UART not available
@@ -256,12 +239,7 @@ AP_GPS::detect_instance(uint8_t instance)
 		_port[instance]->begin(baudrate);
 		_port[instance]->set_flow_control(SerialPort::FLOW_CONTROL_DISABLE);
 		dstate->last_baud_change_ms = now;
-#if UBLOX_RXM_RAW_LOGGING
-    if(_raw_data != 0)
-        send_blob_start(instance, _initialisation_raw_blob, sizeof(_initialisation_raw_blob));
-    else
-#endif
-        send_blob_start(instance, _initialisation_blob, sizeof(_initialisation_blob));
+      send_blob_start(instance, _initialisation_blob, sizeof(_initialisation_blob));
     }
 
     send_blob_update(instance);
@@ -314,9 +292,6 @@ AP_GPS::detect_instance(uint8_t instance)
 		}
 	}
 
-#if CONFIG_HAL_BOARD == HAL_BOARD_PX4
-found_gps:
-#endif
 	if (new_gps != NULL) {
         state[instance].status = NO_FIX;
         drivers[instance] = new_gps;
@@ -324,28 +299,27 @@ found_gps:
 	}
 }
 
-AP_GPS::GPS_Status 
-AP_GPS::highest_supported_status(uint8_t instance) const
+apm::AP_GPS::GPS_Status 
+apm::AP_GPS::highest_supported_status(uint8_t instance) const
 {
     if (drivers[instance] != NULL)
         return drivers[instance]->highest_supported_status();
-    return AP_GPS::GPS_OK_FIX_3D;
+    return apm::AP_GPS::GPS_OK_FIX_3D;
 }
 
-AP_GPS::GPS_Status 
-AP_GPS::highest_supported_status(void) const
+apm::AP_GPS::GPS_Status 
+apm::AP_GPS::highest_supported_status(void) const
 {
     if (drivers[primary_instance] != NULL)
         return drivers[primary_instance]->highest_supported_status();
-    return AP_GPS::GPS_OK_FIX_3D;
+    return apm::AP_GPS::GPS_OK_FIX_3D;
 }
 
 
 /*
   update one GPS instance. This should be called at 10Hz or greater
  */
-void
-AP_GPS::update_instance(uint8_t instance)
+void apm::AP_GPS::update_instance(uint8_t instance)
 {
     if (_type[instance] == GPS_TYPE_HIL) {
         // in HIL, leave info alone
@@ -401,8 +375,7 @@ AP_GPS::update_instance(uint8_t instance)
 /*
   update all GPS instances
  */
-void
-AP_GPS::update(void)
+void apm::AP_GPS::update(void)
 {
     for (uint8_t i=0; i<GPS_MAX_INSTANCES; i++) {
         update_instance(i);
@@ -450,46 +423,12 @@ AP_GPS::update(void)
    // AP_Notify::flags.gps_status = state[primary_instance].status;
 }
 
-#if 0
-/*
-  set HIL (hardware in the loop) status for a GPS instance
- */
-void 
-AP_GPS::setHIL(uint8_t instance, GPS_Status _status, uint64_t time_epoch_ms, 
-               const Location &_location, const Vector3f &_velocity, uint8_t _num_sats, 
-               uint16_t hdop, bool _have_vertical_velocity)
-{
-    if (instance >= GPS_MAX_INSTANCES) {
-        return;
-    }
-    uint32_t tnow = AP_HAL::millis();
-    GPS_State &istate = state[instance];
-    istate.status = _status;
-    istate.location = _location;
-    istate.location.options = 0;
-    istate.velocity = _velocity;
-    istate.ground_speed = pythagorous2(istate.velocity.x, istate.velocity.y);
-    istate.ground_course_cd = wrap_360_cd(degrees(atan2f(istate.velocity.y, istate.velocity.x)) * 100UL);
-    istate.hdop = hdop;
-    istate.num_sats = _num_sats;
-    istate.have_vertical_velocity |= _have_vertical_velocity;
-    istate.last_gps_time_ms = tnow;
-    uint64_t gps_time_ms = time_epoch_ms - (17000ULL*86400ULL + 52*10*7000ULL*86400ULL - 15000ULL);
-    istate.time_week     = gps_time_ms / (86400*7*(uint64_t)1000);
-    istate.time_week_ms  = gps_time_ms - istate.time_week*(86400*7*(uint64_t)1000);
-    timing[instance].last_message_time_ms = tnow;
-    timing[instance].last_fix_time_ms = tnow;
-    _type[instance].set(GPS_TYPE_HIL);
-}
-#endif
-
 /**
    Lock a GPS port, prevening the GPS driver from using it. This can
    be used to allow a user to control a GPS port via the
    SERIAL_CONTROL protocol
  */
-void 
-AP_GPS::lock_port(uint8_t instance, bool lock)
+void apm::AP_GPS::lock_port(uint8_t instance, bool lock)
 {
 
     if (instance >= GPS_MAX_INSTANCES) {
@@ -503,8 +442,7 @@ AP_GPS::lock_port(uint8_t instance, bool lock)
 }
 
     //Inject a packet of raw binary to a GPS
-void 
-AP_GPS::inject_data(uint8_t *data, uint8_t len)
+void apm::AP_GPS::inject_data(uint8_t *data, uint8_t len)
 {
     //Support broadcasting to all GPSes.
     if (_inject_to == GPS_RTK_INJECT_TO_ALL) {
@@ -516,90 +454,8 @@ AP_GPS::inject_data(uint8_t *data, uint8_t len)
     }
 }
 
-void 
-AP_GPS::inject_data(uint8_t instance, uint8_t *data, uint8_t len)
+void apm::AP_GPS::inject_data(uint8_t instance, uint8_t *data, uint8_t len)
 {
     if (instance < GPS_MAX_INSTANCES && drivers[instance] != NULL)
         drivers[instance]->inject_data(data, len);
 }  
-
-#if 0
-void 
-AP_GPS::send_mavlink_gps_raw(mavlink_channel_t chan)
-{
-    static uint32_t last_send_time_ms[MAVLINK_COMM_NUM_BUFFERS];
-    if (status(0) > AP_GPS::NO_GPS) {
-        // when we have a GPS then only send new data
-        if (last_send_time_ms[chan] == last_message_time_ms(0)) {
-            return;
-        }
-        last_send_time_ms[chan] = last_message_time_ms(0);
-    } else {
-        // when we don't have a GPS then send at 1Hz
-        uint32_t now = AP_HAL::millis();
-        if (now - last_send_time_ms[chan] < 1000) {
-            return;
-        }
-        last_send_time_ms[chan] = now;
-    }
-    const Location &loc = location(0);
-    mavlink_msg_gps_raw_int_send(
-        chan,
-        last_fix_time_ms(0)*(uint64_t)1000,
-        status(0),
-        loc.lat,        // in 1E7 degrees
-        loc.lng,        // in 1E7 degrees
-        loc.alt * 10UL, // in mm
-        get_hdop(0),
-        get_vdop(0),
-        ground_speed(0)*100,  // cm/s
-        ground_course_cd(0), // 1/100 degrees,
-        num_sats(0));
-}
-
-void 
-AP_GPS::send_mavlink_gps2_raw(mavlink_channel_t chan)
-{
-    static uint32_t last_send_time_ms[MAVLINK_COMM_NUM_BUFFERS];
-    if (num_sensors() < 2 || status(1) <= AP_GPS::NO_GPS) {
-        return;
-    }
-    // when we have a GPS then only send new data
-    if (last_send_time_ms[chan] == last_message_time_ms(1)) {
-        return;
-    }
-    last_send_time_ms[chan] = last_message_time_ms(1);
-
-    const Location &loc = location(1);
-    mavlink_msg_gps2_raw_send(
-        chan,
-        last_fix_time_ms(1)*(uint64_t)1000,
-        status(1),
-        loc.lat,
-        loc.lng,
-        loc.alt * 10UL,
-        get_hdop(1),
-        get_vdop(1),
-        ground_speed(1)*100,  // cm/s
-        ground_course_cd(1), // 1/100 degrees,
-        num_sats(1),
-        0,
-        0);
-}
-
-void 
-AP_GPS::send_mavlink_gps_rtk(mavlink_channel_t chan)
-{
-    if (drivers[0] != NULL && drivers[0]->highest_supported_status() > AP_GPS::GPS_OK_FIX_3D) {
-        drivers[0]->send_mavlink_gps_rtk(chan);
-    }
-}
-
-void 
-AP_GPS::send_mavlink_gps2_rtk(mavlink_channel_t chan)
-{
-    if (drivers[1] != NULL && drivers[1]->highest_supported_status() > AP_GPS::GPS_OK_FIX_3D) {
-        drivers[1]->send_mavlink_gps_rtk(chan);
-    }
-}
-#endif

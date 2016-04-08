@@ -26,22 +26,8 @@
 
 #include "AP_GPS_SBF.h"
 
-#define SBF_DEBUGGING 0
-
-#if SBF_DEBUGGING
- # define Debug(fmt, args ...)                  \
-do {                                            \
-    hal.console->printf("%s:%d: " fmt "\n",     \
-                        __FUNCTION__, __LINE__, \
-                        ## args);               \
-    hal.scheduler->delay(1);                    \
-} while(0)
-#else
- # define Debug(fmt, args ...)
-#endif
-
-AP_GPS_SBF::AP_GPS_SBF(AP_GPS &_gps, AP_GPS::GPS_State &_state,
-                       SerialPort *_port) :
+apm::AP_GPS_SBF::AP_GPS_SBF(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state,
+                       apm::SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port)
 {	
     sbf_msg.sbf_state = sbf_msg_parser_t::PREAMBLE1;
@@ -51,8 +37,7 @@ AP_GPS_SBF::AP_GPS_SBF(AP_GPS &_gps, AP_GPS::GPS_State &_state,
 
 // Process all bytes available from the stream
 //
-bool
-AP_GPS_SBF::read(void)
+bool apm::AP_GPS_SBF::read(void)
 {
 	uint32_t now = quan::stm32::millis().numeric_value();
 	
@@ -73,8 +58,7 @@ AP_GPS_SBF::read(void)
     return ret;
 }
 
-bool
-AP_GPS_SBF::parse(uint8_t temp)
+bool apm::AP_GPS_SBF::parse(uint8_t temp)
 {
     switch (sbf_msg.sbf_state)
     {
@@ -119,12 +103,12 @@ AP_GPS_SBF::parse(uint8_t temp)
             sbf_msg.sbf_state = sbf_msg_parser_t::DATA;
             if (sbf_msg.length % 4 != 0) {
                 sbf_msg.sbf_state = sbf_msg_parser_t::PREAMBLE1;
-                Debug("bad packet length=%u\n", (unsigned)sbf_msg.length);
+                //Debug("bad packet length=%u\n", (unsigned)sbf_msg.length);
             }
             break;
         case sbf_msg_parser_t::DATA:
             if (sbf_msg.read >= sizeof(sbf_msg.data)) {
-                Debug("parse overflow length=%u\n", (unsigned)sbf_msg.read);
+                //Debug("parse overflow length=%u\n", (unsigned)sbf_msg.read);
                 sbf_msg.sbf_state = sbf_msg_parser_t::PREAMBLE1;
                 break;
             }
@@ -140,7 +124,7 @@ AP_GPS_SBF::parse(uint8_t temp)
                 if (sbf_msg.crc == crc) {
                     return process_message();
                 } else {
-                    Debug("crc fail\n");
+                   // Debug("crc fail\n");
                     crc_error_counter++;
                 }
             }
@@ -150,8 +134,7 @@ AP_GPS_SBF::parse(uint8_t temp)
     return false;
 }
 
-void
-AP_GPS_SBF::log_ExtEventPVTGeodetic(const msg4007 &temp)
+void apm::AP_GPS_SBF::log_ExtEventPVTGeodetic(const msg4007 &temp)
 {
 
 #if 0
@@ -182,12 +165,11 @@ AP_GPS_SBF::log_ExtEventPVTGeodetic(const msg4007 &temp)
 #endif
 }
 
-bool
-AP_GPS_SBF::process_message(void)
+bool apm::AP_GPS_SBF::process_message(void)
 {
     uint16_t blockid = (sbf_msg.blockid & 4095u);
 
-    Debug("BlockID %d", blockid);
+   // Debug("BlockID %d", blockid);
 
     // ExtEventPVTGeodetic
     if (blockid == 4038) {
@@ -237,7 +219,7 @@ AP_GPS_SBF::process_message(void)
             state.num_sats = temp.NrSV;
         }
 
-        Debug("temp.Mode=0x%02x\n", (unsigned)temp.Mode);
+        //Debug("temp.Mode=0x%02x\n", (unsigned)temp.Mode);
         switch (temp.Mode & 15) {
             case 0: // no pvt
                 state.status = AP_GPS::NO_FIX;
@@ -287,13 +269,12 @@ AP_GPS_SBF::process_message(void)
     return false;
 }
 
-void
-AP_GPS_SBF::inject_data(uint8_t *data, uint8_t len)
+void apm::AP_GPS_SBF::inject_data(uint8_t *data, uint8_t len)
 {
     if (port->txspace() > len) {
         last_injected_data_ms = quan::stm32::millis().numeric_value();
         port->write(data, len);
     } else {
-        Debug("SBF: Not enough TXSPACE");
+        //Debug("SBF: Not enough TXSPACE");
     }
 }

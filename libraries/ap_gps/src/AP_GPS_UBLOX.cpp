@@ -42,8 +42,8 @@
  # define Debug(fmt, args ...)
 #endif
 
-AP_GPS_UBLOX::AP_GPS_UBLOX(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port) :
-    AP_GPS_Backend(_gps, _state, _port),
+apm::AP_GPS_UBLOX::AP_GPS_UBLOX(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state, apm::SerialPort *_port) :
+    apm::AP_GPS_Backend(_gps, _state, _port),
     _step(0),
     _msg_id(0),
     _payload_length(0),
@@ -75,8 +75,7 @@ AP_GPS_UBLOX::AP_GPS_UBLOX(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *
   careful to only send a message if there is sufficient buffer space
   available on the serial port to avoid it blocking the CPU
  */
-void
-AP_GPS_UBLOX::send_next_rate_update(void)
+void apm::AP_GPS_UBLOX::send_next_rate_update(void)
 {
     if (port->txspace() < (int16_t)(sizeof(struct ubx_header)+sizeof(struct ubx_cfg_nav_rate)+2)) {
         // not enough space - do it next time
@@ -151,8 +150,7 @@ AP_GPS_UBLOX::send_next_rate_update(void)
 // re-processing it from the top, this is unavoidable. The parser
 // attempts to avoid this when possible.
 //
-bool
-AP_GPS_UBLOX::read(void)
+bool apm::AP_GPS_UBLOX::read(void)
 {
     uint8_t data;
     int16_t numc;
@@ -277,7 +275,7 @@ AP_GPS_UBLOX::read(void)
 // Private Methods /////////////////////////////////////////////////////////////
 #if UBLOX_HW_LOGGING
 
-void AP_GPS_UBLOX::log_mon_hw(void)
+void apm::AP_GPS_UBLOX::log_mon_hw(void)
 {
 //    if (gps._DataFlash == NULL || !gps._DataFlash->logging_started()) {
 //        return;
@@ -300,7 +298,7 @@ void AP_GPS_UBLOX::log_mon_hw(void)
 //    gps._DataFlash->WriteBlock(&pkt, sizeof(pkt));
 }
 
-void AP_GPS_UBLOX::log_mon_hw2(void)
+void apm::AP_GPS_UBLOX::log_mon_hw2(void)
 {
 //    if (gps._DataFlash == NULL || !gps._DataFlash->logging_started()) {
 //        return;
@@ -321,7 +319,7 @@ void AP_GPS_UBLOX::log_mon_hw2(void)
 #endif // UBLOX_HW_LOGGING
 
 #if UBLOX_RXM_RAW_LOGGING
-void AP_GPS_UBLOX::log_rxm_raw(const struct ubx_rxm_raw &raw)
+void apm::AP_GPS_UBLOX::log_rxm_raw(const struct ubx_rxm_raw &raw)
 {
 //    if (gps._DataFlash == NULL || !gps._DataFlash->logging_started()) {
 //        return;
@@ -346,7 +344,7 @@ void AP_GPS_UBLOX::log_rxm_raw(const struct ubx_rxm_raw &raw)
 //    }
 }
 
-void AP_GPS_UBLOX::log_rxm_rawx(const struct ubx_rxm_rawx &raw)
+void apm::AP_GPS_UBLOX::log_rxm_rawx(const struct ubx_rxm_rawx &raw)
 {
 //    if (gps._DataFlash == NULL || !gps._DataFlash->logging_started()) {
 //        return;
@@ -386,7 +384,7 @@ void AP_GPS_UBLOX::log_rxm_rawx(const struct ubx_rxm_rawx &raw)
 }
 #endif // UBLOX_RXM_RAW_LOGGING
 
-void AP_GPS_UBLOX::unexpected_message(void)
+void apm::AP_GPS_UBLOX::unexpected_message(void)
 {
     Debug("Unexpected message 0x%02x 0x%02x", (unsigned)_class, (unsigned)_msg_id);
     if (++_disable_counter == 0) {
@@ -399,8 +397,7 @@ void AP_GPS_UBLOX::unexpected_message(void)
     }
 }
 
-bool
-AP_GPS_UBLOX::_parse_gps(void)
+bool apm::AP_GPS_UBLOX::_parse_gps(void)
 {
     if (_class == CLASS_ACK) {
         Debug("ACK %u", (unsigned)_msg_id);
@@ -722,8 +719,7 @@ AP_GPS_UBLOX::_parse_gps(void)
 /*
  *  update checksum for a set of bytes
  */
-void
-AP_GPS_UBLOX::_update_checksum(uint8_t *data, uint16_t len, uint8_t &ck_a, uint8_t &ck_b)
+void apm::AP_GPS_UBLOX::_update_checksum(uint8_t *data, uint16_t len, uint8_t &ck_a, uint8_t &ck_b)
 {
     while (len--) {
         ck_a += *data;
@@ -736,8 +732,7 @@ AP_GPS_UBLOX::_update_checksum(uint8_t *data, uint16_t len, uint8_t &ck_a, uint8
 /*
  *  send a ublox message
  */
-void
-AP_GPS_UBLOX::_send_message(uint8_t msg_class, uint8_t msg_id, void *msg, uint16_t size)
+void apm::AP_GPS_UBLOX::_send_message(uint8_t msg_class, uint8_t msg_id, void *msg, uint16_t size)
 {
     struct ubx_header header;
     uint8_t ck_a=0, ck_b=0;
@@ -761,8 +756,7 @@ AP_GPS_UBLOX::_send_message(uint8_t msg_class, uint8_t msg_id, void *msg, uint16
  *  configure a UBlox GPS for the given message rate for a specific
  *  message class and msg_id
  */
-void
-AP_GPS_UBLOX::_configure_message_rate(uint8_t msg_class, uint8_t msg_id, uint8_t rate)
+void apm::AP_GPS_UBLOX::_configure_message_rate(uint8_t msg_class, uint8_t msg_id, uint8_t rate)
 {
     struct ubx_cfg_msg_rate msg;
     msg.msg_class = msg_class;
@@ -774,8 +768,7 @@ AP_GPS_UBLOX::_configure_message_rate(uint8_t msg_class, uint8_t msg_id, uint8_t
 /*
  *  configure a UBlox GPS navigation solution rate of 200ms
  */
-void
-AP_GPS_UBLOX::_configure_navigation_rate(uint16_t rate_ms)
+void apm::AP_GPS_UBLOX::_configure_navigation_rate(uint16_t rate_ms)
 {
     struct ubx_cfg_nav_rate msg;
     msg.measure_rate_ms = rate_ms;
@@ -787,8 +780,7 @@ AP_GPS_UBLOX::_configure_navigation_rate(uint16_t rate_ms)
 /*
  *  configure a UBlox GPS for the given message rate
  */
-void
-AP_GPS_UBLOX::_configure_gps(void)
+void apm::AP_GPS_UBLOX::_configure_gps(void)
 {
     // start the process of updating the GPS rates
     need_rate_update = true;
@@ -805,8 +797,7 @@ AP_GPS_UBLOX::_configure_gps(void)
  * save gps configurations to non-volatile memory sent until the call of
  * this message
  */
-void
-AP_GPS_UBLOX::_save_cfg()
+void apm::AP_GPS_UBLOX::_save_cfg()
 {
     ubx_cfg_cfg save_cfg;
     save_cfg.clearMask = 0;
@@ -819,8 +810,7 @@ AP_GPS_UBLOX::_save_cfg()
   detect a Ublox GPS. Adds one byte, and returns true if the stream
   matches a UBlox
  */
-bool
-AP_GPS_UBLOX::_detect(struct UBLOX_detect_state &state, uint8_t data)
+bool apm::AP_GPS_UBLOX::_detect(struct UBLOX_detect_state &state, uint8_t data)
 {
 reset:
 	switch (state.step) {
@@ -877,8 +867,7 @@ reset:
     return false;
 }
 
-void
-AP_GPS_UBLOX::_request_version(void)
+void apm::AP_GPS_UBLOX::_request_version(void)
 {
     _configure_message_rate(CLASS_NAV, MSG_NAV_SVINFO, 2);
 }

@@ -32,57 +32,60 @@
 #define MTK_GPS_REVISION_V16  16
 #define MTK_GPS_REVISION_V19  19
 
-class AP_GPS_MTK19 : public AP_GPS_Backend {
-public:
-    AP_GPS_MTK19(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port);
+namespace apm{
 
-    bool        read(void);
+   class AP_GPS_MTK19 : public AP_GPS_Backend {
+   public:
+       AP_GPS_MTK19(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port);
 
-    static bool _detect(struct MTK19_detect_state &state, uint8_t data);
+       bool        read(void);
 
-private:
-    struct PACKED diyd_mtk_msg {
-        int32_t latitude;
-        int32_t longitude;
-        int32_t altitude;
-        int32_t ground_speed;
-        int32_t ground_course;
-        uint8_t satellites;
-        uint8_t fix_type;
-        uint32_t utc_date;
-        uint32_t utc_time;
-        uint16_t hdop;
-    } ;
-    enum diyd_mtk_fix_type {
-        FIX_NONE = 1,
-        FIX_2D = 2,
-        FIX_3D = 3,
-		  FIX_2D_SBAS = 6,
-        FIX_3D_SBAS = 7
-    };
+       static bool _detect(struct MTK19_detect_state &state, uint8_t data);
 
-    enum diyd_mtk_protocol_bytes {
-	     PREAMBLE1_V16 = 0xd0,
-        PREAMBLE1_V19 = 0xd1,
-        PREAMBLE2     = 0xdd,
-    };
+   private:
+       struct PACKED diyd_mtk_msg {
+           int32_t latitude;
+           int32_t longitude;
+           int32_t altitude;
+           int32_t ground_speed;
+           int32_t ground_course;
+           uint8_t satellites;
+           uint8_t fix_type;
+           uint32_t utc_date;
+           uint32_t utc_time;
+           uint16_t hdop;
+       } ;
+       enum diyd_mtk_fix_type {
+           FIX_NONE = 1,
+           FIX_2D = 2,
+           FIX_3D = 3,
+           FIX_2D_SBAS = 6,
+           FIX_3D_SBAS = 7
+       };
 
-    // Packet checksum accumulators
-    uint8_t         _ck_a;
-    uint8_t         _ck_b;
+       enum diyd_mtk_protocol_bytes {
+           PREAMBLE1_V16 = 0xd0,
+           PREAMBLE1_V19 = 0xd1,
+           PREAMBLE2     = 0xdd,
+       };
 
-    // State machine state
-    uint8_t         _step;
-    uint8_t         _payload_counter;
-	uint8_t			_mtk_revision;
+       // Packet checksum accumulators
+       uint8_t         _ck_a;
+       uint8_t         _ck_b;
 
-    uint8_t         _fix_counter;
+       // State machine state
+       uint8_t         _step;
+       uint8_t         _payload_counter;
+      uint8_t			_mtk_revision;
 
-    // Receive buffer
-    union {
-        diyd_mtk_msg msg;
-        uint8_t bytes[];
-    } _buffer;
-};
+       uint8_t         _fix_counter;
+
+       // Receive buffer
+       union {
+           diyd_mtk_msg msg;
+           uint8_t bytes[];
+       } _buffer;
+   };
+} // apm
 
 #endif  // AP_GPS_MTK19_H

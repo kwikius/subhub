@@ -50,118 +50,120 @@
 #include "../AP_GPS.h"
 #include "GPS_Backend.h"
 
-/// NMEA parser
-///
-class AP_GPS_NMEA : public AP_GPS_Backend
-{
-public:
-	AP_GPS_NMEA(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port);
+namespace apm {
 
-    /// Checks the serial receive buffer for characters,
-    /// attempts to parse NMEA data and updates internal state
-    /// accordingly.
-    bool        read();
+   class AP_GPS_NMEA : public AP_GPS_Backend
+   {
+   public:
+      AP_GPS_NMEA(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port);
 
-	 static bool _detect(struct NMEA_detect_state &state, uint8_t data);
+       /// Checks the serial receive buffer for characters,
+       /// attempts to parse NMEA data and updates internal state
+       /// accordingly.
+       bool        read();
 
-private:
-    /// Coding for the GPS sentences that the parser handles
-    enum _sentence_types {      //there are some more than 10 fields in some sentences , thus we have to increase these value.
-        _GPS_SENTENCE_GPRMC = 32,
-        _GPS_SENTENCE_GPGGA = 64,
-        _GPS_SENTENCE_GPVTG = 96,
-        _GPS_SENTENCE_OTHER = 0
-    };
+       static bool _detect(struct NMEA_detect_state &state, uint8_t data);
 
-    /// Update the decode state machine with a new character
-    ///
-    /// @param	c		The next character in the NMEA input stream
-    /// @returns		True if processing the character has resulted in
-    ///					an update to the GPS state
-    ///
-    bool                        _decode(char c);
+   private:
+       /// Coding for the GPS sentences that the parser handles
+       enum _sentence_types {      //there are some more than 10 fields in some sentences , thus we have to increase these value.
+           _GPS_SENTENCE_GPRMC = 32,
+           _GPS_SENTENCE_GPGGA = 64,
+           _GPS_SENTENCE_GPVTG = 96,
+           _GPS_SENTENCE_OTHER = 0
+       };
 
-    /// Return the numeric value of an ascii hex character
-    ///
-    /// @param	a		The character to be converted
-    /// @returns		The value of the character as a hex digit
-    ///
-    int16_t                     _from_hex(char a);
+       /// Update the decode state machine with a new character
+       ///
+       /// @param	c		The next character in the NMEA input stream
+       /// @returns		True if processing the character has resulted in
+       ///					an update to the GPS state
+       ///
+       bool                        _decode(char c);
 
-    /// Parses the current term as a NMEA-style decimal number with
-    /// up to two decimal digits.
-    ///
-    /// @returns		The value expressed by the string in _term,
-    ///					multiplied by 100.
-    ///
-    uint32_t    _parse_decimal_100();
+       /// Return the numeric value of an ascii hex character
+       ///
+       /// @param	a		The character to be converted
+       /// @returns		The value of the character as a hex digit
+       ///
+       int16_t                     _from_hex(char a);
 
-    /// Parses the current term as a NMEA-style degrees + minutes
-    /// value with up to four decimal digits.
-    ///
-    /// This gives a theoretical resolution limit of around 1cm.
-    ///
-    /// @returns		The value expressed by the string in _term,
-    ///					multiplied by 1e7.
-    ///
-    uint32_t    _parse_degrees();
+       /// Parses the current term as a NMEA-style decimal number with
+       /// up to two decimal digits.
+       ///
+       /// @returns		The value expressed by the string in _term,
+       ///					multiplied by 100.
+       ///
+       uint32_t    _parse_decimal_100();
 
-    /// Processes the current term when it has been deemed to be
-    /// complete.
-    ///
-    /// Each GPS message is broken up into terms separated by commas.
-    /// Each term is then processed by this function as it is received.
-    ///
-    /// @returns		True if completing the term has resulted in
-    ///					an update to the GPS state.
-    bool                        _term_complete();
+       /// Parses the current term as a NMEA-style degrees + minutes
+       /// value with up to four decimal digits.
+       ///
+       /// This gives a theoretical resolution limit of around 1cm.
+       ///
+       /// @returns		The value expressed by the string in _term,
+       ///					multiplied by 1e7.
+       ///
+       uint32_t    _parse_degrees();
 
-    /// return true if we have a new set of NMEA messages
-    bool _have_new_message(void);
+       /// Processes the current term when it has been deemed to be
+       /// complete.
+       ///
+       /// Each GPS message is broken up into terms separated by commas.
+       /// Each term is then processed by this function as it is received.
+       ///
+       /// @returns		True if completing the term has resulted in
+       ///					an update to the GPS state.
+       bool                        _term_complete();
 
-    uint8_t _parity;                                                    ///< NMEA message checksum accumulator
-    bool _is_checksum_term;                                     ///< current term is the checksum
-    char _term[15];                                                     ///< buffer for the current term within the current sentence
-    uint8_t _sentence_type;                                     ///< the sentence type currently being processed
-    uint8_t _term_number;                                       ///< term index within the current sentence
-    uint8_t _term_offset;                                       ///< character offset with the term being received
-    bool _gps_data_good;                                        ///< set when the sentence indicates data is good
+       /// return true if we have a new set of NMEA messages
+       bool _have_new_message(void);
 
-    // The result of parsing terms within a message is stored temporarily until
-    // the message is completely processed and the checksum validated.
-    // This avoids the need to buffer the entire message.
-    int32_t _new_time;                                                  ///< time parsed from a term
-    int32_t _new_date;                                                  ///< date parsed from a term
-    int32_t _new_latitude;                                      ///< latitude parsed from a term
-    int32_t _new_longitude;                                     ///< longitude parsed from a term
-    int32_t _new_altitude;                                      ///< altitude parsed from a term
-    int32_t _new_speed;                                                 ///< speed parsed from a term
-    int32_t _new_course;                                        ///< course parsed from a term
-    uint16_t _new_hdop;                                                 ///< HDOP parsed from a term
-    uint8_t _new_satellite_count;                       ///< satellite count parsed from a term
+       uint8_t _parity;                                                    ///< NMEA message checksum accumulator
+       bool _is_checksum_term;                                     ///< current term is the checksum
+       char _term[15];                                                     ///< buffer for the current term within the current sentence
+       uint8_t _sentence_type;                                     ///< the sentence type currently being processed
+       uint8_t _term_number;                                       ///< term index within the current sentence
+       uint8_t _term_offset;                                       ///< character offset with the term being received
+       bool _gps_data_good;                                        ///< set when the sentence indicates data is good
 
-    uint32_t _last_GPRMC_ms = 0;
-    uint32_t _last_GPGGA_ms = 0;
-    uint32_t _last_GPVTG_ms = 0;
+       // The result of parsing terms within a message is stored temporarily until
+       // the message is completely processed and the checksum validated.
+       // This avoids the need to buffer the entire message.
+       int32_t _new_time;                                                  ///< time parsed from a term
+       int32_t _new_date;                                                  ///< date parsed from a term
+       int32_t _new_latitude;                                      ///< latitude parsed from a term
+       int32_t _new_longitude;                                     ///< longitude parsed from a term
+       int32_t _new_altitude;                                      ///< altitude parsed from a term
+       int32_t _new_speed;                                                 ///< speed parsed from a term
+       int32_t _new_course;                                        ///< course parsed from a term
+       uint16_t _new_hdop;                                                 ///< HDOP parsed from a term
+       uint8_t _new_satellite_count;                       ///< satellite count parsed from a term
 
-    /// @name	Init strings
-    ///			In ::init, an attempt is made to configure the GPS
-    ///			unit to send just the messages that we are interested
-    ///			in using these strings
-    //@{
-    static const char _SiRF_init_string[];         ///< init string for SiRF units
-    static const char _MTK_init_string[];                  ///< init string for MediaTek units
-    static const char _ublox_init_string[];        ///< init string for ublox units
-    //@}
+       uint32_t _last_GPRMC_ms = 0;
+       uint32_t _last_GPGGA_ms = 0;
+       uint32_t _last_GPVTG_ms = 0;
 
-    /// @name	GPS message identifier strings
-    //@{
-    static const char _gprmc_string[];
-    static const char _gpgga_string[];
-    static const char _gpvtg_string[];
-    //@}
+       /// @name	Init strings
+       ///			In ::init, an attempt is made to configure the GPS
+       ///			unit to send just the messages that we are interested
+       ///			in using these strings
+       //@{
+       static const char _SiRF_init_string[];         ///< init string for SiRF units
+       static const char _MTK_init_string[];                  ///< init string for MediaTek units
+       static const char _ublox_init_string[];        ///< init string for ublox units
+       //@}
 
-    static const char _initialisation_blob[];
-};
+       /// @name	GPS message identifier strings
+       //@{
+       static const char _gprmc_string[];
+       static const char _gpgga_string[];
+       static const char _gpvtg_string[];
+       //@}
+
+       static const char _initialisation_blob[];
+   };
+
+}//apm
 
 #endif // __AP_GPS_NMEA_H__

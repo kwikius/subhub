@@ -14,7 +14,6 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//
 //  DIYDrones Custom Mediatek GPS driver for ArduPilot and ArduPilotMega.
 //    Code by Michael Smith, Jordi Munoz and Jose Julio, Craig Elder, DIYDrones.com
 //
@@ -23,21 +22,22 @@
 //   Note that this driver supports both the 1.6 and 1.9 protocol varients
 //
 
-#include <ap_serialport/serialport.hpp>
 #include <ap_common/ap_common.hpp>
 #include <ap_math/ap_math.hpp>
 #include <quan/stm32/millis.hpp>
+#include <ap_serialport/serialport.hpp>
+
 #include "AP_GPS_MTK19.h"
 #include "AP_GPS_MTK.h"
 
-AP_GPS_MTK19::AP_GPS_MTK19(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port) :
+apm::AP_GPS_MTK19::AP_GPS_MTK19(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state, apm::SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port),
     _step(0),
     _payload_counter(0),
     _mtk_revision(0),
     _fix_counter(0)
 {
-    AP_GPS_MTK::send_init_blob(_state.instance, _gps);
+    apm::AP_GPS_MTK::send_init_blob(_state.instance, _gps);
 }
 
 // Process bytes available from the stream
@@ -51,8 +51,7 @@ AP_GPS_MTK19::AP_GPS_MTK19(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *
 // The lack of a standard header length field makes it impossible to skip
 // unrecognised messages.
 //
-bool
-AP_GPS_MTK19::read(void)
+bool apm::AP_GPS_MTK19::read(void)
 {
     uint8_t data;
     int16_t numc;
@@ -186,8 +185,7 @@ restart:
 /*
   detect a MTK16 or MTK19 GPS
  */
-bool
-AP_GPS_MTK19::_detect(struct MTK19_detect_state &state, uint8_t data)
+bool apm::AP_GPS_MTK19::_detect(struct apm::MTK19_detect_state &state, uint8_t data)
 {
 restart:
 	switch (state.step) {

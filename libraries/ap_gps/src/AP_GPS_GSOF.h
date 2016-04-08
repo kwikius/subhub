@@ -25,69 +25,72 @@
 #include "../AP_GPS.h"
 #include "GPS_Backend.h"
 
-class AP_GPS_GSOF : public AP_GPS_Backend
-{
-public:
-    AP_GPS_GSOF(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port);
+namespace apm{
 
-    AP_GPS::GPS_Status highest_supported_status(void) {
-        return AP_GPS::GPS_OK_FIX_3D_RTK;
-    }
+   class AP_GPS_GSOF : public AP_GPS_Backend{
+   public:
+       AP_GPS_GSOF(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port);
 
-    // Methods
-    bool read();
+       AP_GPS::GPS_Status highest_supported_status(void) {
+           return AP_GPS::GPS_OK_FIX_3D_RTK;
+       }
 
-    void inject_data(uint8_t *data, uint8_t len);
+       // Methods
+       bool read();
 
-private:
+       void inject_data(uint8_t *data, uint8_t len);
 
-    bool parse(uint8_t temp);
-    bool process_message();
-    void requestBaud(uint8_t portindex);
-    void requestGSOF(uint8_t messagetype, uint8_t portindex);
-    double SwapDouble(uint8_t* src, uint32_t pos);
-    float SwapFloat(uint8_t* src, uint32_t pos);
-    uint32_t SwapUint32(uint8_t* src, uint32_t pos);
-    uint16_t SwapUint16(uint8_t* src, uint32_t pos);
+   private:
+
+       bool parse(uint8_t temp);
+       bool process_message();
+       void requestBaud(uint8_t portindex);
+       void requestGSOF(uint8_t messagetype, uint8_t portindex);
+       double SwapDouble(uint8_t* src, uint32_t pos);
+       float SwapFloat(uint8_t* src, uint32_t pos);
+       uint32_t SwapUint32(uint8_t* src, uint32_t pos);
+       uint16_t SwapUint16(uint8_t* src, uint32_t pos);
 
 
-    struct gsof_msg_parser_t
-    {
-        enum
-        {
-            STARTTX = 0,
-            STATUS,
-            PACKETTYPE,
-            LENGTH,
-            DATA,
-            CHECKSUM,
-            ENDTX
-        } gsof_state;
+       struct gsof_msg_parser_t
+       {
+           enum
+           {
+               STARTTX = 0,
+               STATUS,
+               PACKETTYPE,
+               LENGTH,
+               DATA,
+               CHECKSUM,
+               ENDTX
+           } gsof_state;
 
-        uint8_t starttx;
-        uint8_t status;
-        uint8_t packettype;
-        uint8_t length;
-        uint8_t data[256];
-        uint8_t checksum;
-        uint8_t endtx;
+           uint8_t starttx;
+           uint8_t status;
+           uint8_t packettype;
+           uint8_t length;
+           uint8_t data[256];
+           uint8_t checksum;
+           uint8_t endtx;
 
-        uint16_t read;
-        uint8_t checksumcalc;
-    } gsof_msg;
+           uint16_t read;
+           uint8_t checksumcalc;
+       } gsof_msg;
 
-    static const uint8_t GSOF_STX = 0x02;
-    static const uint8_t GSOF_ETX = 0x03;
+       static const uint8_t GSOF_STX = 0x02;
+       static const uint8_t GSOF_ETX = 0x03;
 
-    uint8_t packetcount = 0;
+       uint8_t packetcount = 0;
 
-    uint32_t gsofmsg_time = 0;
-    uint8_t gsofmsgreq_index = 0;
-    uint8_t gsofmsgreq[5] = {1,2,8,9,12};
+       uint32_t gsofmsg_time = 0;
+       uint8_t gsofmsgreq_index = 0;
+       uint8_t gsofmsgreq[5] = {1,2,8,9,12};
 
-    uint32_t last_hdop = 9999;
-    uint32_t crc_error_counter = 0;
-    uint32_t last_injected_data_ms = 0;
-};
+       uint32_t last_hdop = 9999;
+       uint32_t crc_error_counter = 0;
+       uint32_t last_injected_data_ms = 0;
+   };
+
+} // apm
 
 #endif // __AP_GPS_GSOF_H__
