@@ -1,4 +1,4 @@
-
+#General stm32f0 flags
 SUBHUB_INCLUDE_PATH = $(patsubst %common/,%libraries/,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 TOOLCHAIN_PREFIX =/opt/gcc-arm-none-eabi-4_7-2013q2/
