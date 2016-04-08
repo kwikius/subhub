@@ -1,6 +1,5 @@
-#include <ap_math/ap_math.hpp>
-
 #include <cmath>
+#include <ap_math/ap_math.hpp>
 
 int32_t wrap_360_cd(int32_t error)
 {
