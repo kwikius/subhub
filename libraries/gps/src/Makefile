@@ -1,4 +1,4 @@
-include ../../../common/stm32f0_make_flags.mk
+include ../../../common/mk/stm32f0_make_flags.mk
 
 CPLUS_INCLUDE_PATH=
 C_INCLUDE_PATH=
