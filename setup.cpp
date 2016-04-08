@@ -20,18 +20,18 @@
 //#include "fsk.hpp"
 //#include "frsky.hpp"
 //#include "events.hpp"
-
-#include "resources.hpp"
-
+#include <malloc.h>
 #include <stm32f0xx.h>
+#include <stddef.h> /* where ptrdiff_t is defined */
+#include "resources.hpp"
 
 extern "C" void __cxa_pure_virtual() { while (1); }
 void *__dso_handle;
 
 
-void * operator new(size_t size)
+void * operator new(size_t size) throw()
 {
-  return nullptr;
+  return malloc(size);
 }
 void operator delete (void*p){ ;}
 
