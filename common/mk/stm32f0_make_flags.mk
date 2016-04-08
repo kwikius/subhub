@@ -3,6 +3,8 @@ SUBHUB_INCLUDE_PATH = $(patsubst %common/mk/,%libraries/,$(dir $(abspath $(lastw
 ## exports
 # export TOOLCHAIN_PREFIX="/opt/gcc-arm-none-eabi-4_7-2013q2/"
 # export TOOLCHAIN_GCC_VERSION="4.7.4"
+# export QUAN_INCLUDE_PATH=/home/andy/website/quan-trunk
+# export STM32_STD_PERIPH_LIB_DIR=/opt/stm32f4/STM32F4xx_DSP_StdPeriph_Lib_V1.0.0/Libraries/
 
 CC      = $(TOOLCHAIN_PREFIX)bin/arm-none-eabi-g++
 CC1     = $(TOOLCHAIN_PREFIX)bin/arm-none-eabi-gcc
@@ -12,10 +14,9 @@ OD      = $(TOOLCHAIN_PREFIX)bin/arm-none-eabi-objdump
 AR      = $(TOOLCHAIN_PREFIX)bin/arm-none-eabi-ar
 SIZ     = $(TOOLCHAIN_PREFIX)bin/arm-none-eabi-size
 
-  
-INCLUDES = /opt/stm32f0/STM32F0xx_StdPeriph_Lib_V1.1.0/Libraries/CMSIS/Include \
-/opt/stm32f0/STM32F0xx_StdPeriph_Lib_V1.1.0/Libraries/CMSIS/Device/ST/STM32F0xx/Include \
-/home/andy/website/quan-trunk $(SUBHUB_INCLUDE_PATH)
+INCLUDES = $(STM32_STD_PERIPH_LIB_DIR)CMSIS/Include \
+$(STM32_STD_PERIPH_LIB_DIR)CMSIS/Device/ST/STM32F0xx/Include \
+$(QUAN_INCLUDE_PATH) $(SUBHUB_INCLUDE_PATH)
 
 INIT_LIB_PREFIX = $(TOOLCHAIN_PREFIX)lib/gcc/arm-none-eabi/$(TOOLCHAIN_GCC_VERSION)/armv6-m/
 
