@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <ap_common/ap_common.hpp>
 
+namespace apm{
+
    struct SerialPort {
       enum {
          BASE_DEFAULT = 0,
@@ -57,6 +59,8 @@
       size_t printNumber(unsigned long, uint8_t);
       size_t printFloat(float, uint8_t);
    };
+
+}// apm
 
 #endif // QUAN_SUBHUB_SERIALPORT_HPP_INCLUDED
 
