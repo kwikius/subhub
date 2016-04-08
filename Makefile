@@ -1,11 +1,10 @@
 
 include common/stm32f0_make_flags.mk
 
-
 object_files = main.o setup.o spbrk.o $(SYSTEM_INIT).o timer.o serial_port.o events.o
 objects = $(patsubst %.o,obj/%.o,$(object_files))
 
-lib_files = gps.a ap_math.a
+lib_files = gps.a ap_math.a ap_gps.a
 libs = $(patsubst %.a,lib/%.a,$(lib_files))
 
 all: test
@@ -32,9 +31,14 @@ obj/startup.o: $(STARTUP)
 $(libs) : lib/%.a : libraries/%/src
 	make -C $<
 
-.PHONY: clean all test upload
+.PHONY: clean cleanlibs all test upload
 clean:
 	-rm -rf obj/*.o bin/*.elf bin/*.bin bin/*.lst
+
+cleanlibs:
+	for libdir in $(patsubst %.a,%,$(lib_files)) ; do \
+      make -C libraries/$$libdir/src clean; \
+   done
 
 upload : test
 	st-flash write bin/main.bin 0x8000000
