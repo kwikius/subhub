@@ -1,10 +1,10 @@
 
-include common/stm32f0_make_flags.mk
+include common/mk/stm32f0_make_flags.mk
 
-object_files = main.o setup.o spbrk.o $(SYSTEM_INIT).o timer.o serial_port.o events.o
+object_files = main.o setup.o timer.o serial_port.o events.o
 objects = $(patsubst %.o,obj/%.o,$(object_files))
 
-lib_files = gps.a ap_math.a ap_gps.a
+lib_files = system.a gps.a ap_math.a ap_gps.a 
 libs = $(patsubst %.a,lib/%.a,$(lib_files))
 
 all: test
@@ -15,18 +15,14 @@ test: bin/main.elf
 	$(OD) $(ODFLAGS) bin/main.elf > bin/main.lst
 	$(SIZ) -A bin/main.elf
 
-bin/main.elf:  $(objects) obj/startup.o $(libs)
+bin/main.elf:  $(objects)  $(libs)
 	mkdir -p bin
 	@ echo "..linking"
-	$(LD) $(LFLAGS) -o bin/main.elf $(objects) obj/startup.o $(libs)
+	$(LD) $(LFLAGS) -o bin/main.elf $(objects) -Wl,--undefined=_sbrk $(libs)
 
 $(objects): obj/%.o : %.cpp  
 	mkdir -p obj
 	$(CC) $(CFLAGS) $< -o $@
-
-obj/startup.o: $(STARTUP)
-	mkdir -p obj
-	$(CC) $(CFLAGS) $< -o $@ 
 
 $(libs) : lib/%.a : libraries/%/src
 	make -C $<
