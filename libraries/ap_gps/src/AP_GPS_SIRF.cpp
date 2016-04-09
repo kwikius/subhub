@@ -37,7 +37,7 @@ const uint8_t apm::AP_GPS_SIRF::_initialisation_blob[] = {
     0xa0, 0xa2, 0x00, 0x08, 0xa6, 0x00, 0x29, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0, 0xb0, 0xb3 
 };
 
-apm::AP_GPS_SIRF::AP_GPS_SIRF(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port) :
+apm::AP_GPS_SIRF::AP_GPS_SIRF(gps_t &_gps, gps_t::GPS_State &_state, SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port),
     _step(0),
     _gather(false),
@@ -178,15 +178,15 @@ bool apm::AP_GPS_SIRF::_parse_gps(void)
         //time                    = _swapl(&_buffer.nav.time);
         // parse fix type
         if (_buffer.nav.fix_invalid) {
-            state.status = AP_GPS::NO_FIX;
+            state.status = gps_t::NO_FIX;
         }else if ((_buffer.nav.fix_type & FIX_MASK) == FIX_3D) {
-            state.status = AP_GPS::GPS_OK_FIX_3D;
+            state.status = gps_t::GPS_OK_FIX_3D;
         }else{
-            state.status = AP_GPS::GPS_OK_FIX_2D;
+            state.status = gps_t::GPS_OK_FIX_2D;
         }
-        state.location.lat      = AP_GPS::lat_lon_type{swap_int32(_buffer.nav.latitude)};
-        state.location.lon      = AP_GPS::lat_lon_type{swap_int32(_buffer.nav.longitude)};
-        state.location.alt      = AP_GPS::altitude_type{swap_int32(_buffer.nav.altitude_msl)};
+        state.location.lat      = gps_t::lat_lon_type{swap_int32(_buffer.nav.latitude)};
+        state.location.lon      = gps_t::lat_lon_type{swap_int32(_buffer.nav.longitude)};
+        state.location.alt      = gps_t::altitude_type{swap_int32(_buffer.nav.altitude_msl)};
         state.ground_speed      = swap_int32(_buffer.nav.ground_speed)*0.01f;
         state.ground_course_cd  = wrap_360_cd(swap_int16(_buffer.nav.ground_course));
         state.num_sats          = _buffer.nav.satellites;

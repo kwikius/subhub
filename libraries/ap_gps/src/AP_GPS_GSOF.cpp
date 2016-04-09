@@ -24,7 +24,7 @@
 #include <quan/stm32/millis.hpp>
 #include <ap_math/ap_math.hpp>
 
-apm::AP_GPS_GSOF::AP_GPS_GSOF(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state,
+apm::AP_GPS_GSOF::AP_GPS_GSOF(apm::gps_t &_gps, apm::gps_t::GPS_State &_state,
                          apm::SerialPort *_port) :
     apm::AP_GPS_Backend(_gps, _state, _port)
 {
@@ -247,27 +247,27 @@ bool apm::AP_GPS_GSOF::process_message(void)
 
                 if ((posf1 & 1) == 1)
                 {
-                    state.status = AP_GPS::GPS_OK_FIX_3D;
+                    state.status = gps_t::GPS_OK_FIX_3D;
                     if ((posf2 & 1) == 1)
                     {
-                        state.status = AP_GPS::GPS_OK_FIX_3D_DGPS;
+                        state.status = gps_t::GPS_OK_FIX_3D_DGPS;
                         if ((posf2 & 4) == 4)
                         {
-                            state.status = AP_GPS::GPS_OK_FIX_3D_RTK;
+                            state.status = gps_t::GPS_OK_FIX_3D_RTK;
                         }
                     }
                 }
                 else
                 {
-                    state.status = AP_GPS::NO_FIX;
+                    state.status = gps_t::NO_FIX;
                 }
                 valid++;
             }
             else if (output_type == 2) // position
             {
-                state.location.lat = AP_GPS::lat_lon_type{RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a)) * 1e7}; // deg1e7
-                state.location.lon = AP_GPS::lat_lon_type{RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a + 8)) * 1e7}; // deg1e7
-                state.location.alt = AP_GPS::altitude_type{SwapDouble(gsof_msg.data, a + 16) * 1e2}; //cm
+                state.location.lat = gps_t::lat_lon_type{RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a)) * 1e7}; // deg1e7
+                state.location.lon = gps_t::lat_lon_type{RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a + 8)) * 1e7}; // deg1e7
+                state.location.alt = gps_t::altitude_type{SwapDouble(gsof_msg.data, a + 16) * 1e2}; //cm
 
                 state.last_gps_time_ms = state.time_week_ms;
 
@@ -281,7 +281,7 @@ bool apm::AP_GPS_GSOF::process_message(void)
                     state.ground_speed = SwapFloat(gsof_msg.data, a + 1);
                     state.ground_course_cd = (int32_t)(ToDeg(SwapFloat(gsof_msg.data, a + 5)) * 100);
                     fill_3d_velocity();
-                    state.velocity.z = AP_GPS::velocity_type{-SwapFloat(gsof_msg.data, a + 9)};
+                    state.velocity.z = gps_t::velocity_type{-SwapFloat(gsof_msg.data, a + 9)};
                     state.have_vertical_velocity = true;
                 }
                 valid++;
@@ -306,7 +306,7 @@ bool apm::AP_GPS_GSOF::process_message(void)
         if (valid == 5) {
             return true;
         } else {
-            state.status = AP_GPS::NO_FIX;
+            state.status = gps_t::NO_FIX;
         }
     }
 

@@ -23,6 +23,6 @@ extern "C" void setup();
 
 int main()
 {
-   apm::AP_GPS gps;
+   apm::gps_t gps;
    setup();
 }

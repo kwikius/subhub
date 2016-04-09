@@ -20,7 +20,7 @@
 #include "../AP_GPS.h"
 #include "GPS_Backend.h"
 
-apm::AP_GPS_Backend::AP_GPS_Backend(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state, apm::SerialPort *_port) :
+apm::AP_GPS_Backend::AP_GPS_Backend(apm::gps_t &_gps, apm::gps_t::GPS_State &_state, apm::SerialPort *_port) :
     port(_port),
     gps(_gps),
     state(_state)
@@ -63,7 +63,7 @@ int16_t apm::AP_GPS_Backend::swap_int16(int16_t v) const
 /**
    calculate current time since the unix epoch in microseconds
  */
-uint64_t apm::AP_GPS::time_epoch_usec(uint8_t instance)
+uint64_t apm::gps_t::time_epoch_usec(uint8_t instance)
 {
     const GPS_State &istate = state[instance];
     if (istate.last_gps_time_ms == 0) {
@@ -125,8 +125,8 @@ void apm::AP_GPS_Backend::fill_3d_velocity(void)
 {
     float gps_heading = ToRad(state.ground_course_cd * 0.01f);
 
-    state.velocity.x = AP_GPS::velocity_type{state.ground_speed * cosf(gps_heading)};
-    state.velocity.y = AP_GPS::velocity_type{state.ground_speed * sinf(gps_heading)};
-    state.velocity.z = AP_GPS::velocity_type{0};
+    state.velocity.x = gps_t::velocity_type{state.ground_speed * cosf(gps_heading)};
+    state.velocity.y = gps_t::velocity_type{state.ground_speed * sinf(gps_heading)};
+    state.velocity.z = gps_t::velocity_type{0};
     state.have_vertical_velocity = false;
 }

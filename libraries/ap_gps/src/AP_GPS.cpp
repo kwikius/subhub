@@ -44,34 +44,34 @@ static inline uint32_t pgm_read_dword(const void *s) {
 //extern const AP_HAL::HAL& hal;
 #if 0
 // table of user settable parameters
-const AP_Param::GroupInfo apm::AP_GPS::var_info[] = {
+const AP_Param::GroupInfo apm::gps_t::var_info[] = {
     // @Param: TYPE
     // @DisplayName: GPS type
     // @Description: GPS type
     // @Values: 0:None,1:AUTO,2:uBlox,3:MTK,4:MTK19,5:NMEA,6:SiRF,7:HIL,8:SwiftNav,9:PX4-UAVCAN,10:SBF,11:GSOF
     // @RebootRequired: True
-    AP_GROUPINFO("TYPE",    0, AP_GPS, _type[0], 1),
+    AP_GROUPINFO("TYPE",    0, gps_t, _type[0], 1),
 
     // @Param: TYPE2
     // @DisplayName: 2nd GPS type
     // @Description: GPS type of 2nd GPS
     // @Values: 0:None,1:AUTO,2:uBlox,3:MTK,4:MTK19,5:NMEA,6:SiRF,7:HIL,8:SwiftNav,9:PX4-UAVCAN,10:SBF,11:GSOF
     // @RebootRequired: True
-    AP_GROUPINFO("TYPE2",   1, AP_GPS, _type[1], 0),
+    AP_GROUPINFO("TYPE2",   1, gps_t, _type[1], 0),
 
     // @Param: NAVFILTER
     // @DisplayName: Navigation filter setting
     // @Description: Navigation filter engine setting
     // @Values: 0:Portable,2:Stationary,3:Pedestrian,4:Automotive,5:Sea,6:Airborne1G,7:Airborne2G,8:Airborne4G
     // @RebootRequired: True
-    AP_GROUPINFO("NAVFILTER", 2, AP_GPS, _navfilter, GPS_ENGINE_AIRBORNE_4G),
+    AP_GROUPINFO("NAVFILTER", 2, gps_t, _navfilter, GPS_ENGINE_AIRBORNE_4G),
 
     // @Param: AUTO_SWITCH
     // @DisplayName: Automatic Switchover Setting
     // @Description: Automatic switchover to GPS reporting best lock
     // @Values: 0:Disabled,1:Enabled
     // @User: Advanced
-    AP_GROUPINFO("AUTO_SWITCH", 3, AP_GPS, _auto_switch, 1),
+    AP_GROUPINFO("AUTO_SWITCH", 3, gps_t, _auto_switch, 1),
 
     // @Param: MIN_DGPS
     // @DisplayName: Minimum Lock Type Accepted for DGPS
@@ -79,7 +79,7 @@ const AP_Param::GroupInfo apm::AP_GPS::var_info[] = {
     // @Values: 0:Any,50:FloatRTK,100:IntegerRTK
     // @User: Advanced
     // @RebootRequired: True
-    AP_GROUPINFO("MIN_DGPS", 4, AP_GPS, _min_dgps, 100),
+    AP_GROUPINFO("MIN_DGPS", 4, gps_t, _min_dgps, 100),
 
     // @Param: SBAS_MODE
     // @DisplayName: SBAS Mode
@@ -87,7 +87,7 @@ const AP_Param::GroupInfo apm::AP_GPS::var_info[] = {
     // @Values: 0:Disabled,1:Enabled,2:NoChange
     // @User: Advanced
     // @RebootRequired: True
-    AP_GROUPINFO("SBAS_MODE", 5, AP_GPS, _sbas_mode, 2),
+    AP_GROUPINFO("SBAS_MODE", 5, gps_t, _sbas_mode, 2),
 
     // @Param: MIN_ELEV
     // @DisplayName: Minimum elevation
@@ -96,27 +96,27 @@ const AP_Param::GroupInfo apm::AP_GPS::var_info[] = {
     // @Units: Degrees
     // @User: Advanced
     // @RebootRequired: True
-    AP_GROUPINFO("MIN_ELEV", 6, AP_GPS, _min_elevation, -100),
+    AP_GROUPINFO("MIN_ELEV", 6, gps_t, _min_elevation, -100),
 
     // @Param: INJECT_TO
     // @DisplayName: Destination for GPS_INJECT_DATA MAVLink packets
     // @Description: The GGS can send raw serial packets to inject data to multiple GPSes.
     // @Values: 0:send to first GPS, 1:send to 2nd GPS, 127:send to all
-    AP_GROUPINFO("INJECT_TO",   7, AP_GPS, _inject_to, GPS_RTK_INJECT_TO_ALL),
+    AP_GROUPINFO("INJECT_TO",   7, gps_t, _inject_to, GPS_RTK_INJECT_TO_ALL),
 
     // @Param: SBP_LOGMASK
     // @DisplayName: Swift Binary Protocol Logging Mask
     // @Description: Masked with the SBP msg_type field to determine whether SBR1/SBR2 data is logged
     // @Values: 0x0000:None, 0xFFFF:All, 0xFF00:External only
     // @User: Advanced
-    AP_GROUPINFO("SBP_LOGMASK", 8, AP_GPS, _sbp_logmask, 0xFF00),
+    AP_GROUPINFO("SBP_LOGMASK", 8, gps_t, _sbp_logmask, 0xFF00),
 
     // @Param: RAW_DATA
     // @DisplayName: Raw data logging
     // @Description: Enable logging of RXM raw data from uBlox which includes carrier phase and pseudo range information. This allows for post processing of dataflash logs for more precise positioning. Note that this requires a raw capable uBlox such as the 6P or 6T.
     // @Values: 0:Disabled,1:log at 1MHz,5:log at 5MHz
     // @RebootRequired: True
-    AP_GROUPINFO("RAW_DATA", 9, AP_GPS, _raw_data, 0),
+    AP_GROUPINFO("RAW_DATA", 9, gps_t, _raw_data, 0),
 
     // @Param: GNSS_MODE
     // @DisplayName: GNSS system configuration
@@ -125,14 +125,14 @@ const AP_Param::GroupInfo apm::AP_GPS::var_info[] = {
     // @Bitmask: 0:GPS, 1:SBAS, 2:Galileo, 3:Beidou, 4:IMES, 5:QZSS, 6:GLOSNASS
     // @User: Advanced
     // @RebootRequired: True
-    AP_GROUPINFO("GNSS_MODE", 10, AP_GPS, _gnss_mode, 0),
+    AP_GROUPINFO("GNSS_MODE", 10, gps_t, _gnss_mode, 0),
 
     // @Param: SAVE_CFG
     // @DisplayName: Save GPS configuration
     // @Description: Determines whether the configuration for this GPS should be written to non-volatile memory on the GPS. Currently working for UBlox.
     // @Values: 0:Do not save config,1:Save config
     // @User: Advanced
-    AP_GROUPINFO("SAVE_CFG", 11, AP_GPS, _save_config, 0),
+    AP_GROUPINFO("SAVE_CFG", 11, gps_t, _save_config, 0),
 
     AP_GROUPEND
 };
@@ -140,7 +140,7 @@ const AP_Param::GroupInfo apm::AP_GPS::var_info[] = {
 #endif
 
 /// Startup initialisation.
-void apm::AP_GPS::init(/*DataFlash_Class *dataflash, const AP_SerialManager& serial_manager */)
+void apm::gps_t::init(/*DataFlash_Class *dataflash, const AP_SerialManager& serial_manager */)
 {
 //    _DataFlash = dataflash;
 //    primary_instance = 0;
@@ -152,18 +152,18 @@ void apm::AP_GPS::init(/*DataFlash_Class *dataflash, const AP_SerialManager& ser
 }
 
 // baudrates to try to detect GPSes with
-const uint32_t apm::AP_GPS::_baudrates[] = {4800U, 38400U, 115200U, 57600U, 9600U, 230400U};
+const uint32_t apm::gps_t::_baudrates[] = {4800U, 38400U, 115200U, 57600U, 9600U, 230400U};
 
 // initialisation blobs to send to the GPS to try to get it into the
 // right mode
-const char apm::AP_GPS::_initialisation_blob[] = UBLOX_SET_BINARY MTK_SET_BINARY SIRF_SET_BINARY;
-const char apm::AP_GPS::_initialisation_raw_blob[] = UBLOX_SET_BINARY_RAW_BAUD MTK_SET_BINARY SIRF_SET_BINARY;
+const char apm::gps_t::_initialisation_blob[] = UBLOX_SET_BINARY MTK_SET_BINARY SIRF_SET_BINARY;
+const char apm::gps_t::_initialisation_raw_blob[] = UBLOX_SET_BINARY_RAW_BAUD MTK_SET_BINARY SIRF_SET_BINARY;
 
 /*
   send some more initialisation string bytes if there is room in the
   UART transmit buffer
  */
-void apm::AP_GPS::send_blob_start(uint8_t instance, const char *_blob, uint16_t size)
+void apm::gps_t::send_blob_start(uint8_t instance, const char *_blob, uint16_t size)
 {
     initblob_state[instance].blob = _blob;
     initblob_state[instance].remaining = size;
@@ -173,7 +173,7 @@ void apm::AP_GPS::send_blob_start(uint8_t instance, const char *_blob, uint16_t 
   send some more initialisation string bytes if there is room in the
   UART transmit buffer
  */
-void apm::AP_GPS::send_blob_update(uint8_t instance)
+void apm::gps_t::send_blob_update(uint8_t instance)
 {
     // exit immediately if no uart for this instance
     if (_port[instance] == NULL) {
@@ -203,7 +203,7 @@ void apm::AP_GPS::send_blob_update(uint8_t instance)
   from NO_GPS to NO_FIX.
  */
 void
-apm::AP_GPS::detect_instance(uint8_t instance)
+apm::gps_t::detect_instance(uint8_t instance)
 {
     AP_GPS_Backend *new_gps = NULL;
     struct detect_state *dstate = &detect_state[instance];
@@ -303,27 +303,27 @@ apm::AP_GPS::detect_instance(uint8_t instance)
 	}
 }
 
-apm::AP_GPS::GPS_Status 
-apm::AP_GPS::highest_supported_status(uint8_t instance) const
+apm::gps_t::GPS_Status 
+apm::gps_t::highest_supported_status(uint8_t instance) const
 {
     if (drivers[instance] != NULL)
         return drivers[instance]->highest_supported_status();
-    return apm::AP_GPS::GPS_OK_FIX_3D;
+    return apm::gps_t::GPS_OK_FIX_3D;
 }
 
-apm::AP_GPS::GPS_Status 
-apm::AP_GPS::highest_supported_status(void) const
+apm::gps_t::GPS_Status 
+apm::gps_t::highest_supported_status(void) const
 {
     if (drivers[primary_instance] != NULL)
         return drivers[primary_instance]->highest_supported_status();
-    return apm::AP_GPS::GPS_OK_FIX_3D;
+    return apm::gps_t::GPS_OK_FIX_3D;
 }
 
 
 /*
   update one GPS instance. This should be called at 10Hz or greater
  */
-void apm::AP_GPS::update_instance(uint8_t instance)
+void apm::gps_t::update_instance(uint8_t instance)
 {
     if (_type[instance] == GPS_TYPE_HIL) {
         // in HIL, leave info alone
@@ -379,7 +379,7 @@ void apm::AP_GPS::update_instance(uint8_t instance)
 /*
   update all GPS instances
  */
-void apm::AP_GPS::update(void)
+void apm::gps_t::update(void)
 {
     for (uint8_t i=0; i<GPS_MAX_INSTANCES; i++) {
         update_instance(i);
@@ -432,7 +432,7 @@ void apm::AP_GPS::update(void)
    be used to allow a user to control a GPS port via the
    SERIAL_CONTROL protocol
  */
-void apm::AP_GPS::lock_port(uint8_t instance, bool lock)
+void apm::gps_t::lock_port(uint8_t instance, bool lock)
 {
 
     if (instance >= GPS_MAX_INSTANCES) {
@@ -446,7 +446,7 @@ void apm::AP_GPS::lock_port(uint8_t instance, bool lock)
 }
 
     //Inject a packet of raw binary to a GPS
-void apm::AP_GPS::inject_data(uint8_t *data, uint8_t len)
+void apm::gps_t::inject_data(uint8_t *data, uint8_t len)
 {
     //Support broadcasting to all GPSes.
     if (_inject_to == GPS_RTK_INJECT_TO_ALL) {
@@ -458,7 +458,7 @@ void apm::AP_GPS::inject_data(uint8_t *data, uint8_t len)
     }
 }
 
-void apm::AP_GPS::inject_data(uint8_t instance, uint8_t *data, uint8_t len)
+void apm::gps_t::inject_data(uint8_t instance, uint8_t *data, uint8_t len)
 {
     if (instance < GPS_MAX_INSTANCES && drivers[instance] != NULL)
         drivers[instance]->inject_data(data, len);

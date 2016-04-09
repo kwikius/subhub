@@ -30,7 +30,7 @@
 // right mode
 const char apm::AP_GPS_MTK::_initialisation_blob[] = MTK_OUTPUT_5HZ SBAS_ON WAAS_ON MTK_NAVTHRES_OFF;
 
-apm::AP_GPS_MTK::AP_GPS_MTK(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state,apm::SerialPort *_port) :
+apm::AP_GPS_MTK::AP_GPS_MTK(apm::gps_t &_gps, apm::gps_t::GPS_State &_state,apm::SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port),
     _step(0),
     _payload_counter(0)
@@ -41,7 +41,7 @@ apm::AP_GPS_MTK::AP_GPS_MTK(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state,ap
 /*
   send an initialisation blob to configure the GPS
  */
-void apm::AP_GPS_MTK::send_init_blob(uint8_t instance, AP_GPS &gps)
+void apm::AP_GPS_MTK::send_init_blob(uint8_t instance, gps_t &gps)
 {
     gps.send_blob_start(instance, _initialisation_blob, sizeof(_initialisation_blob));
 }
@@ -138,20 +138,20 @@ restart:
 
             // set fix type
             if (_buffer.msg.fix_type == FIX_3D) {
-                state.status = AP_GPS::GPS_OK_FIX_3D;
+                state.status = gps_t::GPS_OK_FIX_3D;
             }else if (_buffer.msg.fix_type == FIX_2D) {
-                state.status = AP_GPS::GPS_OK_FIX_2D;
+                state.status = gps_t::GPS_OK_FIX_2D;
             }else{
-                state.status = AP_GPS::NO_FIX;
+                state.status = gps_t::NO_FIX;
             }
-            state.location.lat  = AP_GPS::lat_lon_type{swap_int32(_buffer.msg.latitude)  * 10};
-            state.location.lon  = AP_GPS::lat_lon_type{swap_int32(_buffer.msg.longitude) * 10};
-            state.location.alt  = AP_GPS::altitude_type{swap_int32(_buffer.msg.altitude)};
+            state.location.lat  = gps_t::lat_lon_type{swap_int32(_buffer.msg.latitude)  * 10};
+            state.location.lon  = gps_t::lat_lon_type{swap_int32(_buffer.msg.longitude) * 10};
+            state.location.alt  = gps_t::altitude_type{swap_int32(_buffer.msg.altitude)};
             state.ground_speed      = swap_int32(_buffer.msg.ground_speed) * 0.01f;
             state.ground_course_cd  = wrap_360_cd(swap_int32(_buffer.msg.ground_course) / 10000);
             state.num_sats          = _buffer.msg.satellites;
 
-            if (state.status >= AP_GPS::GPS_OK_FIX_2D) {
+            if (state.status >= gps_t::GPS_OK_FIX_2D) {
                 make_gps_time(0, swap_int32(_buffer.msg.utc_time)*10);
             }
             // we don't change _last_gps_time as we don't know the

@@ -42,7 +42,7 @@
  # define Debug(fmt, args ...)
 #endif
 
-apm::AP_GPS_UBLOX::AP_GPS_UBLOX(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state, apm::SerialPort *_port) :
+apm::AP_GPS_UBLOX::AP_GPS_UBLOX(apm::gps_t &_gps, apm::gps_t::GPS_State &_state, apm::SerialPort *_port) :
     apm::AP_GPS_Backend(_gps, _state, _port),
     _step(0),
     _msg_id(0),
@@ -57,7 +57,7 @@ apm::AP_GPS_UBLOX::AP_GPS_UBLOX(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_stat
     _new_speed(0),
     need_rate_update(false),
     _disable_counter(0),
-    next_fix(AP_GPS::NO_FIX),
+    next_fix(gps_t::NO_FIX),
     rate_update_step(0),
     _last_5hz_time(0),
     noReceivedHdop(true)
@@ -414,7 +414,7 @@ bool apm::AP_GPS_UBLOX::_parse_gps(void)
               (int)_buffer.nav_settings.minElev,
               (unsigned)_buffer.nav_settings.drLimit);
         _buffer.nav_settings.mask = 0;
-        if (gps._navfilter != AP_GPS::GPS_ENGINE_NONE &&
+        if (gps._navfilter != gps_t::GPS_ENGINE_NONE &&
             _buffer.nav_settings.dynModel != gps._navfilter) {
             // we've received the current nav settings, change the engine
             // settings and send them back
@@ -536,9 +536,9 @@ bool apm::AP_GPS_UBLOX::_parse_gps(void)
     case MSG_POSLLH:
         Debug("MSG_POSLLH next_fix=%u", next_fix);
         _last_pos_time        = _buffer.posllh.time;
-        state.location.lon    = AP_GPS::lat_lon_type{_buffer.posllh.longitude};
-        state.location.lat    = AP_GPS::lat_lon_type{_buffer.posllh.latitude};
-        state.location.alt    = AP_GPS::altitude_type{_buffer.posllh.altitude_msl / 10};
+        state.location.lon    = gps_t::lat_lon_type{_buffer.posllh.longitude};
+        state.location.lat    = gps_t::lat_lon_type{_buffer.posllh.latitude};
+        state.location.alt    = gps_t::altitude_type{_buffer.posllh.altitude_msl / 10};
         state.status          = next_fix;
         _new_position = true;
         state.horizontal_accuracy = _buffer.posllh.horizontal_accuracy*1.0e-3f;
@@ -546,9 +546,9 @@ bool apm::AP_GPS_UBLOX::_parse_gps(void)
         state.have_horizontal_accuracy = true;
         state.have_vertical_accuracy = true;
 #if UBLOX_FAKE_3DLOCK
-        state.location.lon = AP_GPS::lat_lon_type{1491652300L};
-        state.location.lat = AP_GPS::lat_lon_type{-353632610L};
-        state.location.alt = AP_GPS::altitude_type{58400};
+        state.location.lon = gps_t::lat_lon_type{1491652300L};
+        state.location.lat = gps_t::lat_lon_type{-353632610L};
+        state.location.alt = gps_t::altitude_type{58400};
         state.vertical_accuracy = false;
         state.horizontal_accuracy = false;
 #endif
@@ -560,21 +560,21 @@ bool apm::AP_GPS_UBLOX::_parse_gps(void)
         if (_buffer.status.fix_status & NAV_STATUS_FIX_VALID) {
             if( (_buffer.status.fix_type == AP_GPS_UBLOX::FIX_3D) &&
                 (_buffer.status.fix_status & AP_GPS_UBLOX::NAV_STATUS_DGPS_USED)) {
-                next_fix = AP_GPS::GPS_OK_FIX_3D_DGPS;
+                next_fix = gps_t::GPS_OK_FIX_3D_DGPS;
             }else if( _buffer.status.fix_type == AP_GPS_UBLOX::FIX_3D) {
-                next_fix = AP_GPS::GPS_OK_FIX_3D;
+                next_fix = gps_t::GPS_OK_FIX_3D;
             }else if (_buffer.status.fix_type == AP_GPS_UBLOX::FIX_2D) {
-                next_fix = AP_GPS::GPS_OK_FIX_2D;
+                next_fix = gps_t::GPS_OK_FIX_2D;
             }else{
-                next_fix = AP_GPS::NO_FIX;
-                state.status = AP_GPS::NO_FIX;
+                next_fix = gps_t::NO_FIX;
+                state.status = gps_t::NO_FIX;
             }
         }else{
-            next_fix = AP_GPS::NO_FIX;
-            state.status = AP_GPS::NO_FIX;
+            next_fix = gps_t::NO_FIX;
+            state.status = gps_t::NO_FIX;
         }
 #if UBLOX_FAKE_3DLOCK
-        state.status = AP_GPS::GPS_OK_FIX_3D;
+        state.status = gps_t::GPS_OK_FIX_3D;
         next_fix = state.status;
 #endif
         break;
@@ -595,24 +595,24 @@ bool apm::AP_GPS_UBLOX::_parse_gps(void)
         if (_buffer.solution.fix_status & NAV_STATUS_FIX_VALID) {
             if( (_buffer.solution.fix_type == AP_GPS_UBLOX::FIX_3D) &&
                 (_buffer.solution.fix_status & AP_GPS_UBLOX::NAV_STATUS_DGPS_USED)) {
-                next_fix = AP_GPS::GPS_OK_FIX_3D_DGPS;
+                next_fix = gps_t::GPS_OK_FIX_3D_DGPS;
             }else if( _buffer.solution.fix_type == AP_GPS_UBLOX::FIX_3D) {
-                next_fix = AP_GPS::GPS_OK_FIX_3D;
+                next_fix = gps_t::GPS_OK_FIX_3D;
             }else if (_buffer.solution.fix_type == AP_GPS_UBLOX::FIX_2D) {
-                next_fix = AP_GPS::GPS_OK_FIX_2D;
+                next_fix = gps_t::GPS_OK_FIX_2D;
             }else{
-                next_fix = AP_GPS::NO_FIX;
-                state.status = AP_GPS::NO_FIX;
+                next_fix = gps_t::NO_FIX;
+                state.status = gps_t::NO_FIX;
             }
         }else{
-            next_fix = AP_GPS::NO_FIX;
-            state.status = AP_GPS::NO_FIX;
+            next_fix = gps_t::NO_FIX;
+            state.status = gps_t::NO_FIX;
         }
         if(noReceivedHdop) {
             state.hdop = _buffer.solution.position_DOP;
         }
         state.num_sats    = _buffer.solution.satellites;
-        if (next_fix >= AP_GPS::GPS_OK_FIX_2D) {
+        if (next_fix >= gps_t::GPS_OK_FIX_2D) {
             state.last_gps_time_ms = quan::stm32::millis().numeric_value();
             if (state.time_week == _buffer.solution.week &&
                 state.time_week_ms + 200 == _buffer.solution.time) {
@@ -639,9 +639,9 @@ bool apm::AP_GPS_UBLOX::_parse_gps(void)
         state.ground_speed     = _buffer.velned.speed_2d*0.01f;          // m/s
         state.ground_course_cd = wrap_360_cd(_buffer.velned.heading_2d / 1000);       // Heading 2D deg * 100000 rescaled to deg * 100
         state.have_vertical_velocity = true;
-        state.velocity.x = AP_GPS::velocity_type{_buffer.velned.ned_north * 0.01f};
-        state.velocity.y = AP_GPS::velocity_type{_buffer.velned.ned_east * 0.01f};
-        state.velocity.z = AP_GPS::velocity_type{_buffer.velned.ned_down * 0.01f};
+        state.velocity.x = gps_t::velocity_type{_buffer.velned.ned_north * 0.01f};
+        state.velocity.y = gps_t::velocity_type{_buffer.velned.ned_east * 0.01f};
+        state.velocity.z = gps_t::velocity_type{_buffer.velned.ned_down * 0.01f};
         state.have_speed_accuracy = true;
         state.speed_accuracy = _buffer.velned.speed_accuracy*0.01f;
 #if UBLOX_FAKE_3DLOCK

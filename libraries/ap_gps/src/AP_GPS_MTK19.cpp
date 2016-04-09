@@ -30,7 +30,7 @@
 #include "AP_GPS_MTK19.h"
 #include "AP_GPS_MTK.h"
 
-apm::AP_GPS_MTK19::AP_GPS_MTK19(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state, apm::SerialPort *_port) :
+apm::AP_GPS_MTK19::AP_GPS_MTK19(apm::gps_t &_gps, apm::gps_t::GPS_State &_state, apm::SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port),
     _step(0),
     _payload_counter(0),
@@ -130,27 +130,27 @@ restart:
 
             // parse fix
             if (_buffer.msg.fix_type == FIX_3D || _buffer.msg.fix_type == FIX_3D_SBAS) {
-                state.status = AP_GPS::GPS_OK_FIX_3D;
+                state.status = gps_t::GPS_OK_FIX_3D;
             }else if (_buffer.msg.fix_type == FIX_2D || _buffer.msg.fix_type == FIX_2D_SBAS) {
-                state.status = AP_GPS::GPS_OK_FIX_2D;
+                state.status = gps_t::GPS_OK_FIX_2D;
             }else{
-                state.status = AP_GPS::NO_FIX;
+                state.status = gps_t::NO_FIX;
             }
 
             if (_mtk_revision == MTK_GPS_REVISION_V16) {
-               state.location.lat  = AP_GPS::lat_lon_type{ _buffer.msg.latitude  * 10};  // V16, V17,V18 doc says *10e7 but device says otherwise
-               state.location.lon  = AP_GPS::lat_lon_type{_buffer.msg.longitude * 10};  // V16, V17,V18 doc says *10e7 but device says otherwise
+               state.location.lat  = gps_t::lat_lon_type{ _buffer.msg.latitude  * 10};  // V16, V17,V18 doc says *10e7 but device says otherwise
+               state.location.lon  = gps_t::lat_lon_type{_buffer.msg.longitude * 10};  // V16, V17,V18 doc says *10e7 but device says otherwise
             } else {
-               state.location.lat  = AP_GPS::lat_lon_type{_buffer.msg.latitude};
-               state.location.lon  = AP_GPS::lat_lon_type{_buffer.msg.longitude};
+               state.location.lat  = gps_t::lat_lon_type{_buffer.msg.latitude};
+               state.location.lon  = gps_t::lat_lon_type{_buffer.msg.longitude};
 			   }
-            state.location.alt      = AP_GPS::altitude_type{_buffer.msg.altitude};
+            state.location.alt      = gps_t::altitude_type{_buffer.msg.altitude};
             state.ground_speed      = _buffer.msg.ground_speed*0.01f;
             state.ground_course_cd  = wrap_360_cd(_buffer.msg.ground_course);
             state.num_sats          = _buffer.msg.satellites;
             state.hdop              = _buffer.msg.hdop;
             
-            if (state.status >= AP_GPS::GPS_OK_FIX_2D) {
+            if (state.status >= gps_t::GPS_OK_FIX_2D) {
                 if (_fix_counter == 0) {
                     uint32_t bcd_time_ms;
                     bcd_time_ms = _buffer.msg.utc_time;

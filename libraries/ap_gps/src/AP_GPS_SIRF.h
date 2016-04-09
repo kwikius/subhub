@@ -31,7 +31,7 @@ namespace apm{
 
    class AP_GPS_SIRF : public AP_GPS_Backend {
    public:
-      AP_GPS_SIRF(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port);
+      AP_GPS_SIRF(gps_t &_gps, gps_t::GPS_State &_state, SerialPort *_port);
       bool read();
       static bool _detect(struct SIRF_detect_state &state, uint8_t data);
    private:

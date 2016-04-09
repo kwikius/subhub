@@ -19,10 +19,10 @@
 
 /*
   GPS detection state structures. These need to be in a separate
-  header to prevent a circular dependency between AP_GPS and the
+  header to prevent a circular dependency between gps_t and the
   backend drivers.
 
-  These structures are allocated as a single block in AP_GPS during
+  These structures are allocated as a single block in gps_t during
   driver detection, then freed once the detection is finished. Each
   GPS driver needs to implement a static _detect() function which uses
   this state information to detect if the attached GPS is of the

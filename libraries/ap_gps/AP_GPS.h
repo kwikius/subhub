@@ -36,10 +36,10 @@ namespace apm{
    class AP_GPS_Backend;
    class SerialPort;
 
-   class AP_GPS {
+   class gps_t {
    public:
        // constructor
-       AP_GPS() {}
+       gps_t() {}
 
        typedef quan::angle_<int32_t>::deg10e7                   lat_lon_type;
        typedef quan::length_<int32_t>::cm                       altitude_type; // n.b the AP type is differnt to the quan osd type

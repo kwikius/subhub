@@ -26,7 +26,7 @@
 
 #include "AP_GPS_SBF.h"
 
-apm::AP_GPS_SBF::AP_GPS_SBF(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state,
+apm::AP_GPS_SBF::AP_GPS_SBF(apm::gps_t &_gps, apm::gps_t::GPS_State &_state,
                        apm::SerialPort *_port) :
     AP_GPS_Backend(_gps, _state, _port)
 {	
@@ -190,9 +190,9 @@ bool apm::AP_GPS_SBF::process_message(void)
 
         // Update velocity state (dont use −2·10^10)
         if (temp.Vn > -200000) {
-            state.velocity.x = AP_GPS::velocity_type{temp.Vn};
-            state.velocity.y = AP_GPS::velocity_type{temp.Ve};
-            state.velocity.z = AP_GPS::velocity_type{-temp.Vu};
+            state.velocity.x = gps_t::velocity_type{temp.Vn};
+            state.velocity.y = gps_t::velocity_type{temp.Ve};
+            state.velocity.z = gps_t::velocity_type{-temp.Vu};
 			
 			   state.have_vertical_velocity = true;
 
@@ -210,9 +210,9 @@ bool apm::AP_GPS_SBF::process_message(void)
 
         // Update position state (dont use −2·10^10)
         if (temp.Latitude > -200000) {
-            state.location.lat = AP_GPS::lat_lon_type{temp.Latitude * RAD_TO_DEG_DOUBLE * 1e7};
-            state.location.lon = AP_GPS::lat_lon_type{temp.Longitude * RAD_TO_DEG_DOUBLE * 1e7};
-            state.location.alt = AP_GPS::altitude_type{(float)temp.Height * 1e2f};
+            state.location.lat = gps_t::lat_lon_type{temp.Latitude * RAD_TO_DEG_DOUBLE * 1e7};
+            state.location.lon = gps_t::lat_lon_type{temp.Longitude * RAD_TO_DEG_DOUBLE * 1e7};
+            state.location.alt = gps_t::altitude_type{(float)temp.Height * 1e2f};
         }
 
         if (temp.NrSV != 255) {
@@ -222,38 +222,38 @@ bool apm::AP_GPS_SBF::process_message(void)
         //Debug("temp.Mode=0x%02x\n", (unsigned)temp.Mode);
         switch (temp.Mode & 15) {
             case 0: // no pvt
-                state.status = AP_GPS::NO_FIX;
+                state.status = gps_t::NO_FIX;
                 break;
             case 1: // standalone
-                state.status = AP_GPS::GPS_OK_FIX_3D;
+                state.status = gps_t::GPS_OK_FIX_3D;
                 break;
             case 2: // dgps
-                state.status = AP_GPS::GPS_OK_FIX_3D_DGPS;
+                state.status = gps_t::GPS_OK_FIX_3D_DGPS;
                 break;
             case 3: // fixed location
-                state.status = AP_GPS::GPS_OK_FIX_3D;
+                state.status = gps_t::GPS_OK_FIX_3D;
                 break;
             case 4: // rtk fixed
-                state.status = AP_GPS::GPS_OK_FIX_3D_RTK;
+                state.status = gps_t::GPS_OK_FIX_3D_RTK;
                 break;
             case 5: // rtk float
-                state.status = AP_GPS::GPS_OK_FIX_3D_DGPS;
+                state.status = gps_t::GPS_OK_FIX_3D_DGPS;
                 break;
             case 6: // sbas
-                state.status = AP_GPS::GPS_OK_FIX_3D;
+                state.status = gps_t::GPS_OK_FIX_3D;
                 break;
             case 7: // moving rtk fixed
-                state.status = AP_GPS::GPS_OK_FIX_3D_RTK;
+                state.status = gps_t::GPS_OK_FIX_3D_RTK;
                 break;
             case 8: // moving rtk float
-                state.status = AP_GPS::GPS_OK_FIX_3D_DGPS;
+                state.status = gps_t::GPS_OK_FIX_3D_DGPS;
                 break;
         }
         
         if ((temp.Mode & 64) > 0) // gps is in base mode
-            state.status = AP_GPS::NO_FIX;
+            state.status = gps_t::NO_FIX;
         if ((temp.Mode & 128) > 0) // gps only has 2d fix
-            state.status = AP_GPS::GPS_OK_FIX_2D;
+            state.status = gps_t::GPS_OK_FIX_2D;
                     
         return true;
     }

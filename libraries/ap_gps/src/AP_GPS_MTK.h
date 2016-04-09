@@ -34,12 +34,12 @@ namespace apm{
 
    class AP_GPS_MTK : public AP_GPS_Backend {
    public:
-       AP_GPS_MTK(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port);
+       AP_GPS_MTK(gps_t &_gps, gps_t::GPS_State &_state, SerialPort *_port);
 
        bool read(void);
 
        static bool _detect(struct MTK_detect_state &state, uint8_t data);
-       static void send_init_blob(uint8_t instance, AP_GPS &gps);
+       static void send_init_blob(uint8_t instance, gps_t &gps);
 
    private:
        struct PACKED diyd_mtk_msg {

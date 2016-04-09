@@ -32,7 +32,7 @@
 
 extern const AP_HAL::HAL& hal;
 
-AP_GPS_PX4::AP_GPS_PX4(AP_GPS &_gps, AP_GPS::GPS_State &_state, AP_HAL::UARTDriver *_port) :
+AP_GPS_PX4::AP_GPS_PX4(gps_t &_gps, gps_t::GPS_State &_state, AP_HAL::UARTDriver *_port) :
     AP_GPS_Backend(_gps, _state, _port)
 {
     _gps_sub = orb_subscribe(ORB_ID(vehicle_gps_position));
@@ -53,7 +53,7 @@ AP_GPS_PX4::read(void)
     if (updated) {
         if (OK == orb_copy(ORB_ID(vehicle_gps_position), _gps_sub, &_gps_pos)) {
             state.last_gps_time_ms = AP_HAL::millis();
-            state.status  = (AP_GPS::GPS_Status) (_gps_pos.fix_type | AP_GPS::NO_FIX);
+            state.status  = (gps_t::GPS_Status) (_gps_pos.fix_type | gps_t::NO_FIX);
             state.num_sats = _gps_pos.satellites_used;
             state.hdop = uint16_t(_gps_pos.eph*100.0f + .5f);
 
@@ -76,7 +76,7 @@ AP_GPS_PX4::read(void)
                 if (_gps_pos.time_utc_usec == 0) {
                   // This is a work-around for https://github.com/PX4/Firmware/issues/1474
                   // reject position reports with invalid time, as APM adjusts it's clock after the first lock has been aquired
-                  state.status = AP_GPS::NO_FIX;
+                  state.status = gps_t::NO_FIX;
                 }
             }
             if (_gps_pos.fix_type >= 3) {

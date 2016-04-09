@@ -1,6 +1,6 @@
-#include <ap_gps/AP_GPS.h>
+#include <ap_gps/gps_t.h>
 
 int main()
 {
-    AP_GPS gps;
+    apm::gps_t gps;
 }

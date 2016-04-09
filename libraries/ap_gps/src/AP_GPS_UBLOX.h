@@ -66,12 +66,12 @@ namespace apm{
 
    class AP_GPS_UBLOX : public AP_GPS_Backend{
    public:
-      AP_GPS_UBLOX(AP_GPS &_gps, AP_GPS::GPS_State &_state, SerialPort *_port);
+      AP_GPS_UBLOX(gps_t &_gps, gps_t::GPS_State &_state, SerialPort *_port);
 
        // Methods
        bool read();
 
-       AP_GPS::GPS_Status highest_supported_status(void) { return AP_GPS::GPS_OK_FIX_3D_DGPS; }
+       gps_t::GPS_Status highest_supported_status(void) { return gps_t::GPS_OK_FIX_3D_DGPS; }
 
        static bool _detect(struct UBLOX_detect_state &state, uint8_t data);
 
@@ -423,7 +423,7 @@ namespace apm{
        bool        _parse_gps();
 
        // used to update fix between status and position packets
-       AP_GPS::GPS_Status next_fix;
+       gps_t::GPS_Status next_fix;
 
        uint8_t rate_update_step;
        uint32_t _last_5hz_time;

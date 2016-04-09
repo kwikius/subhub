@@ -105,7 +105,7 @@ const char apm::AP_GPS_NMEA::_gpvtg_string[] = "GPVTG";
 #define DIGIT_TO_VAL(_x)        (_x - '0')
 #define hexdigit(x) ((x)>9?'A'+(x):'0'+(x))
 
-apm::AP_GPS_NMEA::AP_GPS_NMEA(apm::AP_GPS &_gps, apm::AP_GPS::GPS_State &_state, apm::SerialPort *_port) 
+apm::AP_GPS_NMEA::AP_GPS_NMEA(apm::gps_t &_gps, apm::gps_t::GPS_State &_state, apm::SerialPort *_port) 
 :AP_GPS_Backend(_gps, _state, _port),
     _parity(0),
     _is_checksum_term(false),
@@ -295,24 +295,24 @@ bool apm::AP_GPS_NMEA::_term_complete()
                 case _GPS_SENTENCE_GPRMC:
                     //time                        = _new_time;
                     //date                        = _new_date;
-                    state.location.lat     = AP_GPS::lat_lon_type{_new_latitude};
-                    state.location.lon     = AP_GPS::lat_lon_type{_new_longitude};
+                    state.location.lat     = gps_t::lat_lon_type{_new_latitude};
+                    state.location.lon     = gps_t::lat_lon_type{_new_longitude};
                     state.ground_speed     = _new_speed*0.01f;
                     state.ground_course_cd = wrap_360_cd(_new_course);
                     make_gps_time(_new_date, _new_time * 10);
                     state.last_gps_time_ms = quan::stm32::millis().numeric_value();
                     // To-Do: add support for proper reporting of 2D and 3D fix
-                    state.status           = AP_GPS::GPS_OK_FIX_3D;
+                    state.status           = gps_t::GPS_OK_FIX_3D;
                     fill_3d_velocity();
                     break;
                 case _GPS_SENTENCE_GPGGA:
-                    state.location.alt  = AP_GPS::altitude_type{_new_altitude};
-                    state.location.lat  = AP_GPS::lat_lon_type{_new_latitude};
-                    state.location.lon  = AP_GPS::lat_lon_type{_new_longitude};
+                    state.location.alt  = gps_t::altitude_type{_new_altitude};
+                    state.location.lat  = gps_t::lat_lon_type{_new_latitude};
+                    state.location.lon  = gps_t::lat_lon_type{_new_longitude};
                     state.num_sats      = _new_satellite_count;
                     state.hdop          = _new_hdop;
                     // To-Do: add support for proper reporting of 2D and 3D fix
-                    state.status        = AP_GPS::GPS_OK_FIX_3D;
+                    state.status        = gps_t::GPS_OK_FIX_3D;
                     break;
                 case _GPS_SENTENCE_GPVTG:
                     state.ground_speed     = _new_speed*0.01f;
@@ -326,7 +326,7 @@ bool apm::AP_GPS_NMEA::_term_complete()
                 case _GPS_SENTENCE_GPGGA:
                     // Only these sentences give us information about
                     // fix status.
-                    state.status = AP_GPS::NO_FIX;
+                    state.status = gps_t::NO_FIX;
                 }
             }
             // see if we got a good message

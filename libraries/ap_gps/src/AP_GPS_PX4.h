@@ -29,7 +29,7 @@
 
 class AP_GPS_PX4 : public AP_GPS_Backend {
 public:
-    AP_GPS_PX4(AP_GPS &_gps, AP_GPS::GPS_State &_state, AP_HAL::UARTDriver *_port);
+    AP_GPS_PX4(gps_t &_gps, gps_t::GPS_State &_state, AP_HAL::UARTDriver *_port);
 
     bool read();
 
