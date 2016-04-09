@@ -17,15 +17,12 @@
 */
 
 
-#include <gps/gps.hpp>
-
-
+#include <ap_gps/AP_GPS.h>
 
 extern "C" void setup();
 
 int main()
 {
-   quan_apm::gps const * gps = quan_apm::get_gps();
-
+   apm::AP_GPS gps;
    setup();
 }

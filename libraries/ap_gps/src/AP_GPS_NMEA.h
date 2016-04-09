@@ -1,4 +1,3 @@
-// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 /*
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,6 +12,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef APM_GPS_NMEA_HPP_INCLUDED
+#define APM_GPS_NMEA_HPP_INCLUDED
 
 //
 // NMEA parser, adapted by Michael Smith from TinyGPS v9:
@@ -44,8 +45,7 @@
 ///
 
 
-#ifndef __AP_GPS_NMEA_H__
-#define __AP_GPS_NMEA_H__
+
 
 #include "../AP_GPS.h"
 #include "GPS_Backend.h"
@@ -166,4 +166,4 @@ namespace apm {
 
 }//apm
 
-#endif // __AP_GPS_NMEA_H__
+#endif // APM_GPS_NMEA_HPP_INCLUDED

@@ -1,4 +1,4 @@
-// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
 /*
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 //  GPS proxy driver for APM on PX4 platforms
 //  Code by Holger Steinhaus
 //
+#error reference only
 #ifndef __AP_GPS_PX4_H__
 #define __AP_GPS_PX4_H__
 

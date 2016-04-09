@@ -14,7 +14,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define GPS_BAUD_TIME_MS 1200
+
 //
 #include <cstring>
 #include <ap_serialport/serialport.hpp>
@@ -29,6 +29,8 @@
 #include "AP_GPS_GSOF.h"
 
 #include <quan/stm32/millis.hpp>
+
+#define GPS_BAUD_TIME_MS 1200
 
 static inline uint8_t pgm_read_byte(const void *s)
 {
@@ -185,7 +187,9 @@ void apm::AP_GPS::send_blob_update(uint8_t instance)
             space = initblob_state[instance].remaining;
         }
         while (space > 0) {
-            _port[instance]->write(pgm_read_byte(initblob_state[instance].blob));
+            //_port[instance]->write(pgm_read_byte(initblob_state[instance].blob),1);
+           // _port[instance]->write((uint8_t const *)initblob_state[instance].blob,1);
+            _port[instance]->write(initblob_state[instance].blob[0]);
             initblob_state[instance].blob++;
             space--;
             initblob_state[instance].remaining--;

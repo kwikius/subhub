@@ -1,4 +1,4 @@
-// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
 /*
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
 //
 //  UBlox Lea6H protocol: http://www.u-blox.com/images/downloads/Product_Docs/u-blox6_ReceiverDescriptionProtocolSpec_%28GPS.G6-SW-10018%29.pdf
 
-#ifndef __AP_GPS_UBLOX_H__
-#define __AP_GPS_UBLOX_H__
+#ifndef APM_GPS_UBLOX_HPP_INCLUDED
+#define APM_GPS_UBLOX_HPP_INCLUDED
 
 //#include <AP_HAL/AP_HAL.h>
 #include "../AP_GPS.h"
@@ -455,4 +455,4 @@ namespace apm{
 
 }//apm
 
-#endif // __AP_GPS_UBLOX_H__
+#endif // APM_GPS_UBLOX_HPP_INCLUDED

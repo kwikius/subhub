@@ -1,4 +1,4 @@
-// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
 /*
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 //	Code by Michael Oborne
 //
 
-#ifndef __AP_GPS_GSOF_H__
-#define __AP_GPS_GSOF_H__
+#ifndef APM_GPS_GSOF_HPP_INCLUDED
+#define APM_GPS_GSOF_HPP_INCLUDED
 
 #include "../AP_GPS.h"
 #include "GPS_Backend.h"
@@ -93,4 +93,4 @@ namespace apm{
 
 } // apm
 
-#endif // __AP_GPS_GSOF_H__
+#endif // APM_GPS_GSOF_HPP_INCLUDED

@@ -1,4 +1,4 @@
-// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
 /*
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 //  Swift Binary Protocol format: http://docs.swift-nav.com/
 //
 
-#ifndef __AP_GPS_SBP_H__
-#define __AP_GPS_SBP_H__
+#ifndef APM_GPS_SBP_HPP_INCLUDED
+#define APM_GPS_SBP_HPP_INCLUDED
 
 #include <ap_common/ap_common.hpp>
 
@@ -178,4 +178,4 @@ namespace apm{
 
 }//apm
 
-#endif // __AP_GPS_SBP_H__
+#endif // APM_GPS_SBP_HPP_INCLUDED

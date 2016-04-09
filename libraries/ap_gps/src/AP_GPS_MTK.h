@@ -1,4 +1,4 @@
-// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
 /*
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
 //
 // Note - see AP_GPS_MTK16.h for firmware 1.6 and later.
 //
-#ifndef __AP_GPS_MTK_H__
-#define __AP_GPS_MTK_H__
+#ifndef APM_GPS_MTK_HPP_INCLUDED
+#define APM_GPS_MTK_HPP_INCLUDED
 
 #include "../AP_GPS.h"
 #include "AP_GPS_MTK_Common.h"
@@ -87,4 +87,4 @@ namespace apm{
 
 } // apm
 
-#endif  // __AP_GPS_MTK_H__
+#endif  // APM_GPS_MTK_HPP_INCLUDED

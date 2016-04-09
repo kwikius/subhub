@@ -14,8 +14,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __AP_GPS_H__
-#define __AP_GPS_H__
+#ifndef APM_GPS_GPS_HPP_INCLUDED
+#define APM_GPS_GPS_HPP_INCLUDED
 
 #include <cstdint>
 #include <quan/three_d/vect.hpp>
@@ -331,13 +331,6 @@ namespace apm{
        void inject_data(uint8_t *data, uint8_t len);
        void inject_data(uint8_t instance, uint8_t *data, uint8_t len);
 
-       //MAVLink Status Sending
-   //    void send_mavlink_gps_raw(mavlink_channel_t chan);
-    //   void send_mavlink_gps2_raw(mavlink_channel_t chan);
-
-    //   void send_mavlink_gps_rtk(mavlink_channel_t chan);
-    //   void send_mavlink_gps2_rtk(mavlink_channel_t chan);
-
    private:
        struct GPS_timing {
            // the time we got our last fix in system milliseconds
@@ -387,4 +380,4 @@ namespace apm{
    };
 } // namespace apm
 
-#endif // __AP_GPS_H__
+#endif // APM_GPS_GPS_HPP_INCLUDED

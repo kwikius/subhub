@@ -1,4 +1,4 @@
-// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
 /*
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 //  SiRF Binary GPS driver for ArduPilot and ArduPilotMega.
 //	Code by Michael Smith.
 //
-#ifndef __AP_GPS_SIRF_H__
-#define __AP_GPS_SIRF_H__
+#ifndef APM_GPS_SIRF_HPP_INCLUDED
+#define APM_GPS_SIRF_HPP_INCLUDED
 
 #include <ap_common/ap_common.hpp>
 #include "../AP_GPS.h"
@@ -106,4 +106,4 @@ namespace apm{
 
 } //apm
 
-#endif // AP_GPS_SIRF_h
+#endif // APM_GPS_SIRF_HPP_INCLUDED

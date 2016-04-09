@@ -1,7 +1,4 @@
-#ifndef APM_GPS_DETECT_STATE_HPP_INCLUDED
-#define APM_GPS_DETECT_STATE_HPP_INCLUDED
 
-// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 /*
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,6 +13,9 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifndef APM_GPS_DETECT_STATE_HPP_INCLUDED
+#define APM_GPS_DETECT_STATE_HPP_INCLUDED
 
 /*
   GPS detection state structures. These need to be in a separate

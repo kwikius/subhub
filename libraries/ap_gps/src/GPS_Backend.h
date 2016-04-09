@@ -1,4 +1,4 @@
-// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
 /*
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,10 +17,10 @@
 /*
   GPS driver backend class
  */
-#ifndef __AP_GPS_BACKEND_H__
-#define __AP_GPS_BACKEND_H__
 
-//#include <GCS_MAVLink/GCS_MAVLink.h>
+#ifndef APM_GPS_BACKEND_HPP_INCLUDED
+#define APM_GPS_BACKEND_HPP_INCLUDED
+
 #include "../AP_GPS.h"
 
 namespace apm{
@@ -63,4 +63,4 @@ namespace apm{
 
 }// apm
 
-#endif // __AP_GPS_BACKEND_H__
+#endif // APM_GPS_BACKEND_HPP_INCLUDED
