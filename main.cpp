@@ -17,7 +17,7 @@
 */
 
 
-#include <ap_gps/gps.h>
+#include <apm/gps.h>
 
 extern "C" void setup();
 

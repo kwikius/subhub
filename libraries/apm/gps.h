@@ -22,13 +22,13 @@
 #include <quan/velocity.hpp>
 #include <quan/time.hpp>
 #include <quan/uav/position.hpp>
-#include "src/GPS_detect_state.h"
+#include <apm/gps/src/GPS_detect_state.h>
 
 /**
    maximum number of GPS instances available on this platform. If more
    than 1 then redundent sensors may be available
  */
-#define GPS_MAX_INSTANCES 2
+#define GPS_MAX_INSTANCES 1
 #define GPS_RTK_INJECT_TO_ALL 127
 
 namespace apm{
@@ -69,7 +69,7 @@ namespace apm{
            GPS_TYPE_SBP   = 8,
            GPS_TYPE_PX4   = 9,
            GPS_TYPE_SBF   = 10,
-         GPS_TYPE_GSOF  = 11,
+           GPS_TYPE_GSOF  = 11,
        };
 
        /// GPS status codes

@@ -23,7 +23,7 @@
 #define APM_GPS_SBF_HPP_INCLUDED
 
 #include <ap_common/ap_common.hpp>
-#include "../gps.h"
+#include <apm/gps.h>
 #include "GPS_Backend.h"
 
 #define SBF_SETUP_MSG "\nsso, Stream1, COM1, PVTGeodetic+DOP+ExtEventPVTGeodetic, msec100\n"

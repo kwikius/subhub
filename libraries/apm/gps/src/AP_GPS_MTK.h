@@ -25,7 +25,7 @@
 #ifndef APM_GPS_MTK_HPP_INCLUDED
 #define APM_GPS_MTK_HPP_INCLUDED
 
-#include "../gps.h"
+#include <apm/gps.h>
 #include "AP_GPS_MTK_Common.h"
 #include <ap_common/ap_common.hpp>
 #include "GPS_Backend.h"

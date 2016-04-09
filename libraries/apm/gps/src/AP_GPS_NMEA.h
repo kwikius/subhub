@@ -47,7 +47,7 @@
 
 
 
-#include "../gps.h"
+#include <apm/gps.h>
 #include "GPS_Backend.h"
 
 namespace apm {

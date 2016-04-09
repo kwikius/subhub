@@ -17,7 +17,7 @@
 #include <ap_math/ap_math.hpp>
 #include <quan/stm32/millis.hpp>
 
-#include "../gps.h"
+#include <apm/gps.h>
 #include "GPS_Backend.h"
 
 apm::AP_GPS_Backend::AP_GPS_Backend(apm::gps_t &_gps, apm::gps_t::GPS_State &_state, apm::SerialPort *_port) :
