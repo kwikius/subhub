@@ -22,7 +22,7 @@
 #define APM_GPS_SIRF_HPP_INCLUDED
 
 #include <ap_common/ap_common.hpp>
-#include "../AP_GPS.h"
+#include "../gps.h"
 #include "GPS_Backend.h"
 
 #define SIRF_SET_BINARY "$PSRF100,0,38400,8,1,0*3C\r\n"

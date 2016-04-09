@@ -26,7 +26,7 @@
 
 #include <ap_common/ap_common.hpp>
 
-#include "../AP_GPS.h"
+#include "../gps.h"
 #include "GPS_Backend.h"
 
 namespace apm{

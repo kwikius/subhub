@@ -27,7 +27,7 @@
 #include <ap_serialport/serialport.hpp>
 #include <ap_math/ap_math.hpp>
 
-#include "../AP_GPS.h"
+#include "../gps.h"
 #include "AP_GPS_SBP.h"
 
 #define SBP_TIMEOUT_HEATBEAT  4000

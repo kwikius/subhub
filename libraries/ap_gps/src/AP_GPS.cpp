@@ -18,7 +18,7 @@
 //
 #include <cstring>
 #include <ap_serialport/serialport.hpp>
-#include "../AP_GPS.h"
+#include "../gps.h"
 #include "AP_GPS_UBLOX.h"
 #include "AP_GPS_MTK.h"
 #include "AP_GPS_MTK19.h"

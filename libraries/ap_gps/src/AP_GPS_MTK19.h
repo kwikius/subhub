@@ -26,7 +26,7 @@
 #include <ap_common/ap_common.hpp>
 
 #include "AP_GPS_MTK_Common.h"
-#include "../AP_GPS.h"
+#include "../gps.h"
 #include "GPS_Backend.h"
 
 #define MTK_GPS_REVISION_V16  16

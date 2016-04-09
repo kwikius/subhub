@@ -21,7 +21,7 @@
 #ifndef APM_GPS_BACKEND_HPP_INCLUDED
 #define APM_GPS_BACKEND_HPP_INCLUDED
 
-#include "../AP_GPS.h"
+#include "../gps.h"
 
 namespace apm{
 

@@ -24,7 +24,7 @@
 #define APM_GPS_UBLOX_HPP_INCLUDED
 
 //#include <AP_HAL/AP_HAL.h>
-#include "../AP_GPS.h"
+#include "../gps.h"
 #include "GPS_Backend.h"
 #include <ap_common/ap_common.hpp>
 
