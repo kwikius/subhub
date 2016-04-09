@@ -105,8 +105,8 @@ const char apm::AP_GPS_NMEA::_gpvtg_string[] = "GPVTG";
 #define DIGIT_TO_VAL(_x)        (_x - '0')
 #define hexdigit(x) ((x)>9?'A'+(x):'0'+(x))
 
-apm::AP_GPS_NMEA::AP_GPS_NMEA(apm::gps_t &_gps, apm::gps_t::GPS_State &_state, apm::SerialPort *_port) 
-:AP_GPS_Backend(_gps, _state, _port),
+apm::AP_GPS_NMEA::AP_GPS_NMEA(apm::gps_t &_gps, apm::SerialPort *_port) 
+:AP_GPS_Backend(_gps, _port),
     _parity(0),
     _is_checksum_term(false),
     _sentence_type(0),
@@ -114,7 +114,7 @@ apm::AP_GPS_NMEA::AP_GPS_NMEA(apm::gps_t &_gps, apm::gps_t::GPS_State &_state, a
     _term_offset(0),
     _gps_data_good(false)
 {
-    gps.send_blob_start(state.instance, _initialisation_blob, sizeof(_initialisation_blob));
+    gps.send_blob_start( _initialisation_blob, sizeof(_initialisation_blob));
     // this guarantees that _term is always nul terminated
     memset(_term, 0, sizeof(_term));
 }
@@ -295,28 +295,28 @@ bool apm::AP_GPS_NMEA::_term_complete()
                 case _GPS_SENTENCE_GPRMC:
                     //time                        = _new_time;
                     //date                        = _new_date;
-                    state.location.lat     = gps_t::lat_lon_type{_new_latitude};
-                    state.location.lon     = gps_t::lat_lon_type{_new_longitude};
-                    state.ground_speed     = _new_speed*0.01f;
-                    state.ground_course_cd = wrap_360_cd(_new_course);
+                    gps.state.location.lat     = gps_t::lat_lon_type{_new_latitude};
+                    gps.state.location.lon     = gps_t::lat_lon_type{_new_longitude};
+                    gps.state.ground_speed     = _new_speed*0.01f;
+                    gps.state.ground_course_cd = wrap_360_cd(_new_course);
                     make_gps_time(_new_date, _new_time * 10);
-                    state.last_gps_time_ms = quan::stm32::millis().numeric_value();
+                    gps.state.last_gps_time_ms = quan::stm32::millis().numeric_value();
                     // To-Do: add support for proper reporting of 2D and 3D fix
-                    state.status           = gps_t::GPS_OK_FIX_3D;
+                    gps.state.status           = gps_t::GPS_OK_FIX_3D;
                     fill_3d_velocity();
                     break;
                 case _GPS_SENTENCE_GPGGA:
-                    state.location.alt  = gps_t::altitude_type{_new_altitude};
-                    state.location.lat  = gps_t::lat_lon_type{_new_latitude};
-                    state.location.lon  = gps_t::lat_lon_type{_new_longitude};
-                    state.num_sats      = _new_satellite_count;
-                    state.hdop          = _new_hdop;
+                    gps.state.location.alt  = gps_t::altitude_type{_new_altitude};
+                    gps.state.location.lat  = gps_t::lat_lon_type{_new_latitude};
+                    gps.state.location.lon  = gps_t::lat_lon_type{_new_longitude};
+                    gps.state.num_sats      = _new_satellite_count;
+                    gps.state.hdop          = _new_hdop;
                     // To-Do: add support for proper reporting of 2D and 3D fix
-                    state.status        = gps_t::GPS_OK_FIX_3D;
+                    gps.state.status        = gps_t::GPS_OK_FIX_3D;
                     break;
                 case _GPS_SENTENCE_GPVTG:
-                    state.ground_speed     = _new_speed*0.01f;
-                    state.ground_course_cd = wrap_360_cd(_new_course);
+                    gps.state.ground_speed     = _new_speed*0.01f;
+                    gps.state.ground_course_cd = wrap_360_cd(_new_course);
                     // VTG has no fix indicator, can't change fix status
                     break;
                 }
@@ -326,7 +326,7 @@ bool apm::AP_GPS_NMEA::_term_complete()
                 case _GPS_SENTENCE_GPGGA:
                     // Only these sentences give us information about
                     // fix status.
-                    state.status = gps_t::NO_FIX;
+                    gps.state.status = gps_t::NO_FIX;
                 }
             }
             // see if we got a good message
@@ -431,34 +431,34 @@ bool apm::AP_GPS_NMEA::_term_complete()
   detect a NMEA GPS. Adds one byte, and returns true if the stream
   matches a NMEA string
  */
-bool apm::AP_GPS_NMEA::_detect(struct NMEA_detect_state &state, uint8_t data)
+bool apm::AP_GPS_NMEA::_detect(struct NMEA_detect_state &det_state, uint8_t data)
 {
-	switch (state.step) {
+	switch (det_state.step) {
 	case 0:
-		state.ck = 0;
+		det_state.ck = 0;
 		if ('$' == data) {
-			state.step++;
+			det_state.step++;
 		}
 		break;
 	case 1:
 		if ('*' == data) {
-			state.step++;
+			det_state.step++;
 		} else {
-			state.ck ^= data;
+			det_state.ck ^= data;
 		}
 		break;
 	case 2:
-		if (hexdigit(state.ck>>4) == data) {
-			state.step++;
+		if (hexdigit(det_state.ck>>4) == data) {
+			det_state.step++;
 		} else {
-			state.step = 0;
+			det_state.step = 0;
 		}
 		break;
 	case 3:
-		if (hexdigit(state.ck&0xF) == data) {
+		if (hexdigit(det_state.ck&0xF) == data) {
 			return true;
 		}
-		state.step = 0;
+		det_state.step = 0;
 		break;
     }
     return false;

@@ -27,7 +27,7 @@ namespace apm{
 
    class AP_GPS_Backend{
    public:
-      AP_GPS_Backend(gps_t &_gps, gps_t::GPS_State &_state, SerialPort *_port);
+      AP_GPS_Backend(gps_t &_gps, SerialPort *_port);
        virtual ~AP_GPS_Backend(void) {}
 
        // The read() method is the only one needed in each driver. It
@@ -42,8 +42,7 @@ namespace apm{
        virtual gps_t::GPS_Status highest_supported_status(void) { return gps_t::GPS_OK_FIX_3D; }
    protected:
        SerialPort *port;           ///< UART we are attached to
-       gps_t &gps;                        ///< access to frontend (for parameters)
-       gps_t::GPS_State &state;           ///< public state for this instance
+       gps_t &gps;                ///< access to frontend 
 
        // common utility functions
        int32_t swap_int32(int32_t v) const;

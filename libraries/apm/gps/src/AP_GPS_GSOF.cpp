@@ -24,9 +24,8 @@
 #include <quan/stm32/millis.hpp>
 #include <ap_math/ap_math.hpp>
 
-apm::AP_GPS_GSOF::AP_GPS_GSOF(apm::gps_t &_gps, apm::gps_t::GPS_State &_state,
-                         apm::SerialPort *_port) :
-    apm::AP_GPS_Backend(_gps, _state, _port)
+apm::AP_GPS_GSOF::AP_GPS_GSOF(apm::gps_t &_gps,apm::SerialPort *_port) :
+    apm::AP_GPS_Backend(_gps, _port)
 {
     gsof_msg.gsof_state = gsof_msg_parser_t::STARTTX;
 
@@ -222,10 +221,7 @@ bool apm::AP_GPS_GSOF::process_message(void)
     //http://www.trimble.com/OEM_ReceiverHelp/V4.81/en/default.html#welcome.html
 
     if (gsof_msg.packettype == 0x40) { // GSOF
-
-
         int valid = 0;
-
         // want 1 2 8 9 12
         for (uint32_t a = 3; a < gsof_msg.length; a++)
         {
@@ -234,42 +230,39 @@ bool apm::AP_GPS_GSOF::process_message(void)
             uint8_t output_length = gsof_msg.data[a];
             a++;
             //Debug("GSOF type: " + output_type + " len: " + output_length);
-
             if (output_type == 1) // pos time
             {
-                state.time_week_ms = SwapUint32(gsof_msg.data, a);
-                state.time_week = SwapUint16(gsof_msg.data, a + 4);
-                state.num_sats = gsof_msg.data[a + 6];
+                gps.state.time_week_ms = SwapUint32(gsof_msg.data, a);
+                gps.state.time_week = SwapUint16(gsof_msg.data, a + 4);
+                gps.state.num_sats = gsof_msg.data[a + 6];
                 uint8_t posf1 = gsof_msg.data[a + 7];
                 uint8_t posf2 = gsof_msg.data[a + 8];
-
                 //Debug("POSTIME: " + posf1 + " " + posf2);
-
                 if ((posf1 & 1) == 1)
                 {
-                    state.status = gps_t::GPS_OK_FIX_3D;
+                    gps.state.status = gps_t::GPS_OK_FIX_3D;
                     if ((posf2 & 1) == 1)
                     {
-                        state.status = gps_t::GPS_OK_FIX_3D_DGPS;
+                        gps.state.status = gps_t::GPS_OK_FIX_3D_DGPS;
                         if ((posf2 & 4) == 4)
                         {
-                            state.status = gps_t::GPS_OK_FIX_3D_RTK;
+                            gps.state.status = gps_t::GPS_OK_FIX_3D_RTK;
                         }
                     }
                 }
                 else
                 {
-                    state.status = gps_t::NO_FIX;
+                    gps.state.status = gps_t::NO_FIX;
                 }
                 valid++;
             }
             else if (output_type == 2) // position
             {
-                state.location.lat = gps_t::lat_lon_type{RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a)) * 1e7}; // deg1e7
-                state.location.lon = gps_t::lat_lon_type{RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a + 8)) * 1e7}; // deg1e7
-                state.location.alt = gps_t::altitude_type{SwapDouble(gsof_msg.data, a + 16) * 1e2}; //cm
+                gps.state.location.lat = gps_t::lat_lon_type{RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a)) * 1e7}; // deg1e7
+                gps.state.location.lon = gps_t::lat_lon_type{RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a + 8)) * 1e7}; // deg1e7
+                gps.state.location.alt = gps_t::altitude_type{SwapDouble(gsof_msg.data, a + 16) * 1e2}; //cm
 
-                state.last_gps_time_ms = state.time_week_ms;
+                gps.state.last_gps_time_ms = gps.state.time_week_ms;
 
                 valid++;
             }
@@ -278,25 +271,25 @@ bool apm::AP_GPS_GSOF::process_message(void)
                 uint8_t vflag = gsof_msg.data[a];
                 if ((vflag & 1) == 1)
                 {
-                    state.ground_speed = SwapFloat(gsof_msg.data, a + 1);
-                    state.ground_course_cd = (int32_t)(ToDeg(SwapFloat(gsof_msg.data, a + 5)) * 100);
+                    gps.state.ground_speed = SwapFloat(gsof_msg.data, a + 1);
+                    gps.state.ground_course_cd = (int32_t)(ToDeg(SwapFloat(gsof_msg.data, a + 5)) * 100);
                     fill_3d_velocity();
-                    state.velocity.z = gps_t::velocity_type{-SwapFloat(gsof_msg.data, a + 9)};
-                    state.have_vertical_velocity = true;
+                    gps.state.velocity.z = gps_t::velocity_type{-SwapFloat(gsof_msg.data, a + 9)};
+                    gps.state.have_vertical_velocity = true;
                 }
                 valid++;
             }
             else if (output_type == 9) //dop
             {
-                state.hdop = (uint16_t)(SwapFloat(gsof_msg.data, a + 4) * 100);
+                gps.state.hdop = (uint16_t)(SwapFloat(gsof_msg.data, a + 4) * 100);
                 valid++;
             }
             else if (output_type == 12) // position sigma
             {
-                state.horizontal_accuracy = (SwapFloat(gsof_msg.data, a + 4) + SwapFloat(gsof_msg.data, a + 8)) / 2;
-                state.vertical_accuracy = SwapFloat(gsof_msg.data, a + 16);
-                state.have_horizontal_accuracy = true;
-                state.have_vertical_accuracy = true;
+                gps.state.horizontal_accuracy = (SwapFloat(gsof_msg.data, a + 4) + SwapFloat(gsof_msg.data, a + 8)) / 2;
+                gps.state.vertical_accuracy = SwapFloat(gsof_msg.data, a + 16);
+                gps.state.have_horizontal_accuracy = true;
+                gps.state.have_vertical_accuracy = true;
                 valid++;
             }
 
@@ -306,7 +299,7 @@ bool apm::AP_GPS_GSOF::process_message(void)
         if (valid == 5) {
             return true;
         } else {
-            state.status = gps_t::NO_FIX;
+            gps.state.status = gps_t::NO_FIX;
         }
     }
 

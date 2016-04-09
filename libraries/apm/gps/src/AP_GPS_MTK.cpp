@@ -30,20 +30,20 @@
 // right mode
 const char apm::AP_GPS_MTK::_initialisation_blob[] = MTK_OUTPUT_5HZ SBAS_ON WAAS_ON MTK_NAVTHRES_OFF;
 
-apm::AP_GPS_MTK::AP_GPS_MTK(apm::gps_t &_gps, apm::gps_t::GPS_State &_state,apm::SerialPort *_port) :
-    AP_GPS_Backend(_gps, _state, _port),
+apm::AP_GPS_MTK::AP_GPS_MTK(apm::gps_t &_gps, apm::SerialPort *_port) :
+    AP_GPS_Backend(_gps, _port),
     _step(0),
     _payload_counter(0)
 {
-    gps.send_blob_start(state.instance, _initialisation_blob, sizeof(_initialisation_blob));
+    gps.send_blob_start( _initialisation_blob, sizeof(_initialisation_blob));
 }
 
 /*
   send an initialisation blob to configure the GPS
  */
-void apm::AP_GPS_MTK::send_init_blob(uint8_t instance, gps_t &gps)
+void apm::AP_GPS_MTK::send_init_blob( gps_t &gps)
 {
-    gps.send_blob_start(instance, _initialisation_blob, sizeof(_initialisation_blob));
+    gps.send_blob_start( _initialisation_blob, sizeof(_initialisation_blob));
 }
 
 
@@ -138,20 +138,20 @@ restart:
 
             // set fix type
             if (_buffer.msg.fix_type == FIX_3D) {
-                state.status = gps_t::GPS_OK_FIX_3D;
+                gps.state.status = gps_t::GPS_OK_FIX_3D;
             }else if (_buffer.msg.fix_type == FIX_2D) {
-                state.status = gps_t::GPS_OK_FIX_2D;
+                gps.state.status = gps_t::GPS_OK_FIX_2D;
             }else{
-                state.status = gps_t::NO_FIX;
+                gps.state.status = gps_t::NO_FIX;
             }
-            state.location.lat  = gps_t::lat_lon_type{swap_int32(_buffer.msg.latitude)  * 10};
-            state.location.lon  = gps_t::lat_lon_type{swap_int32(_buffer.msg.longitude) * 10};
-            state.location.alt  = gps_t::altitude_type{swap_int32(_buffer.msg.altitude)};
-            state.ground_speed      = swap_int32(_buffer.msg.ground_speed) * 0.01f;
-            state.ground_course_cd  = wrap_360_cd(swap_int32(_buffer.msg.ground_course) / 10000);
-            state.num_sats          = _buffer.msg.satellites;
+            gps.state.location.lat  = gps_t::lat_lon_type{swap_int32(_buffer.msg.latitude)  * 10};
+            gps.state.location.lon  = gps_t::lat_lon_type{swap_int32(_buffer.msg.longitude) * 10};
+            gps.state.location.alt  = gps_t::altitude_type{swap_int32(_buffer.msg.altitude)};
+            gps.state.ground_speed      = swap_int32(_buffer.msg.ground_speed) * 0.01f;
+            gps.state.ground_course_cd  = wrap_360_cd(swap_int32(_buffer.msg.ground_course) / 10000);
+            gps.state.num_sats          = _buffer.msg.satellites;
 
-            if (state.status >= gps_t::GPS_OK_FIX_2D) {
+            if (gps.state.status >= gps_t::GPS_OK_FIX_2D) {
                 make_gps_time(0, swap_int32(_buffer.msg.utc_time)*10);
             }
             // we don't change _last_gps_time as we don't know the
@@ -168,51 +168,51 @@ restart:
 /*
   detect a MTK GPS
  */
-bool apm::AP_GPS_MTK::_detect(struct MTK_detect_state &state, uint8_t data)
+bool apm::AP_GPS_MTK::_detect(struct MTK_detect_state &det_state, uint8_t data)
 {
-	switch (state.step) {
+	switch (det_state.step) {
         case 1:
             if (PREAMBLE2 == data) {
-                state.step++;
+                det_state.step++;
                 break;
             }
-            state.step = 0;
+            det_state.step = 0;
         case 0:
-			state.ck_b = state.ck_a = state.payload_counter = 0;
+			det_state.ck_b = det_state.ck_a = det_state.payload_counter = 0;
             if(PREAMBLE1 == data)
-                state.step++;
+                det_state.step++;
             break;
         case 2:
             if (MESSAGE_CLASS == data) {
-                state.step++;
-                state.ck_b = state.ck_a = data;
+                det_state.step++;
+                det_state.ck_b = det_state.ck_a = data;
             } else {
-                state.step = 0;
+                det_state.step = 0;
             }
             break;
         case 3:
             if (MESSAGE_ID == data) {
-                state.step++;
-                state.ck_b += (state.ck_a += data);
-                state.payload_counter = 0;
+                det_state.step++;
+                det_state.ck_b += (det_state.ck_a += data);
+                det_state.payload_counter = 0;
             } else {
-                state.step = 0;
+                det_state.step = 0;
             }
             break;
         case 4:
-            state.ck_b += (state.ck_a += data);
-            if (++state.payload_counter == sizeof(struct diyd_mtk_msg))
-                state.step++;
+            det_state.ck_b += (det_state.ck_a += data);
+            if (++det_state.payload_counter == sizeof(struct diyd_mtk_msg))
+                det_state.step++;
             break;
         case 5:
-            state.step++;
-            if (state.ck_a != data) {
-                state.step = 0;
+            det_state.step++;
+            if (det_state.ck_a != data) {
+                det_state.step = 0;
             }
             break;
         case 6:
-            state.step = 0;
-            if (state.ck_b == data) {
+            det_state.step = 0;
+            if (det_state.ck_b == data) {
 				return true;
             }
 	}

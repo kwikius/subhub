@@ -36,9 +36,9 @@
 bool apm::AP_GPS_SBP::logging_started = false;
 
 
-apm::AP_GPS_SBP::AP_GPS_SBP(apm::gps_t &_gps, apm::gps_t::GPS_State &_state,
+apm::AP_GPS_SBP::AP_GPS_SBP(apm::gps_t &_gps,
                        apm::SerialPort *_port) :
-    apm::AP_GPS_Backend(_gps, _state, _port),
+    apm::AP_GPS_Backend(_gps, _port),
 
     last_injected_data_ms(0),
     last_iar_num_hypotheses(0),
@@ -52,9 +52,9 @@ apm::AP_GPS_SBP::AP_GPS_SBP(apm::gps_t &_gps, apm::gps_t::GPS_State &_state,
     parser_state.state = sbp_parser_state_t::WAITING;
 
     //Externally visible state
-    state.status = gps_t::NO_FIX;
-    state.have_vertical_velocity = true;
-    state.last_gps_time_ms = last_heatbeat_received_ms = quan::stm32::millis().numeric_value();
+    gps.state.status = gps_t::NO_FIX;
+    gps.state.have_vertical_velocity = true;
+    gps.state.last_gps_time_ms = last_heatbeat_received_ms = quan::stm32::millis().numeric_value();
 }
 
 // Process all bytes available from the stream
@@ -231,7 +231,7 @@ bool apm::AP_GPS_SBP::_attempt_state_update()
 
     if (now - last_heatbeat_received_ms > SBP_TIMEOUT_HEATBEAT) {
         
-        state.status = gps_t::NO_GPS;
+        gps.state.status = gps_t::NO_GPS;
        // Debug("No Heartbeats from Piksi! Driver Ready to Die!");
         ret = false;
 
@@ -244,35 +244,35 @@ bool apm::AP_GPS_SBP::_attempt_state_update()
         sbp_pos_llh_t *pos_llh = &last_pos_llh_rtk;
 
         // Update time state
-        state.time_week         = last_gps_time.wn;
-        state.time_week_ms      = last_vel_ned.tow;
+        gps.state.time_week         = last_gps_time.wn;
+        gps.state.time_week_ms      = last_vel_ned.tow;
 
-        state.hdop              = last_dops.hdop;
+        gps.state.hdop              = last_dops.hdop;
 
         // Update velocity state
-        state.velocity[0]       = gps_t::velocity_type{last_vel_ned.n / 1000.0};
-        state.velocity[1]       = gps_t::velocity_type{last_vel_ned.e / 1000.0};
-        state.velocity[2]       = gps_t::velocity_type{last_vel_ned.d / 1000.0};
+        gps.state.velocity[0]       = gps_t::velocity_type{last_vel_ned.n / 1000.0};
+        gps.state.velocity[1]       = gps_t::velocity_type{last_vel_ned.e / 1000.0};
+        gps.state.velocity[2]       = gps_t::velocity_type{last_vel_ned.d / 1000.0};
 
-        float ground_vector_sq = state.velocity[0].numeric_value()*state.velocity[0].numeric_value() 
-                                    + state.velocity[1].numeric_value()*state.velocity[1].numeric_value();
-        state.ground_speed = safe_sqrt(ground_vector_sq);
+        float ground_vector_sq = gps.state.velocity[0].numeric_value()*gps.state.velocity[0].numeric_value() 
+                                    + gps.state.velocity[1].numeric_value()*gps.state.velocity[1].numeric_value();
+        gps.state.ground_speed = safe_sqrt(ground_vector_sq);
 
-        state.ground_course_cd = wrap_360_cd((int32_t) 100*ToDeg(atan2f(state.velocity[1].numeric_value(), state.velocity[0].numeric_value())));
+        gps.state.ground_course_cd = wrap_360_cd((int32_t) 100*ToDeg(atan2f(gps.state.velocity[1].numeric_value(), gps.state.velocity[0].numeric_value())));
 
         // Update position state
 
-        state.location.lat      = gps_t::lat_lon_type{pos_llh->lat*1e7};
-        state.location.lon      = gps_t::lat_lon_type{pos_llh->lon*1e7};
-        state.location.alt      = gps_t::altitude_type{pos_llh->height*1e2};
-        state.num_sats          = pos_llh->n_sats;
+        gps.state.location.lat      = gps_t::lat_lon_type{pos_llh->lat*1e7};
+        gps.state.location.lon      = gps_t::lat_lon_type{pos_llh->lon*1e7};
+        gps.state.location.alt      = gps_t::altitude_type{pos_llh->height*1e2};
+        gps.state.num_sats          = pos_llh->n_sats;
 
         if (pos_llh->flags == 0)
-            state.status = gps_t::GPS_OK_FIX_3D;
+            gps.state.status = gps_t::GPS_OK_FIX_3D;
         else if (pos_llh->flags == 2)
-            state.status = gps_t::GPS_OK_FIX_3D_DGPS;
+            gps.state.status = gps_t::GPS_OK_FIX_3D_DGPS;
         else if (pos_llh->flags == 1)
-            state.status = gps_t::GPS_OK_FIX_3D_RTK;
+            gps.state.status = gps_t::GPS_OK_FIX_3D_RTK;
  
         last_full_update_tow = last_vel_ned.tow;
         last_full_update_cpu_ms = now;
@@ -282,7 +282,7 @@ bool apm::AP_GPS_SBP::_attempt_state_update()
     } else if (now - last_full_update_cpu_ms > SBP_TIMEOUT_PVT) {
 
         //INVARIANT: If we currently have a fix, ONLY return true after a full update.
-        state.status = gps_t::NO_FIX;
+        gps.state.status = gps_t::NO_FIX;
         ret = true;
     } else {
         //No timeouts yet, no data yet, nothing has happened.
@@ -291,66 +291,66 @@ bool apm::AP_GPS_SBP::_attempt_state_update()
     return ret;
 }
 
-bool apm::AP_GPS_SBP::_detect(struct SBP_detect_state &state, uint8_t data)
+bool apm::AP_GPS_SBP::_detect(struct SBP_detect_state &det_state, uint8_t data)
 {
     // This switch reads one character at a time, if we find something that
     // looks like our preamble we'll try to read the full message length,
     // calculating the CRC. If the CRC matches, we have an SBP GPS!
 
-    switch(state.state) {
+    switch(det_state.state) {
         case SBP_detect_state::WAITING:
             if (data == SBP_PREAMBLE) {
-                state.n_read = 0;
-                state.crc_so_far = 0;
-                state.state = SBP_detect_state::GET_TYPE;
+                det_state.n_read = 0;
+                det_state.crc_so_far = 0;
+                det_state.state = SBP_detect_state::GET_TYPE;
             }
             break;
 
         case SBP_detect_state::GET_TYPE:
-            state.crc_so_far = crc16_ccitt(&data, 1, state.crc_so_far);
-            state.n_read += 1;
-            if (state.n_read >= 2) {
-                state.n_read = 0;
-                state.state = SBP_detect_state::GET_SENDER;
+            det_state.crc_so_far = crc16_ccitt(&data, 1, det_state.crc_so_far);
+            det_state.n_read += 1;
+            if (det_state.n_read >= 2) {
+                det_state.n_read = 0;
+                det_state.state = SBP_detect_state::GET_SENDER;
             }
             break;
 
         case SBP_detect_state::GET_SENDER:
-            state.crc_so_far = crc16_ccitt(&data, 1, state.crc_so_far);
-            state.n_read += 1;
-            if (state.n_read >= 2) {
-                state.n_read = 0;
-                state.state = SBP_detect_state::GET_LEN;
+            det_state.crc_so_far = crc16_ccitt(&data, 1, det_state.crc_so_far);
+            det_state.n_read += 1;
+            if (det_state.n_read >= 2) {
+                det_state.n_read = 0;
+                det_state.state = SBP_detect_state::GET_LEN;
             }
             break;
 
         case SBP_detect_state::GET_LEN:
-            state.crc_so_far = crc16_ccitt(&data, 1, state.crc_so_far);
-            state.msg_len = data;
-            state.n_read = 0;
-            state.state = SBP_detect_state::GET_MSG;
+            det_state.crc_so_far = crc16_ccitt(&data, 1, det_state.crc_so_far);
+            det_state.msg_len = data;
+            det_state.n_read = 0;
+            det_state.state = SBP_detect_state::GET_MSG;
             break;
 
         case SBP_detect_state::GET_MSG:
-            state.crc_so_far = crc16_ccitt(&data, 1, state.crc_so_far);
-            state.n_read += 1;
-            if (state.n_read >= state.msg_len) {
-                state.n_read = 0;
-                state.state = SBP_detect_state::GET_CRC;
+            det_state.crc_so_far = crc16_ccitt(&data, 1, det_state.crc_so_far);
+            det_state.n_read += 1;
+            if (det_state.n_read >= det_state.msg_len) {
+                det_state.n_read = 0;
+                det_state.state = SBP_detect_state::GET_CRC;
             }
             break;
 
         case SBP_detect_state::GET_CRC:
-            *((uint8_t*)&(state.crc) + state.n_read) = data;
-            state.n_read += 1;
-            if (state.n_read >= 2) {
-                state.state = SBP_detect_state::WAITING;
-                return state.crc == state.crc_so_far;
+            *((uint8_t*)&(det_state.crc) + det_state.n_read) = data;
+            det_state.n_read += 1;
+            if (det_state.n_read >= 2) {
+                det_state.state = SBP_detect_state::WAITING;
+                return det_state.crc == det_state.crc_so_far;
             }
             break;
 
         default:
-            state.state = SBP_detect_state::WAITING;
+            det_state.state = SBP_detect_state::WAITING;
             break;
     }
     return false;

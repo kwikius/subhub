@@ -55,7 +55,7 @@ namespace apm {
    class AP_GPS_NMEA : public AP_GPS_Backend
    {
    public:
-      AP_GPS_NMEA(gps_t &_gps, gps_t::GPS_State &_state, SerialPort *_port);
+      AP_GPS_NMEA(gps_t &_gps,SerialPort *_port);
 
        /// Checks the serial receive buffer for characters,
        /// attempts to parse NMEA data and updates internal state

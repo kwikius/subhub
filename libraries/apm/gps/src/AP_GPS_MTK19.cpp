@@ -30,14 +30,14 @@
 #include "AP_GPS_MTK19.h"
 #include "AP_GPS_MTK.h"
 
-apm::AP_GPS_MTK19::AP_GPS_MTK19(apm::gps_t &_gps, apm::gps_t::GPS_State &_state, apm::SerialPort *_port) :
-    AP_GPS_Backend(_gps, _state, _port),
+apm::AP_GPS_MTK19::AP_GPS_MTK19(apm::gps_t &_gps, apm::SerialPort *_port) :
+    AP_GPS_Backend(_gps, _port),
     _step(0),
     _payload_counter(0),
     _mtk_revision(0),
     _fix_counter(0)
 {
-    apm::AP_GPS_MTK::send_init_blob(_state.instance, _gps);
+    apm::AP_GPS_MTK::send_init_blob(_gps);
 }
 
 // Process bytes available from the stream
@@ -130,27 +130,27 @@ restart:
 
             // parse fix
             if (_buffer.msg.fix_type == FIX_3D || _buffer.msg.fix_type == FIX_3D_SBAS) {
-                state.status = gps_t::GPS_OK_FIX_3D;
+                gps.state.status = gps_t::GPS_OK_FIX_3D;
             }else if (_buffer.msg.fix_type == FIX_2D || _buffer.msg.fix_type == FIX_2D_SBAS) {
-                state.status = gps_t::GPS_OK_FIX_2D;
+                gps.state.status = gps_t::GPS_OK_FIX_2D;
             }else{
-                state.status = gps_t::NO_FIX;
+                gps.state.status = gps_t::NO_FIX;
             }
 
             if (_mtk_revision == MTK_GPS_REVISION_V16) {
-               state.location.lat  = gps_t::lat_lon_type{ _buffer.msg.latitude  * 10};  // V16, V17,V18 doc says *10e7 but device says otherwise
-               state.location.lon  = gps_t::lat_lon_type{_buffer.msg.longitude * 10};  // V16, V17,V18 doc says *10e7 but device says otherwise
+               gps.state.location.lat  = gps_t::lat_lon_type{ _buffer.msg.latitude  * 10};  // V16, V17,V18 doc says *10e7 but device says otherwise
+               gps.state.location.lon  = gps_t::lat_lon_type{_buffer.msg.longitude * 10};  // V16, V17,V18 doc says *10e7 but device says otherwise
             } else {
-               state.location.lat  = gps_t::lat_lon_type{_buffer.msg.latitude};
-               state.location.lon  = gps_t::lat_lon_type{_buffer.msg.longitude};
+               gps.state.location.lat  = gps_t::lat_lon_type{_buffer.msg.latitude};
+               gps.state.location.lon  = gps_t::lat_lon_type{_buffer.msg.longitude};
 			   }
-            state.location.alt      = gps_t::altitude_type{_buffer.msg.altitude};
-            state.ground_speed      = _buffer.msg.ground_speed*0.01f;
-            state.ground_course_cd  = wrap_360_cd(_buffer.msg.ground_course);
-            state.num_sats          = _buffer.msg.satellites;
-            state.hdop              = _buffer.msg.hdop;
+            gps.state.location.alt      = gps_t::altitude_type{_buffer.msg.altitude};
+            gps.state.ground_speed      = _buffer.msg.ground_speed*0.01f;
+            gps.state.ground_course_cd  = wrap_360_cd(_buffer.msg.ground_course);
+            gps.state.num_sats          = _buffer.msg.satellites;
+            gps.state.hdop              = _buffer.msg.hdop;
             
-            if (state.status >= gps_t::GPS_OK_FIX_2D) {
+            if (gps.state.status >= gps_t::GPS_OK_FIX_2D) {
                 if (_fix_counter == 0) {
                     uint32_t bcd_time_ms;
                     bcd_time_ms = _buffer.msg.utc_time;
@@ -161,7 +161,7 @@ restart:
                                         (unsigned)_mtk_revision);                                        
 #endif
                     make_gps_time(_buffer.msg.utc_date, bcd_time_ms);
-                    state.last_gps_time_ms = quan::stm32::millis().numeric_value();
+                    gps.state.last_gps_time_ms = quan::stm32::millis().numeric_value();
                 }
                 // the _fix_counter is to reduce the cost of the GPS
                 // BCD time conversion by only doing it every 10s
@@ -185,48 +185,48 @@ restart:
 /*
   detect a MTK16 or MTK19 GPS
  */
-bool apm::AP_GPS_MTK19::_detect(struct apm::MTK19_detect_state &state, uint8_t data)
+bool apm::AP_GPS_MTK19::_detect(struct apm::MTK19_detect_state &det_state, uint8_t data)
 {
 restart:
-	switch (state.step) {
+	switch (det_state.step) {
         case 0:
-            state.ck_b = state.ck_a = state.payload_counter = 0;
+            det_state.ck_b = det_state.ck_a = det_state.payload_counter = 0;
             if (data == PREAMBLE1_V16 || data == PREAMBLE1_V19) {
-                state.step++;
+                det_state.step++;
             }    
             break;
         case 1:
             if (PREAMBLE2 == data) {
-                state.step++;
+                det_state.step++;
             } else {
-				state.step = 0;
+				det_state.step = 0;
 				goto restart;
 			}
 			break;
         case 2:
             if (data == sizeof(struct diyd_mtk_msg)) {
-                state.step++;
-                state.ck_b = state.ck_a = data;
+                det_state.step++;
+                det_state.ck_b = det_state.ck_a = data;
             } else {
-                state.step = 0;
+                det_state.step = 0;
 				goto restart;
             }
             break;
         case 3:
-            state.ck_b += (state.ck_a += data);
-            if (++state.payload_counter == sizeof(struct diyd_mtk_msg))
-                state.step++;
+            det_state.ck_b += (det_state.ck_a += data);
+            if (++det_state.payload_counter == sizeof(struct diyd_mtk_msg))
+                det_state.step++;
             break;
         case 4:
-            state.step++;
-            if (state.ck_a != data) {
-                state.step = 0;
+            det_state.step++;
+            if (det_state.ck_a != data) {
+                det_state.step = 0;
 				goto restart;
             }
             break;
         case 5:
-            state.step = 0;
-            if (state.ck_b != data) {
+            det_state.step = 0;
+            if (det_state.ck_b != data) {
 				goto restart;
 			}
 			return true;

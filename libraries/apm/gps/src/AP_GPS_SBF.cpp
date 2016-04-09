@@ -26,12 +26,10 @@
 
 #include "AP_GPS_SBF.h"
 
-apm::AP_GPS_SBF::AP_GPS_SBF(apm::gps_t &_gps, apm::gps_t::GPS_State &_state,
-                       apm::SerialPort *_port) :
-    AP_GPS_Backend(_gps, _state, _port)
+apm::AP_GPS_SBF::AP_GPS_SBF(apm::gps_t &_gps,apm::SerialPort *_port) :
+    AP_GPS_Backend(_gps, _port)
 {	
-    sbf_msg.sbf_state = sbf_msg_parser_t::PREAMBLE1;
-	
+   sbf_msg.sbf_state = sbf_msg_parser_t::PREAMBLE1;
 	port->write((const uint8_t*)_initialisation_blob[0], strlen(_initialisation_blob[0]));
 }
 
@@ -181,79 +179,79 @@ bool apm::AP_GPS_SBF::process_message(void)
 
         // Update time state
         if (temp.WNc != 65535) {
-            state.time_week = temp.WNc;
-            state.time_week_ms = (uint32_t)(temp.TOW);
+            gps.state.time_week = temp.WNc;
+            gps.state.time_week_ms = (uint32_t)(temp.TOW);
         }
 		
-		  state.last_gps_time_ms = quan::stm32::millis().numeric_value();
-        state.hdop = last_hdop;
+		  gps.state.last_gps_time_ms = quan::stm32::millis().numeric_value();
+        gps.state.hdop = last_hdop;
 
         // Update velocity state (dont use −2·10^10)
         if (temp.Vn > -200000) {
-            state.velocity.x = gps_t::velocity_type{temp.Vn};
-            state.velocity.y = gps_t::velocity_type{temp.Ve};
-            state.velocity.z = gps_t::velocity_type{-temp.Vu};
+            gps.state.velocity.x = gps_t::velocity_type{temp.Vn};
+            gps.state.velocity.y = gps_t::velocity_type{temp.Ve};
+            gps.state.velocity.z = gps_t::velocity_type{-temp.Vu};
 			
-			   state.have_vertical_velocity = true;
+			   gps.state.have_vertical_velocity = true;
 
-            float ground_vector_sq = state.velocity[0].numeric_value() * state.velocity[0].numeric_value() 
-                  + state.velocity[1].numeric_value() * state.velocity[1].numeric_value();
-            state.ground_speed = (float)safe_sqrt(ground_vector_sq);
-            state.ground_course_cd = (int32_t)(100 * ToDeg(atan2f(state.velocity[1].numeric_value(), state.velocity[0].numeric_value())));
-            state.ground_course_cd = wrap_360_cd(state.ground_course_cd);
+            float ground_vector_sq = gps.state.velocity[0].numeric_value() * gps.state.velocity[0].numeric_value() 
+                  + gps.state.velocity[1].numeric_value() * gps.state.velocity[1].numeric_value();
+            gps.state.ground_speed = (float)safe_sqrt(ground_vector_sq);
+            gps.state.ground_course_cd = (int32_t)(100 * ToDeg(atan2f(gps.state.velocity[1].numeric_value(), gps.state.velocity[0].numeric_value())));
+            gps.state.ground_course_cd = wrap_360_cd(gps.state.ground_course_cd);
 			
-			state.horizontal_accuracy = (float)temp.HAccuracy * 0.01f;
-			state.vertical_accuracy = (float)temp.VAccuracy * 0.01f;
-			state.have_horizontal_accuracy = true;
-			state.have_vertical_accuracy = true;
+			gps.state.horizontal_accuracy = (float)temp.HAccuracy * 0.01f;
+			gps.state.vertical_accuracy = (float)temp.VAccuracy * 0.01f;
+			gps.state.have_horizontal_accuracy = true;
+			gps.state.have_vertical_accuracy = true;
         }
 
         // Update position state (dont use −2·10^10)
         if (temp.Latitude > -200000) {
-            state.location.lat = gps_t::lat_lon_type{temp.Latitude * RAD_TO_DEG_DOUBLE * 1e7};
-            state.location.lon = gps_t::lat_lon_type{temp.Longitude * RAD_TO_DEG_DOUBLE * 1e7};
-            state.location.alt = gps_t::altitude_type{(float)temp.Height * 1e2f};
+            gps.state.location.lat = gps_t::lat_lon_type{temp.Latitude * RAD_TO_DEG_DOUBLE * 1e7};
+            gps.state.location.lon = gps_t::lat_lon_type{temp.Longitude * RAD_TO_DEG_DOUBLE * 1e7};
+            gps.state.location.alt = gps_t::altitude_type{(float)temp.Height * 1e2f};
         }
 
         if (temp.NrSV != 255) {
-            state.num_sats = temp.NrSV;
+            gps.state.num_sats = temp.NrSV;
         }
 
         //Debug("temp.Mode=0x%02x\n", (unsigned)temp.Mode);
         switch (temp.Mode & 15) {
             case 0: // no pvt
-                state.status = gps_t::NO_FIX;
+                gps.state.status = gps_t::NO_FIX;
                 break;
             case 1: // standalone
-                state.status = gps_t::GPS_OK_FIX_3D;
+                gps.state.status = gps_t::GPS_OK_FIX_3D;
                 break;
             case 2: // dgps
-                state.status = gps_t::GPS_OK_FIX_3D_DGPS;
+                gps.state.status = gps_t::GPS_OK_FIX_3D_DGPS;
                 break;
             case 3: // fixed location
-                state.status = gps_t::GPS_OK_FIX_3D;
+                gps.state.status = gps_t::GPS_OK_FIX_3D;
                 break;
             case 4: // rtk fixed
-                state.status = gps_t::GPS_OK_FIX_3D_RTK;
+                gps.state.status = gps_t::GPS_OK_FIX_3D_RTK;
                 break;
             case 5: // rtk float
-                state.status = gps_t::GPS_OK_FIX_3D_DGPS;
+                gps.state.status = gps_t::GPS_OK_FIX_3D_DGPS;
                 break;
             case 6: // sbas
-                state.status = gps_t::GPS_OK_FIX_3D;
+                gps.state.status = gps_t::GPS_OK_FIX_3D;
                 break;
             case 7: // moving rtk fixed
-                state.status = gps_t::GPS_OK_FIX_3D_RTK;
+                gps.state.status = gps_t::GPS_OK_FIX_3D_RTK;
                 break;
             case 8: // moving rtk float
-                state.status = gps_t::GPS_OK_FIX_3D_DGPS;
+                gps.state.status = gps_t::GPS_OK_FIX_3D_DGPS;
                 break;
         }
         
         if ((temp.Mode & 64) > 0) // gps is in base mode
-            state.status = gps_t::NO_FIX;
+            gps.state.status = gps_t::NO_FIX;
         if ((temp.Mode & 128) > 0) // gps only has 2d fix
-            state.status = gps_t::GPS_OK_FIX_2D;
+            gps.state.status = gps_t::GPS_OK_FIX_2D;
                     
         return true;
     }
@@ -263,7 +261,7 @@ bool apm::AP_GPS_SBF::process_message(void)
 
         last_hdop = temp.HDOP;
 		
-		state.hdop = last_hdop;
+		gps.state.hdop = last_hdop;
     }
 
     return false;

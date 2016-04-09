@@ -20,14 +20,13 @@
 #include <apm/gps.h>
 #include "GPS_Backend.h"
 
-apm::AP_GPS_Backend::AP_GPS_Backend(apm::gps_t &_gps, apm::gps_t::GPS_State &_state, apm::SerialPort *_port) :
+apm::AP_GPS_Backend::AP_GPS_Backend(apm::gps_t &_gps, apm::SerialPort *_port) :
     port(_port),
-    gps(_gps),
-    state(_state)
+    gps(_gps)
 {
-    state.have_speed_accuracy = false;
-    state.have_horizontal_accuracy = false;
-    state.have_vertical_accuracy = false;
+    gps.state.have_speed_accuracy = false;
+    gps.state.have_horizontal_accuracy = false;
+    gps.state.have_vertical_accuracy = false;
 }
 
 int32_t apm::AP_GPS_Backend::swap_int32(int32_t v) const
@@ -63,9 +62,9 @@ int16_t apm::AP_GPS_Backend::swap_int16(int16_t v) const
 /**
    calculate current time since the unix epoch in microseconds
  */
-uint64_t apm::gps_t::time_epoch_usec(uint8_t instance)
+uint64_t apm::gps_t::time_epoch_usec()
 {
-    const GPS_State &istate = state[instance];
+    const GPS_State &istate = state;
     if (istate.last_gps_time_ms == 0) {
         return 0;
     }
@@ -113,9 +112,9 @@ void apm::AP_GPS_Backend::make_gps_time(uint32_t bcd_date, uint32_t bcd_millisec
     ret -= 272764785UL;
 
     // get GPS week and time
-    state.time_week = ret / (7*86400UL);
-    state.time_week_ms = (ret % (7*86400UL)) * 1000;
-    state.time_week_ms += msec;
+    gps.state.time_week = ret / (7*86400UL);
+    gps.state.time_week_ms = (ret % (7*86400UL)) * 1000;
+    gps.state.time_week_ms += msec;
 }
 
 /*
@@ -123,10 +122,10 @@ void apm::AP_GPS_Backend::make_gps_time(uint32_t bcd_date, uint32_t bcd_millisec
  */
 void apm::AP_GPS_Backend::fill_3d_velocity(void)
 {
-    float gps_heading = ToRad(state.ground_course_cd * 0.01f);
+    float gps_heading = ToRad(gps.state.ground_course_cd * 0.01f);
 
-    state.velocity.x = gps_t::velocity_type{state.ground_speed * cosf(gps_heading)};
-    state.velocity.y = gps_t::velocity_type{state.ground_speed * sinf(gps_heading)};
-    state.velocity.z = gps_t::velocity_type{0};
-    state.have_vertical_velocity = false;
+    gps.state.velocity.x = gps_t::velocity_type{gps.state.ground_speed * cosf(gps_heading)};
+    gps.state.velocity.y = gps_t::velocity_type{gps.state.ground_speed * sinf(gps_heading)};
+    gps.state.velocity.z = gps_t::velocity_type{0};
+    gps.state.have_vertical_velocity = false;
 }

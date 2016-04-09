@@ -32,7 +32,7 @@ namespace apm{
 
    class AP_GPS_SBF : public AP_GPS_Backend{
    public:
-       AP_GPS_SBF(gps_t &_gps, gps_t::GPS_State &_state, SerialPort *_port);
+       AP_GPS_SBF(gps_t &_gps,SerialPort *_port);
 
        gps_t::GPS_Status highest_supported_status(void) { return gps_t::GPS_OK_FIX_3D_RTK; }
 

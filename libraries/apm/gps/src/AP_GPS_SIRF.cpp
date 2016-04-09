@@ -37,15 +37,15 @@ const uint8_t apm::AP_GPS_SIRF::_initialisation_blob[] = {
     0xa0, 0xa2, 0x00, 0x08, 0xa6, 0x00, 0x29, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0, 0xb0, 0xb3 
 };
 
-apm::AP_GPS_SIRF::AP_GPS_SIRF(gps_t &_gps, gps_t::GPS_State &_state, SerialPort *_port) :
-    AP_GPS_Backend(_gps, _state, _port),
+apm::AP_GPS_SIRF::AP_GPS_SIRF(gps_t &_gps, SerialPort *_port) :
+    AP_GPS_Backend(_gps, _port),
     _step(0),
     _gather(false),
     _payload_length(0),
     _payload_counter(0),
     _msg_id(0)
 {
-    gps.send_blob_start(state.instance, (const char *)_initialisation_blob, sizeof(_initialisation_blob));
+    gps.send_blob_start( (const char *)_initialisation_blob, sizeof(_initialisation_blob));
 }
 
 
@@ -178,18 +178,18 @@ bool apm::AP_GPS_SIRF::_parse_gps(void)
         //time                    = _swapl(&_buffer.nav.time);
         // parse fix type
         if (_buffer.nav.fix_invalid) {
-            state.status = gps_t::NO_FIX;
+            gps.state.status = gps_t::NO_FIX;
         }else if ((_buffer.nav.fix_type & FIX_MASK) == FIX_3D) {
-            state.status = gps_t::GPS_OK_FIX_3D;
+            gps.state.status = gps_t::GPS_OK_FIX_3D;
         }else{
-            state.status = gps_t::GPS_OK_FIX_2D;
+            gps.state.status = gps_t::GPS_OK_FIX_2D;
         }
-        state.location.lat      = gps_t::lat_lon_type{swap_int32(_buffer.nav.latitude)};
-        state.location.lon      = gps_t::lat_lon_type{swap_int32(_buffer.nav.longitude)};
-        state.location.alt      = gps_t::altitude_type{swap_int32(_buffer.nav.altitude_msl)};
-        state.ground_speed      = swap_int32(_buffer.nav.ground_speed)*0.01f;
-        state.ground_course_cd  = wrap_360_cd(swap_int16(_buffer.nav.ground_course));
-        state.num_sats          = _buffer.nav.satellites;
+        gps.state.location.lat      = gps_t::lat_lon_type{swap_int32(_buffer.nav.latitude)};
+        gps.state.location.lon      = gps_t::lat_lon_type{swap_int32(_buffer.nav.longitude)};
+        gps.state.location.alt      = gps_t::altitude_type{swap_int32(_buffer.nav.altitude_msl)};
+        gps.state.ground_speed      = swap_int32(_buffer.nav.ground_speed)*0.01f;
+        gps.state.ground_course_cd  = wrap_360_cd(swap_int16(_buffer.nav.ground_course));
+        gps.state.num_sats          = _buffer.nav.satellites;
         fill_3d_velocity();
         return true;
     }
@@ -206,45 +206,45 @@ void apm::AP_GPS_SIRF::_accumulate(uint8_t val)
 /*
   detect a SIRF GPS
  */
-bool apm::AP_GPS_SIRF::_detect(struct SIRF_detect_state &state, uint8_t data)
+bool apm::AP_GPS_SIRF::_detect(struct SIRF_detect_state &det_state, uint8_t data)
 {
-	switch (state.step) {
+	switch (det_state.step) {
 	case 1:
 		if (PREAMBLE2 == data) {
-			state.step++;
+			det_state.step++;
 			break;
 		}
-		state.step = 0;
+		det_state.step = 0;
 	case 0:
-		state.payload_length = state.payload_counter = state.checksum = 0;
+		det_state.payload_length = det_state.payload_counter = det_state.checksum = 0;
 		if (PREAMBLE1 == data)
-			state.step++;
+			det_state.step++;
 		break;
 	case 2:
-		state.step++;
+		det_state.step++;
 		if (data != 0) {
 			// only look for short messages
-			state.step = 0;
+			det_state.step = 0;
 		}
 		break;
 	case 3:
-		state.step++;
-		state.payload_length = data;
+		det_state.step++;
+		det_state.payload_length = data;
 		break;
 	case 4:
-		state.checksum = (state.checksum + data) & 0x7fff;
-		if (++state.payload_counter == state.payload_length)
-			state.step++;
+		det_state.checksum = (det_state.checksum + data) & 0x7fff;
+		if (++det_state.payload_counter == det_state.payload_length)
+			det_state.step++;
 		break;
 	case 5:
-		state.step++;
-		if ((state.checksum >> 8) != data) {
-			state.step = 0;
+		det_state.step++;
+		if ((det_state.checksum >> 8) != data) {
+			det_state.step = 0;
 		}
 		break;
 	case 6:
-		state.step = 0;
-		if ((state.checksum & 0xff) == data) {
+		det_state.step = 0;
+		if ((det_state.checksum & 0xff) == data) {
 			return true;
 		}
     }

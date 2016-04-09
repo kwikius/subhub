@@ -36,7 +36,7 @@ namespace apm{
 
    class AP_GPS_MTK19 : public AP_GPS_Backend {
    public:
-       AP_GPS_MTK19(gps_t &_gps, gps_t::GPS_State &_state, SerialPort *_port);
+       AP_GPS_MTK19(gps_t &_gps, SerialPort *_port);
 
        bool        read(void);
 

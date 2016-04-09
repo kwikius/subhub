@@ -43,11 +43,11 @@
 #define UBLOX_SET_BINARY "\265\142\006\001\003\000\001\006\001\022\117$PUBX,41,1,0003,0001,38400,0*26\r\n"
 #define UBLOX_SET_BINARY_RAW_BAUD "\265\142\006\001\003\000\001\006\001\022\117$PUBX,41,1,0003,0001,115200,0*1E\r\n"
 
-#define UBLOX_RXM_RAW_LOGGING 1
+#define UBLOX_RXM_RAW_LOGGING 0
 #define UBLOX_MAX_RXM_RAW_SATS 22
 #define UBLOX_MAX_RXM_RAWX_SATS 32
-#define UBLOX_GNSS_SETTINGS 1
-#define UBLOX_HW_LOGGING 1
+#define UBLOX_GNSS_SETTINGS 0
+#define UBLOX_HW_LOGGING 0
 
 #define UBLOX_MAX_GNSS_CONFIG_BLOCKS 7
 #define UBX_MSG_TYPES 2
@@ -66,7 +66,7 @@ namespace apm{
 
    class AP_GPS_UBLOX : public AP_GPS_Backend{
    public:
-      AP_GPS_UBLOX(gps_t &_gps, gps_t::GPS_State &_state, SerialPort *_port);
+      AP_GPS_UBLOX(gps_t &_gps, SerialPort *_port);
 
        // Methods
        bool read();
@@ -448,9 +448,9 @@ namespace apm{
        void log_rxm_rawx(const struct ubx_rxm_rawx &raw);
 
        // Calculates the correct log message ID based on what GPS instance is being logged
-       uint8_t _ubx_msg_log_index(uint8_t ubx_msg) {
-           return (uint8_t)(ubx_msg + (state.instance * UBX_MSG_TYPES));
-       }
+//       uint8_t _ubx_msg_log_index(uint8_t ubx_msg) {
+//           return (uint8_t)(ubx_msg + (state.instance * UBX_MSG_TYPES));
+//       }
    };
 
 }//apm
