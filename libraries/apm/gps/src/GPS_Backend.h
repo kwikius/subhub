@@ -21,13 +21,13 @@
 #ifndef APM_GPS_BACKEND_HPP_INCLUDED
 #define APM_GPS_BACKEND_HPP_INCLUDED
 
-#include <apm/gps.h>
+#include <apm/gps.hpp>
 
 namespace apm{
 
    class AP_GPS_Backend{
    public:
-      AP_GPS_Backend(gps_t &_gps, SerialPort *_port);
+      AP_GPS_Backend(gps_t &_gps);
        virtual ~AP_GPS_Backend(void) {}
 
        // The read() method is the only one needed in each driver. It
@@ -41,12 +41,10 @@ namespace apm{
        // Allows external system to identify type of receiver connected.
        virtual gps_t::GPS_Status highest_supported_status(void) { return gps_t::GPS_OK_FIX_3D; }
    protected:
-       SerialPort *port;           ///< UART we are attached to
        gps_t &gps;                ///< access to frontend 
-
        // common utility functions
-       int32_t swap_int32(int32_t v) const;
-       int16_t swap_int16(int16_t v) const;
+       static int32_t swap_int32(int32_t v);
+       static int16_t swap_int16(int16_t v);
 
        /*
          fill in 3D velocity from 2D components

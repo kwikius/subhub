@@ -24,14 +24,14 @@
 
 #include "AP_GPS_MTK.h"
 #include <ap_math/ap_math.hpp>
-#include <ap_serialport/serialport.hpp>
+#include <apm/serial_port.hpp>
 
 // initialisation blobs to send to the GPS to try to get it into the
 // right mode
 const char apm::AP_GPS_MTK::_initialisation_blob[] = MTK_OUTPUT_5HZ SBAS_ON WAAS_ON MTK_NAVTHRES_OFF;
 
-apm::AP_GPS_MTK::AP_GPS_MTK(apm::gps_t &_gps, apm::SerialPort *_port) :
-    AP_GPS_Backend(_gps, _port),
+apm::AP_GPS_MTK::AP_GPS_MTK(apm::gps_t &_gps) :
+    AP_GPS_Backend(_gps),
     _step(0),
     _payload_counter(0)
 {
@@ -64,11 +64,11 @@ bool apm::AP_GPS_MTK::read(void)
     int16_t numc;
     bool parsed = false;
 
-    numc = port->available();
+    numc = gps.port->available();
     for (int16_t i = 0; i < numc; i++) {        // Process bytes received
 
         // read the next byte
-        data = port->read();
+        data = gps.port->read();
 
 restart:
         switch(_step) {

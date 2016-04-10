@@ -17,11 +17,10 @@
 #include <ap_math/ap_math.hpp>
 #include <quan/stm32/millis.hpp>
 
-#include <apm/gps.h>
+#include <apm/gps.hpp>
 #include "GPS_Backend.h"
 
-apm::AP_GPS_Backend::AP_GPS_Backend(apm::gps_t &_gps, apm::SerialPort *_port) :
-    port(_port),
+apm::AP_GPS_Backend::AP_GPS_Backend(apm::gps_t &_gps) :
     gps(_gps)
 {
     gps.state.have_speed_accuracy = false;
@@ -29,7 +28,7 @@ apm::AP_GPS_Backend::AP_GPS_Backend(apm::gps_t &_gps, apm::SerialPort *_port) :
     gps.state.have_vertical_accuracy = false;
 }
 
-int32_t apm::AP_GPS_Backend::swap_int32(int32_t v) const
+int32_t apm::AP_GPS_Backend::swap_int32(int32_t v) 
 {
     const uint8_t *b = (const uint8_t *)&v;
     union {
@@ -45,7 +44,7 @@ int32_t apm::AP_GPS_Backend::swap_int32(int32_t v) const
     return u.v;
 }
 
-int16_t apm::AP_GPS_Backend::swap_int16(int16_t v) const
+int16_t apm::AP_GPS_Backend::swap_int16(int16_t v)
 {
     const uint8_t *b = (const uint8_t *)&v;
     union {
@@ -59,21 +58,6 @@ int16_t apm::AP_GPS_Backend::swap_int16(int16_t v) const
     return u.v;
 }
 
-/**
-   calculate current time since the unix epoch in microseconds
- */
-uint64_t apm::gps_t::time_epoch_usec()
-{
-    const GPS_State &istate = state;
-    if (istate.last_gps_time_ms == 0) {
-        return 0;
-    }
-    const uint64_t ms_per_week = 7000ULL*86400ULL;
-    const uint64_t unix_offset = 17000ULL*86400ULL + 52*10*7000ULL*86400ULL - 15000ULL;
-    uint64_t fix_time_ms = unix_offset + istate.time_week*ms_per_week + istate.time_week_ms;
-    // add in the milliseconds since the last fix
-    return (fix_time_ms + (quan::stm32::millis().numeric_value() - istate.last_gps_time_ms)) * 1000ULL;
-}
 
 
 /**

@@ -22,14 +22,14 @@
 #ifndef APM_GPS_GSOF_HPP_INCLUDED
 #define APM_GPS_GSOF_HPP_INCLUDED
 
-#include <apm/gps.h>
+#include <apm/gps.hpp>
 #include "GPS_Backend.h"
 
 namespace apm{
 
    class AP_GPS_GSOF : public AP_GPS_Backend{
    public:
-       AP_GPS_GSOF(gps_t &_gps, SerialPort *_port);
+       AP_GPS_GSOF(gps_t &_gps);
 
        gps_t::GPS_Status highest_supported_status(void) 
        {

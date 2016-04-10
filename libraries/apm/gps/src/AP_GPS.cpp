@@ -15,8 +15,8 @@
  */
 
 #include <cstring>
-#include <ap_serialport/serialport.hpp>
-#include <apm/gps.h>
+#include <apm/serial_port.hpp>
+#include <apm/gps.hpp>
 #include "AP_GPS_UBLOX.h"
 #include "AP_GPS_MTK.h"
 #include "AP_GPS_MTK19.h"
@@ -31,19 +31,8 @@
 #define GPS_BAUD_TIME_MS 1200
 #define GPS_RTK_INJECT_TO_ALL 127
 
-static inline uint8_t pgm_read_byte(const void *s)
-{
-	return *(const uint8_t *)s;
-}
-
-static inline uint32_t pgm_read_dword(const void *s) 
-{
-	return *(const uint32_t *)s;
-}
-
-
 apm::gps_t::gps_t()
-: _type{1}
+: m_preset_firmware_type{1} // auto
 ,_navfilter{GPS_ENGINE_AIRBORNE_4G}
 ,_min_dgps{100}
 ,_sbas_mode{2}
@@ -55,8 +44,8 @@ apm::gps_t::gps_t()
 
 
 /// Startup initialisation.
-void apm::gps_t::init(/*DataFlash_Class *dataflash, const AP_SerialManager& serial_manager */)
-{}
+void apm::gps_t::init(abc_serial_port& sp)
+{port = &sp;}
 
 // baudrates to try to detect GPSes with
 const uint32_t apm::gps_t::_baudrates[] = {4800U, 38400U, 115200U, 57600U, 9600U, 230400U};
@@ -83,20 +72,18 @@ void apm::gps_t::send_blob_start(const char *_blob, uint16_t size)
 void apm::gps_t::send_blob_update()
 {
     // exit immediately if no uart for this instance
-    if (_port == NULL) {
+    if (port == NULL) {
         return;
     }
 
     // see if we can write some more of the initialisation blob
     if (initblob_state.remaining > 0) {
-        int16_t space = _port->txspace();
+        int16_t space = port->txspace();
         if (space > (int16_t)initblob_state.remaining) {
             space = initblob_state.remaining;
         }
         while (space > 0) {
-            //_port->write(pgm_read_byte(initblob_state.blob),1);
-           // _port->write((uint8_t const *)initblob_state.blob,1);
-            _port->write(initblob_state.blob[0]);
+            port->write(initblob_state.blob[0]);
             initblob_state.blob++;
             space--;
             initblob_state.remaining--;
@@ -105,32 +92,31 @@ void apm::gps_t::send_blob_update()
 }
 
 /*
-  run detection step for one GPS instance. If this finds a GPS then it
+  run detection step If this finds a GPS then it
   will fill in drivers and change state.status
   from NO_GPS to NO_FIX.
  */
-void apm::gps_t::detect_instance()
+void apm::gps_t::detect()
 {
-    AP_GPS_Backend *new_gps = NULL;
-    struct detect_state *dstate = &detect_state;
-    uint32_t now = quan::stm32::millis().numeric_value();
-
-    if (_port == NULL) {
+    if (port == NULL) {
         // UART not available
         return;
     }
 
-    //state.instance = instance;
+    AP_GPS_Backend *new_gps = NULL;
+    struct detect_state *dstate = &detect_state;
+    uint32_t now = quan::stm32::millis().numeric_value();
+
     state.status = NO_GPS;
     state.hdop = 9999;
 
 	// by default the sbf/trimble gps outputs no data on its port, until configured.
-	if (_type == GPS_TYPE_SBF) {
+	if (m_preset_firmware_type == GPS_TYPE_SBF) {
 		//hal.console->print(" SBF ");
-		new_gps = new AP_GPS_SBF(*this,  _port);
-	} else if ((_type == GPS_TYPE_GSOF)) {
+		new_gps = new AP_GPS_SBF(*this);
+	} else if ((m_preset_firmware_type == GPS_TYPE_GSOF)) {
 		//hal.console->print(" GSOF ");
-		new_gps = new AP_GPS_GSOF(*this,  _port);
+		new_gps = new AP_GPS_GSOF(*this);
 	}
 
     // record the time when we started detection. This is used to try
@@ -145,18 +131,17 @@ void apm::gps_t::detect_instance()
 		if (dstate->last_baud == ARRAY_SIZE(_baudrates)) {
 			dstate->last_baud = 0;
 		}
-		uint32_t baudrate = pgm_read_dword(&_baudrates[dstate->last_baud]);
-		_port->begin(baudrate);
-		_port->set_flow_control(SerialPort::FLOW_CONTROL_DISABLE);
+       uint32_t baudrate = _baudrates[dstate->last_baud];
+		port->begin(baudrate);
 		dstate->last_baud_change_ms = now;
       send_blob_start( _initialisation_blob, sizeof(_initialisation_blob));
     }
 
     send_blob_update();
 
-    while (initblob_state.remaining == 0 && _port->available() > 0
+    while (initblob_state.remaining == 0 && port->available() > 0
             && new_gps == NULL) {
-        uint8_t data = _port->read();
+        uint8_t data = port->read();
         /*
           running a uBlox at less than 38400 will lead to packet
           corruption, as we can't receive the packets in the 200ms
@@ -164,40 +149,41 @@ void apm::gps_t::detect_instance()
           the uBlox into 38400 no matter what rate it is configured
           for.
         */
-        if ((_type == GPS_TYPE_AUTO || _type == GPS_TYPE_UBLOX) &&
-            pgm_read_dword(&_baudrates[dstate->last_baud]) >= 38400 && 
+        if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_UBLOX) &&
+            //pgm_read_dword(&_baudrates[dstate->last_baud]) >= 38400 && 
+            _baudrates[dstate->last_baud] >= 38400 && 
             AP_GPS_UBLOX::_detect(dstate->ublox_detect_state, data)) {
             //hal.console->print(" ublox ");
-            new_gps = new AP_GPS_UBLOX(*this,  _port);
+            new_gps = new AP_GPS_UBLOX(*this);
         } 
-		  else if ((_type == GPS_TYPE_AUTO || _type == GPS_TYPE_MTK19) &&
+		  else if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_MTK19) &&
                  AP_GPS_MTK19::_detect(dstate->mtk19_detect_state, data)) {
 			//hal.console->print(" MTK19 ");
-			new_gps = new AP_GPS_MTK19(*this,  _port);
+			new_gps = new AP_GPS_MTK19(*this);
 		} 
-		else if ((_type == GPS_TYPE_AUTO || _type == GPS_TYPE_MTK) &&
+		else if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_MTK) &&
                  AP_GPS_MTK::_detect(dstate->mtk_detect_state, data)) {
 			//hal.console->print(" MTK ");
-			new_gps = new AP_GPS_MTK(*this,  _port);
+			new_gps = new AP_GPS_MTK(*this);
 		}
-        else if ((_type == GPS_TYPE_AUTO || _type == GPS_TYPE_SBP) &&
+        else if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_SBP) &&
                  AP_GPS_SBP::_detect(dstate->sbp_detect_state, data)) {
             //hal.console->print(" SBP ");
-            new_gps = new AP_GPS_SBP(*this,  _port);
+            new_gps = new AP_GPS_SBP(*this);
         }
 		// save a bit of code space on a 1280
-		else if ((_type == GPS_TYPE_AUTO || _type == GPS_TYPE_SIRF) &&
+		else if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_SIRF) &&
                  AP_GPS_SIRF::_detect(dstate->sirf_detect_state, data)) {
 			//hal.console->print(" SIRF ");
-			new_gps = new AP_GPS_SIRF(*this,  _port);
+			new_gps = new AP_GPS_SIRF(*this);
 		}
 		else if (now - dstate->detect_started_ms > (ARRAY_SIZE(_baudrates) * GPS_BAUD_TIME_MS)) {
 			// prevent false detection of NMEA mode in
 			// a MTK or UBLOX which has booted in NMEA mode
-			if ((_type == GPS_TYPE_AUTO || _type == GPS_TYPE_NMEA) &&
+			if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_NMEA) &&
                 AP_GPS_NMEA::_detect(dstate->nmea_detect_state, data)) {
 				//hal.console->print(" NMEA ");
-				new_gps = new AP_GPS_NMEA(*this,  _port);
+				new_gps = new AP_GPS_NMEA(*this);
 			}
 		}
 	}
@@ -210,13 +196,30 @@ void apm::gps_t::detect_instance()
 }
 
 apm::gps_t::GPS_Status 
-apm::gps_t::highest_supported_status() const
+apm::gps_t::get_highest_supported_status() const
 {
    if (drivers != NULL){
       return drivers->highest_supported_status();
    }else{
       return apm::gps_t::GPS_OK_FIX_3D;
    }
+}
+
+
+/**
+   calculate current time since the unix epoch in microseconds
+ */
+uint64_t apm::gps_t::get_time_epoch_usec()
+{
+    const GPS_State &istate = state;
+    if (istate.last_gps_time_ms == 0) {
+        return 0;
+    }
+    const uint64_t ms_per_week = 7000ULL*86400ULL;
+    const uint64_t unix_offset = 17000ULL*86400ULL + 52*10*7000ULL*86400ULL - 15000ULL;
+    uint64_t fix_time_ms = unix_offset + istate.time_week*ms_per_week + istate.time_week_ms;
+    // add in the milliseconds since the last fix
+    return (fix_time_ms + (quan::stm32::millis().numeric_value() - istate.last_gps_time_ms)) * 1000ULL;
 }
 
 //apm::gps_t::GPS_Status 
@@ -231,13 +234,13 @@ apm::gps_t::highest_supported_status() const
 /*
   update one GPS instance. This should be called at 10Hz or greater
  */
-void apm::gps_t::update_instance()
+void apm::gps_t::update()
 {
-    if (_type == GPS_TYPE_HIL) {
+    if (m_preset_firmware_type == GPS_TYPE_HIL) {
         // in HIL, leave info alone
         return;
     }
-    if (_type == GPS_TYPE_NONE) {
+    if (m_preset_firmware_type == GPS_TYPE_NONE) {
         // not enabled
         state.status = NO_GPS;
         state.hdop = 9999;
@@ -251,7 +254,7 @@ void apm::gps_t::update_instance()
     if (drivers == NULL || state.status == NO_GPS) {
         // we don't yet know the GPS type of this one, or it has timed
         // out and needs to be re-initialised
-        detect_instance();
+        detect();
         return;
     }
 
@@ -286,56 +289,7 @@ void apm::gps_t::update_instance()
 
 /*
   update all GPS instances
- */
-void apm::gps_t::update(void)
-{
-   // for (uint8_t i=0; i<GPS_MAX_INSTANCES; i++) {
-        update_instance();
-   // }
-
-    // work out which GPS is the primary, and how many sensors we have
-  //  for (uint8_t i=0; i<GPS_MAX_INSTANCES; i++) {
-//        if (state.status != NO_GPS) {
-//            num_instances = i+1;
-//        }
-//        if (_auto_switch) {            
-//            if (i == primary_instance) {
-//                continue;
-//            }
-//            if (state[i].status > state[primary_instance].status) {
-//                // we have a higher status lock, change GPS
-//                primary_instance = i;
-//                continue;
-//            }
-//
-//            bool another_gps_has_1_or_more_sats = (state[i].num_sats >= state[primary_instance].num_sats + 1);
-//
-//            if (state[i].status == state[primary_instance].status && another_gps_has_1_or_more_sats) {
-//
-//                uint32_t now = quan::stm32::millis().numeric_value();
-//                bool another_gps_has_2_or_more_sats = (state[i].num_sats >= state[primary_instance].num_sats + 2);
-//
-//                if ( (another_gps_has_1_or_more_sats && (now - _last_instance_swap_ms) >= 20000) ||
-//                     (another_gps_has_2_or_more_sats && (now - _last_instance_swap_ms) >= 5000 ) ) {
-//                // this GPS has more satellites than the
-//                // current primary, switch primary. Once we switch we will
-//                // then tend to stick to the new GPS as primary. We don't
-//                // want to switch too often as it will look like a
-//                // position shift to the controllers.
-//                primary_instance = i;
-//                _last_instance_swap_ms = now;
-//                }
-//            }
-//        } else {
-//            primary_instance = 0;
-//        }
-   // }
-
-	// update notify with gps status. We always base this on the primary_instance
-   // AP_Notify::flags.gps_status = state[primary_instance].status;
-}
-
-/**
+ *//**
    Lock a GPS port, preventing the GPS driver from using it. This can
    be used to allow a user to control a GPS port via the
    SERIAL_CONTROL protocol
@@ -343,28 +297,8 @@ void apm::gps_t::update(void)
 void apm::gps_t::lock_port( bool lock)
 {
   port_locked = lock;
-//    if (instance >= GPS_MAX_INSTANCES) {
-//        return;
-//    }
-//    if (lock) {
-//        locked_ports = 1;
-//    } else {
-//        locked_ports = 0;
-//    }
 }
 
-    //Inject a packet of raw binary to a GPS
-//void apm::gps_t::inject_data(uint8_t *data, uint8_t len)
-//{
-//    //Support broadcasting to all GPSes.
-//    if (_inject_to == GPS_RTK_INJECT_TO_ALL) {
-//        for (uint8_t i=0; i<GPS_MAX_INSTANCES; i++) {
-//            inject_data(i, data, len);
-//        }
-//    } else {
-//        inject_data(_inject_to, data, len);
-//    }
-//}
 
 void apm::gps_t::inject_data( uint8_t *data, uint8_t len)
 {

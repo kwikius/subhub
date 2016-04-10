@@ -24,7 +24,7 @@
 #define APM_GPS_UBLOX_HPP_INCLUDED
 
 //#include <AP_HAL/AP_HAL.h>
-#include <apm/gps.h>
+#include <apm/gps.hpp>
 #include "GPS_Backend.h"
 #include <ap_common/ap_common.hpp>
 
@@ -66,7 +66,7 @@ namespace apm{
 
    class AP_GPS_UBLOX : public AP_GPS_Backend{
    public:
-      AP_GPS_UBLOX(gps_t &_gps, SerialPort *_port);
+      AP_GPS_UBLOX(gps_t &_gps);
 
        // Methods
        bool read();

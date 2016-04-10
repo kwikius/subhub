@@ -24,10 +24,10 @@
 #include <cstring>
 
 #include <quan/stm32/millis.hpp>
-#include <ap_serialport/serialport.hpp>
+#include <apm/serial_port.hpp>
 #include <ap_math/ap_math.hpp>
 
-#include <apm/gps.h>
+#include <apm/gps.hpp>
 #include "AP_GPS_SBP.h"
 
 #define SBP_TIMEOUT_HEATBEAT  4000
@@ -36,9 +36,8 @@
 bool apm::AP_GPS_SBP::logging_started = false;
 
 
-apm::AP_GPS_SBP::AP_GPS_SBP(apm::gps_t &_gps,
-                       apm::SerialPort *_port) :
-    apm::AP_GPS_Backend(_gps, _port),
+apm::AP_GPS_SBP::AP_GPS_SBP(apm::gps_t &_gps) :
+    apm::AP_GPS_Backend(_gps),
 
     last_injected_data_ms(0),
     last_iar_num_hypotheses(0),
@@ -76,9 +75,9 @@ bool apm::AP_GPS_SBP::read(void)
 void  apm::AP_GPS_SBP::inject_data(uint8_t *data, uint8_t len)
 {
 
-    if (port->txspace() > len) {
+    if (gps.port->txspace() > len) {
         last_injected_data_ms = quan::stm32::millis().numeric_value();
-        port->write(data, len);
+        gps.port->write(data, len);
     } else {
        // Debug("PIKSI: Not enough TXSPACE");
     }
@@ -90,8 +89,8 @@ void  apm::AP_GPS_SBP::inject_data(uint8_t *data, uint8_t len)
 void apm::AP_GPS_SBP::_sbp_process() 
 {
 
-    while (port->available() > 0) {
-        uint8_t temp = port->read();
+    while (gps.port->available() > 0) {
+        uint8_t temp = gps.port->read();
         uint16_t crc;
 
 
@@ -168,7 +167,8 @@ void apm::AP_GPS_SBP::_sbp_process()
 
 
 //INVARIANT: A fully received message with correct CRC is currently in parser_state
-void apm::AP_GPS_SBP::_sbp_process_message() {
+void apm::AP_GPS_SBP::_sbp_process_message() 
+{
     switch(parser_state.msg_type) {
         case SBP_HEARTBEAT_MSGTYPE:
             last_heatbeat_received_ms = quan::stm32::millis().numeric_value();
@@ -215,7 +215,7 @@ void apm::AP_GPS_SBP::_sbp_process_message() {
             break; 
     }
 
-    logging_log_raw_sbp(parser_state.msg_type, parser_state.sender_id, parser_state.msg_len, parser_state.msg_buff);
+    //logging_log_raw_sbp(parser_state.msg_type, parser_state.sender_id, parser_state.msg_len, parser_state.msg_buff);
 }
 
 bool apm::AP_GPS_SBP::_attempt_state_update()
@@ -276,7 +276,7 @@ bool apm::AP_GPS_SBP::_attempt_state_update()
  
         last_full_update_tow = last_vel_ned.tow;
         last_full_update_cpu_ms = now;
-        logging_log_full_update();
+       // logging_log_full_update();
         ret = true;
 
     } else if (now - last_full_update_cpu_ms > SBP_TIMEOUT_PVT) {

@@ -37,7 +37,7 @@
 #include <cstring> 
 #include <ap_math/ap_math.hpp>
 #include <quan/stm32/millis.hpp>
-#include <ap_serialport/serialport.hpp>
+#include <apm/serial_port.hpp>
 
 #include "AP_GPS_NMEA.h"
 
@@ -105,8 +105,8 @@ const char apm::AP_GPS_NMEA::_gpvtg_string[] = "GPVTG";
 #define DIGIT_TO_VAL(_x)        (_x - '0')
 #define hexdigit(x) ((x)>9?'A'+(x):'0'+(x))
 
-apm::AP_GPS_NMEA::AP_GPS_NMEA(apm::gps_t &_gps, apm::SerialPort *_port) 
-:AP_GPS_Backend(_gps, _port),
+apm::AP_GPS_NMEA::AP_GPS_NMEA(apm::gps_t &_gps) 
+:AP_GPS_Backend(_gps),
     _parity(0),
     _is_checksum_term(false),
     _sentence_type(0),
@@ -124,9 +124,9 @@ bool apm::AP_GPS_NMEA::read(void)
     int16_t numc;
     bool parsed = false;
 
-    numc = port->available();
+    numc = gps.port->available();
     while (numc--) {
-        char c = port->read();
+        char c = gps.port->read();
 #ifdef NMEA_LOG_PATH
         static FILE *logf = NULL;
         if (logf == NULL) {

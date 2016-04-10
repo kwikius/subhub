@@ -23,7 +23,7 @@
 #define APM_GPS_SBF_HPP_INCLUDED
 
 #include <ap_common/ap_common.hpp>
-#include <apm/gps.h>
+#include <apm/gps.hpp>
 #include "GPS_Backend.h"
 
 #define SBF_SETUP_MSG "\nsso, Stream1, COM1, PVTGeodetic+DOP+ExtEventPVTGeodetic, msec100\n"
@@ -32,7 +32,7 @@ namespace apm{
 
    class AP_GPS_SBF : public AP_GPS_Backend{
    public:
-       AP_GPS_SBF(gps_t &_gps,SerialPort *_port);
+       AP_GPS_SBF(gps_t &_gps);
 
        gps_t::GPS_Status highest_supported_status(void) { return gps_t::GPS_OK_FIX_3D_RTK; }
 

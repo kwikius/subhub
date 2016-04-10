@@ -25,7 +25,7 @@
 #ifndef APM_GPS_MTK_HPP_INCLUDED
 #define APM_GPS_MTK_HPP_INCLUDED
 
-#include <apm/gps.h>
+#include <apm/gps.hpp>
 #include "AP_GPS_MTK_Common.h"
 #include <ap_common/ap_common.hpp>
 #include "GPS_Backend.h"
@@ -34,7 +34,7 @@ namespace apm{
 
    class AP_GPS_MTK : public AP_GPS_Backend {
    public:
-       AP_GPS_MTK(gps_t &_gps, SerialPort *_port);
+       AP_GPS_MTK(gps_t &_gps);
 
        bool read(void);
 

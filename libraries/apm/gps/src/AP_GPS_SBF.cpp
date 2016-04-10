@@ -21,16 +21,16 @@
 
 #include <cstring>
 #include <ap_math/ap_math.hpp>
-#include <ap_serialport/serialport.hpp>
+#include <apm/serial_port.hpp>
 #include <quan/stm32/millis.hpp>
 
 #include "AP_GPS_SBF.h"
 
-apm::AP_GPS_SBF::AP_GPS_SBF(apm::gps_t &_gps,apm::SerialPort *_port) :
-    AP_GPS_Backend(_gps, _port)
+apm::AP_GPS_SBF::AP_GPS_SBF(apm::gps_t &_gps) :
+    AP_GPS_Backend(_gps)
 {	
    sbf_msg.sbf_state = sbf_msg_parser_t::PREAMBLE1;
-	port->write((const uint8_t*)_initialisation_blob[0], strlen(_initialisation_blob[0]));
+	gps.port->write((const uint8_t*)_initialisation_blob[0], strlen(_initialisation_blob[0]));
 }
 
 // Process all bytes available from the stream
@@ -41,15 +41,15 @@ bool apm::AP_GPS_SBF::read(void)
 	
 	if (_init_blob_index < (sizeof(_initialisation_blob) / sizeof(_initialisation_blob[0]))) {
 		if (now > _init_blob_time) {
-			port->write((const uint8_t*)_initialisation_blob[_init_blob_index], strlen(_initialisation_blob[_init_blob_index]));
+			gps.port->write((const uint8_t*)_initialisation_blob[_init_blob_index], strlen(_initialisation_blob[_init_blob_index]));
 			_init_blob_time = now + 70;
 			_init_blob_index++;
 		}
 	}
 	
     bool ret = false;
-    while (port->available() > 0) {
-        uint8_t temp = port->read();
+    while (gps.port->available() > 0) {
+        uint8_t temp = gps.port->read();
         ret |= parse(temp);
     }
 
@@ -269,9 +269,9 @@ bool apm::AP_GPS_SBF::process_message(void)
 
 void apm::AP_GPS_SBF::inject_data(uint8_t *data, uint8_t len)
 {
-    if (port->txspace() > len) {
+    if (gps.port->txspace() > len) {
         last_injected_data_ms = quan::stm32::millis().numeric_value();
-        port->write(data, len);
+        gps.port->write(data, len);
     } else {
         //Debug("SBF: Not enough TXSPACE");
     }

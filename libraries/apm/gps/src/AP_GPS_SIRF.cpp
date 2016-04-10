@@ -22,7 +22,7 @@
 
 #include <stdint.h>
 #include <ap_math/ap_math.hpp>
-#include <ap_serialport/serialport.hpp>
+#include <apm/serial_port.hpp>
 
 #include "AP_GPS_SIRF.h"
 
@@ -37,8 +37,8 @@ const uint8_t apm::AP_GPS_SIRF::_initialisation_blob[] = {
     0xa0, 0xa2, 0x00, 0x08, 0xa6, 0x00, 0x29, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0, 0xb0, 0xb3 
 };
 
-apm::AP_GPS_SIRF::AP_GPS_SIRF(gps_t &_gps, SerialPort *_port) :
-    AP_GPS_Backend(_gps, _port),
+apm::AP_GPS_SIRF::AP_GPS_SIRF(gps_t &_gps) :
+    AP_GPS_Backend(_gps),
     _step(0),
     _gather(false),
     _payload_length(0),
@@ -64,11 +64,11 @@ bool apm::AP_GPS_SIRF::read(void)
     int16_t numc;
     bool parsed = false;
 
-    numc = port->available();
+    numc = gps.port->available();
     while(numc--) {
 
         // read the next byte
-        data = port->read();
+        data = gps.port->read();
 
         switch(_step) {
 

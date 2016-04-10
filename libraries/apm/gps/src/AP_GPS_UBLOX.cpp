@@ -21,7 +21,7 @@
 //
 
 
-#include <ap_serialport/serialport.hpp>
+#include <apm/serial_port.hpp>
 #include <ap_common/ap_common.hpp>
 #include <ap_math/ap_math.hpp>
 #include <quan/stm32/millis.hpp>
@@ -33,8 +33,8 @@
     #define UBLOX_VERSION_AUTODETECTION 0
 #endif
 
-apm::AP_GPS_UBLOX::AP_GPS_UBLOX(apm::gps_t &_gps, apm::SerialPort *_port) :
-    apm::AP_GPS_Backend(_gps, _port),
+apm::AP_GPS_UBLOX::AP_GPS_UBLOX(apm::gps_t &_gps) :
+    apm::AP_GPS_Backend(_gps),
     _step(0),
     _msg_id(0),
     _payload_length(0),
@@ -68,7 +68,7 @@ apm::AP_GPS_UBLOX::AP_GPS_UBLOX(apm::gps_t &_gps, apm::SerialPort *_port) :
  */
 void apm::AP_GPS_UBLOX::send_next_rate_update(void)
 {
-    if (port->txspace() < (int16_t)(sizeof(struct ubx_header)+sizeof(struct ubx_cfg_nav_rate)+2)) {
+    if (gps.port->txspace() < (int16_t)(sizeof(struct ubx_header)+sizeof(struct ubx_cfg_nav_rate)+2)) {
         // not enough space - do it next time
         return;
     }
@@ -156,11 +156,11 @@ bool apm::AP_GPS_UBLOX::read(void)
         _num_cfg_save_tries++;
     }
 
-    numc = port->available();
+    numc = gps.port->available();
     for (int16_t i = 0; i < numc; i++) {        // Process bytes received
 
         // read the next byte
-        data = port->read();
+        data = gps.port->read();
 
 	reset:
         switch(_step) {
@@ -632,7 +632,7 @@ bool apm::AP_GPS_UBLOX::_parse_gps(void)
                 break;
             case UBLOX_7:
             case UBLOX_M8:
-                port->begin(4000000U);
+                gps.port->begin(4000000U);
                // Debug("Changed speed to 5Mhzfor SPI-driven UBlox\n");
                 break;
             default:
@@ -715,10 +715,10 @@ void apm::AP_GPS_UBLOX::_send_message(uint8_t msg_class, uint8_t msg_id, void *m
     _update_checksum((uint8_t *)&header.msg_class, sizeof(header)-2, ck_a, ck_b);
     _update_checksum((uint8_t *)msg, size, ck_a, ck_b);
 
-    port->write((const uint8_t *)&header, sizeof(header));
-    port->write((const uint8_t *)msg, size);
-    port->write((const uint8_t *)&ck_a, 1);
-    port->write((const uint8_t *)&ck_b, 1);
+    gps.port->write((const uint8_t *)&header, sizeof(header));
+    gps.port->write((const uint8_t *)msg, size);
+    gps.port->write((const uint8_t *)&ck_a, 1);
+    gps.port->write((const uint8_t *)&ck_b, 1);
 }
 
 

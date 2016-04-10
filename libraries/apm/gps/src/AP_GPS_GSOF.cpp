@@ -20,12 +20,12 @@
 //
 
 #include "AP_GPS_GSOF.h"
-#include <ap_serialport/serialport.hpp>
+#include <apm/serial_port.hpp>
 #include <quan/stm32/millis.hpp>
 #include <ap_math/ap_math.hpp>
 
-apm::AP_GPS_GSOF::AP_GPS_GSOF(apm::gps_t &_gps,apm::SerialPort *_port) :
-    apm::AP_GPS_Backend(_gps, _port)
+apm::AP_GPS_GSOF::AP_GPS_GSOF(apm::gps_t &_gps) :
+    apm::AP_GPS_Backend(_gps)
 {
     gsof_msg.gsof_state = gsof_msg_parser_t::STARTTX;
 
@@ -54,8 +54,8 @@ bool apm::AP_GPS_GSOF::read(void)
     }
 
     bool ret = false;
-    while (port->available() > 0) {
-        uint8_t temp = port->read();
+    while (gps.port->available() > 0) {
+        uint8_t temp = gps.port->read();
         ret |= parse(temp);
     }
 
@@ -134,7 +134,7 @@ void apm::AP_GPS_GSOF::requestBaud(uint8_t portindex)
 
     buffer[17] = checksum;
 
-    port->write((const uint8_t*)buffer, sizeof(buffer));
+    gps.port->write((const uint8_t*)buffer, sizeof(buffer));
 }
 
 void apm::AP_GPS_GSOF::requestGSOF(uint8_t messagetype, uint8_t portindex)
@@ -155,7 +155,7 @@ void apm::AP_GPS_GSOF::requestGSOF(uint8_t messagetype, uint8_t portindex)
 
     buffer[19] = checksum;
 
-    port->write((const uint8_t*)buffer, sizeof(buffer));
+    gps.port->write((const uint8_t*)buffer, sizeof(buffer));
 }
 
 double apm::AP_GPS_GSOF::SwapDouble(uint8_t* src, uint32_t pos)
@@ -309,9 +309,9 @@ bool apm::AP_GPS_GSOF::process_message(void)
 void apm::AP_GPS_GSOF::inject_data(uint8_t *data, uint8_t len)
 {
 
-    if (port->txspace() > len) {
+    if (gps.port->txspace() > len) {
         last_injected_data_ms = quan::stm32::millis().numeric_value();
-        port->write(data, len);
+        gps.port->write(data, len);
     } else {
        // Debug("GSOF: Not enough TXSPACE");
     }

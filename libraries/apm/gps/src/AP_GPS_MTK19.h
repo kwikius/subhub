@@ -26,7 +26,7 @@
 #include <ap_common/ap_common.hpp>
 
 #include "AP_GPS_MTK_Common.h"
-#include <apm/gps.h>
+#include <apm/gps.hpp>
 #include "GPS_Backend.h"
 
 #define MTK_GPS_REVISION_V16  16
@@ -36,7 +36,7 @@ namespace apm{
 
    class AP_GPS_MTK19 : public AP_GPS_Backend {
    public:
-       AP_GPS_MTK19(gps_t &_gps, SerialPort *_port);
+       AP_GPS_MTK19(gps_t &_gps);
 
        bool        read(void);
 

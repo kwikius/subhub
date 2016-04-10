@@ -25,13 +25,13 @@
 #include <ap_common/ap_common.hpp>
 #include <ap_math/ap_math.hpp>
 #include <quan/stm32/millis.hpp>
-#include <ap_serialport/serialport.hpp>
+#include <apm/serial_port.hpp>
 
 #include "AP_GPS_MTK19.h"
 #include "AP_GPS_MTK.h"
 
-apm::AP_GPS_MTK19::AP_GPS_MTK19(apm::gps_t &_gps, apm::SerialPort *_port) :
-    AP_GPS_Backend(_gps, _port),
+apm::AP_GPS_MTK19::AP_GPS_MTK19(apm::gps_t &_gps) :
+    AP_GPS_Backend(_gps),
     _step(0),
     _payload_counter(0),
     _mtk_revision(0),
@@ -57,11 +57,11 @@ bool apm::AP_GPS_MTK19::read(void)
     int16_t numc;
     bool parsed = false;
 
-    numc = port->available();
+    numc = gps.port->available();
     for (int16_t i = 0; i < numc; i++) {        // Process bytes received
 
         // read the next byte
-        data = port->read();
+        data = gps.port->read();
 
 restart:
         switch(_step) {

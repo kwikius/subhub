@@ -22,7 +22,7 @@
 #define APM_GPS_SIRF_HPP_INCLUDED
 
 #include <ap_common/ap_common.hpp>
-#include <apm/gps.h>
+#include <apm/gps.hpp>
 #include "GPS_Backend.h"
 
 #define SIRF_SET_BINARY "$PSRF100,0,38400,8,1,0*3C\r\n"
@@ -31,7 +31,7 @@ namespace apm{
 
    class AP_GPS_SIRF : public AP_GPS_Backend {
    public:
-      AP_GPS_SIRF(gps_t &_gps, SerialPort *_port);
+      AP_GPS_SIRF(gps_t &_gps);
       bool read();
       static bool _detect(struct SIRF_detect_state &state, uint8_t data);
    private:
