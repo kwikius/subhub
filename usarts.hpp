@@ -38,8 +38,8 @@ struct aux_sp{
    typedef uart_txo_pin txo_pin;
    typedef uart_rxi_pin rxi_pin;
 
-   static constexpr uint32_t in_buf_size = 200;
-   static constexpr uint32_t out_buf_size = 200;
+   static constexpr uint32_t in_buf_size = 100;
+   static constexpr uint32_t out_buf_size = 100;
    typedef aux_uart uart;
    typedef quan::stm32::serial_port<
       uart,out_buf_size,in_buf_size,txo_pin,rxi_pin

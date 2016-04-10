@@ -1,11 +1,14 @@
+----------------------------
+apm::GPSSerialPort archetype
+----------------------------
 
 archetype apm::GPSSerialPort {
 
-   size_t write(uint8_t c);
-   std::size_t write(uint8_t* data, std::size_t datalength);
-   std::size_t available();
-   size_t read();
-   size_t tx_space();
-   begin(baudrate);
-   set_flow_control(SerialPort::flow_control_type );
+   typedef size_type;
+   size_type write(uint8_t c);
+   size_type write(uint8_t* data, std::size_t datalength);
+   size_type available();
+   size_type read();
+   size_type tx_space();
+   void begin(baudrate);
 }

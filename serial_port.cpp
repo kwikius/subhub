@@ -16,7 +16,88 @@
 */
 
 #include <quan/stm32/usart/irq_handler.hpp>
-#include "serial_ports.hpp"
+#include <apm/serial_port.hpp>
+#include "usarts.hpp"
+
+
+/*
+   Leaf port is connected to GPS or Rc rx
+   Leaf in sense it is an end node rather than a link
+*/
+namespace {
+
+   typedef aux_sp::serial_port port;
+
+   struct leaf_serial_port_t final : apm::abc_serial_port{
+
+      void  begin(uint32_t baud)
+      {
+         switch (baud){
+            case 4800U:
+               port::set_baudrate<4800,false>();
+               break;
+            case 9600U: 
+               port::set_baudrate<9600,false>();
+               break;
+            case 38400U:
+               port::set_baudrate<38400,false>();
+               break;
+            case 57600U:
+               port::set_baudrate<57600,false>();
+               break;
+            case 115200U:
+               port::set_baudrate<115200,false>();
+               break;
+            case 230400U:
+               port::set_baudrate<230400,false>();
+               break;
+            default:
+               break;
+
+         }
+      }
+
+      int16_t   available()const
+      {
+         return port::in_avail();
+      }
+
+      int16_t   read()
+      {
+         if(port::in_avail()){
+            return port::get();
+         }else{
+            return -1;
+         }
+      } 
+        
+      int16_t  txspace()const
+      {
+         return port::get_tx_buffer_free_space();
+      }
+
+      size_t    write(uint8_t c)
+      {
+         port::put((char)c);
+         return 1;
+      }
+
+      size_t  write(const uint8_t *buffer, size_t size)
+      {
+         port::write((const char*)buffer,size);
+         return size;
+      }
+   };
+
+   leaf_serial_port_t leaf_sp;
+
+} // namespace
+
+apm::abc_serial_port& get_leaf_sp()
+{
+   return leaf_sp;
+}
+
 
 extern "C" void USART2_IRQHandler() __attribute__ ((interrupt ("IRQ")));
 extern "C" void USART2_IRQHandler()
@@ -41,3 +122,5 @@ extern "C" void USART1_IRQHandler()
 
    quan::stm32::usart::irq_handler<comm_channel_sp::serial_port>();
 }
+
+

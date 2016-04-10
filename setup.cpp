@@ -16,14 +16,11 @@
  along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-//#include "serial_ports.hpp"
-//#include "fsk.hpp"
-//#include "frsky.hpp"
-//#include "events.hpp"
-#include <malloc.h>
+#include <quan/malloc_free.hpp>
 #include <stm32f0xx.h>
 #include <stddef.h> /* where ptrdiff_t is defined */
 #include "resources.hpp"
+#include "usarts.hpp"
 
 extern "C" void __cxa_pure_virtual() { while (1); }
 void *__dso_handle;
@@ -31,40 +28,36 @@ void *__dso_handle;
 
 void * operator new(size_t size) throw()
 {
-  return malloc(size);
+  return quan::malloc(size);
 }
 void operator delete (void*p){ ;}
 
 void setup_outputs()
 {
 
-//   frsky::setup();
-//   fsk::setup();
 }
 
 void setup_events()
 {
-//   frsky::setup_event();
-//   fsk::setup_event();
-//   setup_heartbeat_event();
    NVIC_SetPriority(SysTick_IRQn,interrupt_priority::systick_timer);
    SysTick_Config(SystemCoreClock / 1000);
-   
 }
 
 void setup_inputs()
 {
+    aux_sp::serial_port::init();
+    comm_channel_sp::serial_port::init();
   // posdata_sp::serial_port::init();
    // add pullup to input
 // inverted on v1 board
 #if !defined(QUAN_DISCOVERY)
-//   typedef posdata_sp::serial_port::usart_type usart;
-//   static constexpr uint8_t txinv_bit = 17;
+   typedef aux_sp::serial_port::usart_type usart;
+   static constexpr uint8_t txinv_bit = 17;
 //   bool const enabled = posdata_sp::serial_port::is_enabled();
 //   if (enabled){
 //      quan::stm32::disable<usart>();
 //   }
-//   usart::get()->cr2.setbit<txinv_bit>();
+   usart::get()->cr2.setbit<txinv_bit>();
 //   if(enabled){
 //      quan::stm32::enable<usart>();
 //   }
