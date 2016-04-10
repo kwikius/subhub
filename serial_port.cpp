@@ -43,13 +43,13 @@ namespace {
                port::set_baudrate<38400,false>();
                break;
             case 57600U:
-               port::set_baudrate<57600,false>();
+               port::set_baudrate<57600,true>();
                break;
             case 115200U:
-               port::set_baudrate<115200,false>();
+               port::set_baudrate<115200,true>();
                break;
             case 230400U:
-               port::set_baudrate<230400,false>();
+               port::set_baudrate<230400,true>();
                break;
             default:
                break;
