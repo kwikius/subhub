@@ -45,9 +45,8 @@ typedef quan::stm32::usart2  aux_uart;
 
 struct interrupt_priority{
    static constexpr uint32_t systick_timer = 15;
-   static constexpr uint32_t frsky_serial_port= 14;
-   static constexpr uint32_t telemetry_input_port = 13;
-   static constexpr uint32_t fsk_dac_timer = 12;
+   static constexpr uint32_t gps_telem_port= 14;
+   static constexpr uint32_t channel_port = 12;
 };
 
 #endif // FSK_TX_RESOURCES_HPP_INCLUDED
