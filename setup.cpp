@@ -43,38 +43,18 @@ void setup_events()
    SysTick_Config(SystemCoreClock / 1000);
 }
 
-void setup_inputs()
+void setup_comm_channel()
 {
-    aux_sp::serial_port::init();
+   // aux_sp::serial_port::init();
     comm_channel_sp::serial_port::init();
-  // posdata_sp::serial_port::init();
-   // add pullup to input
-// inverted on v1 board
-#if !defined(QUAN_DISCOVERY)
-   typedef aux_sp::serial_port::usart_type usart;
-   static constexpr uint8_t txinv_bit = 17;
-//   bool const enabled = posdata_sp::serial_port::is_enabled();
-//   if (enabled){
-//      quan::stm32::disable<usart>();
-//   }
-   usart::get()->cr2.setbit<txinv_bit>();
-//   if(enabled){
-//      quan::stm32::enable<usart>();
-//   }
-#endif
-   // N.B  for mavlink only
-   // for GPS depends on config
-  // posdata_sp::serial_port::set_baudrate<57600,false>();
-   // posdata_sp::serial_port::set_irq_priority(interrupt_priority::telemetry_input_port);
+    comm_channel_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
+
 }
 
 extern "C" void setup()
 {
-  // first check if user wants to dialog
-  // if not then ..
-  // read config
-  setup_outputs();
+
   setup_events();
-  setup_inputs(); 
+
 }
 
