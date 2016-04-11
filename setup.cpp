@@ -16,26 +16,9 @@
  along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#include <quan/malloc_free.hpp>
 #include <stm32f0xx.h>
-#include <stddef.h> /* where ptrdiff_t is defined */
 #include "resources.hpp"
 #include "usarts.hpp"
-
-extern "C" void __cxa_pure_virtual() { while (1); }
-void *__dso_handle;
-
-
-void * operator new(size_t size) throw()
-{
-  return quan::malloc(size);
-}
-void operator delete (void*p){ ;}
-
-void setup_outputs()
-{
-
-}
 
 void setup_events()
 {
@@ -47,14 +30,16 @@ void setup_comm_channel()
 {
    // aux_sp::serial_port::init();
     comm_channel_sp::serial_port::init();
+    
     comm_channel_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
 
 }
 
+// In setup setup comm channle only
 extern "C" void setup()
 {
 
-  setup_events();
+  setup_comm_channel();
 
 }
 
