@@ -131,7 +131,7 @@ void apm::gps_t::detect()
 		if (dstate->last_baud == ARRAY_SIZE(_baudrates)) {
 			dstate->last_baud = 0;
 		}
-       uint32_t baudrate = _baudrates[dstate->last_baud];
+      uint32_t baudrate = _baudrates[dstate->last_baud];
 		port->begin(baudrate);
 		dstate->last_baud_change_ms = now;
       send_blob_start( _initialisation_blob, sizeof(_initialisation_blob));
