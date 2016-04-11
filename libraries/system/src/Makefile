@@ -1,6 +1,6 @@
 include ../../../common/mk/stm32f0_make_flags.mk
 
-object_files = spbrk.o system_initf0.o
+object_files = spbrk.o system_initf0.o system.o
 
 objects = $(patsubst %.o,obj/%.o,$(object_files))
 
