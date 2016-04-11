@@ -26,7 +26,7 @@ _MinStackSize = 0x200;
 MEMORY
 {
    rom (rx)             : org = 0x08000000, len = 64K
-   processor_options(r) : org = 0x1FFFF800, len = 12
+   /*processor_options(r) : org = 0x1FFFF800, len = 12 */
    ram (xrw)            : org = 0x20000000, len = 8K
 }
 
@@ -125,7 +125,7 @@ SECTIONS
       . = ALIGN(4);
       _estack = ORIGIN(ram) + LENGTH(ram); 
    }>ram
-
+/*
    processor_options1 0x1FFFF800 :
    {
       user_options1 = .;
@@ -138,6 +138,7 @@ SECTIONS
    {
       user_options3 = .;
    }>processor_options
+*/
 
    /DISCARD/ :
    {
