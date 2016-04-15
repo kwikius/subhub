@@ -49,6 +49,6 @@ int main()
    setup();
 
    apm::gps_t gps;
-   gps.init(get_leaf_sp());
+   gps.init(get_gps_sp());
    gps.update();
 }

@@ -31,8 +31,8 @@ typedef quan::mcu::pin<quan::stm32::gpiob,5>    digital_rssi_in_pin;
 
 typedef quan::mcu::pin<quan::stm32::gpiob,1>    ppm_in_pin;
 
-typedef quan::mcu::pin<quan::stm32::gpioa,9>    comm_channel_txo_pin; 
-typedef quan::mcu::pin<quan::stm32::gpioa,10>   comm_channel_rxi_pin; 
+typedef quan::mcu::pin<quan::stm32::gpioa,9>    link_txo_pin; 
+typedef quan::mcu::pin<quan::stm32::gpioa,10>   link_rxi_pin; 
 
 typedef quan::mcu::pin<quan::stm32::gpioa,14>   uart_txo_pin;
 typedef quan::mcu::pin<quan::stm32::gpioa,15>   uart_rxi_pin;
@@ -40,7 +40,7 @@ typedef quan::mcu::pin<quan::stm32::gpioa,15>   uart_rxi_pin;
 typedef quan::mcu::pin<quan::stm32::gpiob,7>  i2c_sda;
 typedef quan::mcu::pin<quan::stm32::gpiob,6>  i2c_scl;
  
-typedef quan::stm32::usart1  comm_channel_uart;
+typedef quan::stm32::usart1  link_uart;
 typedef quan::stm32::usart2  aux_uart;
 
 struct interrupt_priority{

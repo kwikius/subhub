@@ -21,11 +21,11 @@
 #include <quan/stm32/serial_port.hpp>
 #include "resources.hpp"
 
-struct comm_channel_sp{
+struct link_sp{
 
-   typedef comm_channel_txo_pin txo_pin;
-   typedef comm_channel_rxi_pin rxi_pin;
-   typedef comm_channel_uart uart;
+   typedef link_txo_pin txo_pin;
+   typedef link_rxi_pin rxi_pin;
+   typedef link_uart uart;
    static constexpr uint32_t in_buf_size = 200;
    static constexpr uint32_t out_buf_size = 200;
 

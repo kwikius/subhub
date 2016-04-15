@@ -1,5 +1,5 @@
 -----------
-apm::ap_gps
+apm::gps
 -----------
 
 GPS library, Forked from `ArduPilot.AP_GPS`_ .

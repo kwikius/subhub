@@ -29,9 +29,9 @@ void setup_events()
 void setup_comm_channel()
 {
    // aux_sp::serial_port::init();
-    comm_channel_sp::serial_port::init();
+    link_sp::serial_port::init();
     
-    comm_channel_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
+    link_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
 
 }
 

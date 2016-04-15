@@ -22,13 +22,13 @@
 
 /*
    Leaf port is connected to GPS or Rc rx
-   Leaf in sense it is an end node rather than a link
+   Leaf in the sense it is an end node rather than a link
 */
 namespace {
 
    typedef aux_sp::serial_port port;
 
-   struct leaf_serial_port_t final : apm::abc_serial_port{
+   struct gps_sp_t final : apm::abc_serial_port{
 
       void  begin(uint32_t baud)
       {
@@ -89,13 +89,13 @@ namespace {
       }
    };
 
-   leaf_serial_port_t leaf_sp;
+   gps_sp_t gps_sp;
 
 } // namespace
 
-apm::abc_serial_port& get_leaf_sp()
+apm::abc_serial_port& get_gps_sp()
 {
-   return leaf_sp;
+   return gps_sp;
 }
 
 extern "C" void USART2_IRQHandler() __attribute__ ((interrupt ("IRQ")));
@@ -109,17 +109,4 @@ extern "C" void USART2_IRQHandler()
 
    quan::stm32::usart::irq_handler<aux_sp::serial_port>();
 }
-
-extern "C" void USART1_IRQHandler() __attribute__ ((interrupt ("IRQ")));
-extern "C" void USART1_IRQHandler()
-{
-   static_assert(
-   std::is_same<
-     comm_channel_sp::serial_port::usart_type,quan::stm32::usart1
-   >::value
-   ,"invalid usart for serial_port irq");
-
-   quan::stm32::usart::irq_handler<comm_channel_sp::serial_port>();
-}
-
 

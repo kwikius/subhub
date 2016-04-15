@@ -27,17 +27,19 @@ namespace {
       SysTick_Config(SystemCoreClock / 1000);
    }
 
-   void setup_usart()
+   void setup_usarts()
    {
+     link_sp::serial_port::init();
+     link_sp::serial_port::set_baudrate<115200,true>();
+     link_sp::serial_port::set_irq_priority(interrupt_priority::gps_telem_port);
+
      aux_sp::serial_port::init();
-     //aux_sp::serial_port::set_baudrate<9600,false>();
-     aux_sp::serial_port::set_irq_priority(interrupt_priority::gps_telem_port);
+     aux_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
    }
 }
 
 extern "C" void setup()
 {
-  setup_usart();
-  
+  setup_usarts();
 }
 
