@@ -13,10 +13,13 @@ Changes from ArduPilot.AP_GPS
 * Aggressively eliminate coupling to other libraries.
 * Multiple instances of a physical GPS are not supported in 1 class instance. 
   Use an array of GPS if this is required
+* Use Quan_ library types to represent Physical quantities.
 
 .. _`Generic Programming`: https://en.wikipedia.org/wiki/Generic_programming
 
 .. _`ArduPilot.AP_GPS`: https://github.com/ArduPilot/ardupilot/tree/master/libraries/AP_GPS
+
+.. _Quan: http://www.zoomworks.org/quan-trunk/quan_matters/doc/index.html
 
 
 
