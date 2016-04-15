@@ -38,5 +38,6 @@ namespace {
 extern "C" void setup()
 {
   setup_usart();
+  
 }
 

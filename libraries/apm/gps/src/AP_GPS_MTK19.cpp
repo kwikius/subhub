@@ -22,8 +22,8 @@
 //   Note that this driver supports both the 1.6 and 1.9 protocol varients
 //
 
-#include <ap_common/ap_common.hpp>
-#include <ap_math/ap_math.hpp>
+#include <apm/common.hpp>
+#include <apm/math.hpp>
 #include <quan/stm32/millis.hpp>
 #include <apm/serial_port.hpp>
 

@@ -23,7 +23,7 @@
 #ifndef APM_GPS_MTK19_HPP_INCLUDED
 #define APM_GPS_MTK19_HPP_INCLUDED
 
-#include <ap_common/ap_common.hpp>
+#include <apm/common.hpp>
 
 #include "AP_GPS_MTK_Common.h"
 #include <apm/gps.hpp>

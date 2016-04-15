@@ -10,7 +10,7 @@
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#include <ap_math/ap_math.hpp>
+#include <apm/math.hpp>
 #if 0
 static inline uint16_t pgm_read_word(const void *s) {
 	return *(const uint16_t *)s;

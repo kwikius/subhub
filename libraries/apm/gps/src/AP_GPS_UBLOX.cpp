@@ -22,8 +22,8 @@
 
 
 #include <apm/serial_port.hpp>
-#include <ap_common/ap_common.hpp>
-#include <ap_math/ap_math.hpp>
+#include <apm/common.hpp>
+#include <apm/math.hpp>
 #include <quan/stm32/millis.hpp>
 #include "AP_GPS_UBLOX.h"
 

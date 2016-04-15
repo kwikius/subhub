@@ -1,10 +1,10 @@
 
 include common/mk/stm32f0_make_flags.mk
 
-object_files = main.o setup.o timer.o serial_port.o events.o
+object_files = main.o setup.o timer.o events.o leaf_serial_port.o
 objects = $(patsubst %.o,obj/%.o,$(object_files))
 
-lib_files = apm/gps.a ap_math.a system.a 
+lib_files = apm/gps.a apm/math.a system.a 
 libs = $(patsubst %.a,lib/%.a,$(lib_files))
 
 all: test

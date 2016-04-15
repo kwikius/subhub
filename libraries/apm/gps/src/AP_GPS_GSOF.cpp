@@ -22,7 +22,7 @@
 #include "AP_GPS_GSOF.h"
 #include <apm/serial_port.hpp>
 #include <quan/stm32/millis.hpp>
-#include <ap_math/ap_math.hpp>
+#include <apm/math.hpp>
 
 apm::AP_GPS_GSOF::AP_GPS_GSOF(apm::gps_t &_gps) :
     apm::AP_GPS_Backend(_gps)

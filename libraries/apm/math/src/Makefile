@@ -1,11 +1,11 @@
-include ../../../common/mk/stm32f0_make_flags.mk
+include ../../../../common/mk/stm32f0_make_flags.mk
 
-object_files = ap_math.o edc.o
+object_files = math.o edc.o
 
 objects = $(patsubst %.o,obj/%.o,$(object_files))
 
 # project archive dir
-OUTPUT_ARCHIVE_FILE = ../../../lib/ap_math.a
+OUTPUT_ARCHIVE_FILE = ../../../../lib/apm/math.a
 
 all : test
 

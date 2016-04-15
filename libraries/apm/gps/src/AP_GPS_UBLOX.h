@@ -26,7 +26,7 @@
 //#include <AP_HAL/AP_HAL.h>
 #include <apm/gps.hpp>
 #include "GPS_Backend.h"
-#include <ap_common/ap_common.hpp>
+#include <apm/common.hpp>
 
 /*
  *  try to put a UBlox into binary mode. This is in two parts. 

@@ -23,7 +23,7 @@
 
 
 #include "AP_GPS_MTK.h"
-#include <ap_math/ap_math.hpp>
+#include <apm/math.hpp>
 #include <apm/serial_port.hpp>
 
 // initialisation blobs to send to the GPS to try to get it into the

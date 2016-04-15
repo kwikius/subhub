@@ -25,7 +25,7 @@
 
 #include <quan/stm32/millis.hpp>
 #include <apm/serial_port.hpp>
-#include <ap_math/ap_math.hpp>
+#include <apm/math.hpp>
 
 #include <apm/gps.hpp>
 #include "AP_GPS_SBP.h"

@@ -35,7 +35,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring> 
-#include <ap_math/ap_math.hpp>
+#include <apm/math.hpp>
 #include <quan/stm32/millis.hpp>
 #include <apm/serial_port.hpp>
 

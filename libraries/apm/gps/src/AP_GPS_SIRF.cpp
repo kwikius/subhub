@@ -21,7 +21,7 @@
 
 
 #include <stdint.h>
-#include <ap_math/ap_math.hpp>
+#include <apm/math.hpp>
 #include <apm/serial_port.hpp>
 
 #include "AP_GPS_SIRF.h"

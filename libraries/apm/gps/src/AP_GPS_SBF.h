@@ -22,7 +22,7 @@
 #ifndef APM_GPS_SBF_HPP_INCLUDED
 #define APM_GPS_SBF_HPP_INCLUDED
 
-#include <ap_common/ap_common.hpp>
+#include <apm/common.hpp>
 #include <apm/gps.hpp>
 #include "GPS_Backend.h"
 

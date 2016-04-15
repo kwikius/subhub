@@ -14,7 +14,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ap_math/ap_math.hpp>
+#include <apm/math.hpp>
 #include <quan/stm32/millis.hpp>
 
 #include <apm/gps.hpp>
