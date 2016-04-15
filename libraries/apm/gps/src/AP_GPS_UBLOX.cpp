@@ -20,6 +20,12 @@
 //  Substantially rewitten for new GPS driver structure by Andrew Tridgell
 //
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 
 #include <apm/serial_port.hpp>
 #include <apm/common.hpp>

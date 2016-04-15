@@ -21,6 +21,12 @@
 //  Swift Binary Protocol format: http://docs.swift-nav.com/
 //
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 #ifndef APM_GPS_SBP_HPP_INCLUDED
 #define APM_GPS_SBP_HPP_INCLUDED
 

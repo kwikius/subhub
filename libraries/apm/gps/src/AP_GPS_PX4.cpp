@@ -22,6 +22,12 @@
 //
 //  Code by Holger Steinhaus
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 #include <AP_HAL/AP_HAL.h>
 #if CONFIG_HAL_BOARD == HAL_BOARD_PX4
 #include "AP_GPS_PX4.h"

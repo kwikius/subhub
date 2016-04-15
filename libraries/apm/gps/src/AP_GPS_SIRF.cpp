@@ -19,6 +19,12 @@
 //	Code by Michael Smith.
 //
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 
 #include <stdint.h>
 #include <apm/math.hpp>

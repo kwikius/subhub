@@ -18,6 +18,11 @@
 //  Trimble GPS driver for ArduPilot.
 //	Code by Michael Oborne
 //
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
 
 #ifndef APM_GPS_GSOF_HPP_INCLUDED
 #define APM_GPS_GSOF_HPP_INCLUDED

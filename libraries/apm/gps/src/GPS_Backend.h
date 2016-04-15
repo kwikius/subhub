@@ -18,6 +18,12 @@
   GPS driver backend class
  */
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 #ifndef APM_GPS_BACKEND_HPP_INCLUDED
 #define APM_GPS_BACKEND_HPP_INCLUDED
 

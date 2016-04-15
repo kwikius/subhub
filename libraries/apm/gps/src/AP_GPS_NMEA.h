@@ -44,7 +44,11 @@
 /// not considered a source of fix-valid information.
 ///
 
-
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
 
 
 #include <apm/gps.hpp>

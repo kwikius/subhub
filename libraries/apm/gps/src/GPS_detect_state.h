@@ -29,6 +29,12 @@
   specific type that it handles.
  */
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 namespace apm{
 
    struct MTK19_detect_state {

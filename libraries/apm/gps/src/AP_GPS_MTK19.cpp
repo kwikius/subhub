@@ -22,6 +22,12 @@
 //   Note that this driver supports both the 1.6 and 1.9 protocol varients
 //
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 #include <apm/common.hpp>
 #include <apm/math.hpp>
 #include <quan/stm32/millis.hpp>

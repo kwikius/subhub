@@ -18,6 +18,12 @@
 //  GPS proxy driver for APM on PX4 platforms
 //  Code by Holger Steinhaus
 //
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 #error reference only
 #ifndef __AP_GPS_PX4_H__
 #define __AP_GPS_PX4_H__

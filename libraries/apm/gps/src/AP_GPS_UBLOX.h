@@ -19,6 +19,12 @@
 //	Code by Michael Smith, Jordi Munoz and Jose Julio, DIYDrones.com
 //
 //  UBlox Lea6H protocol: http://www.u-blox.com/images/downloads/Product_Docs/u-blox6_ReceiverDescriptionProtocolSpec_%28GPS.G6-SW-10018%29.pdf
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 
 #ifndef APM_GPS_UBLOX_HPP_INCLUDED
 #define APM_GPS_UBLOX_HPP_INCLUDED

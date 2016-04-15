@@ -20,6 +20,12 @@
 //
 // Common definitions for MediaTek GPS modules.
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 #ifndef APM_GPS_MTK_COMMON_HPP_INCLUDED
 #define APM_GPS_MTK_COMMON_HPP_INCLUDED
 

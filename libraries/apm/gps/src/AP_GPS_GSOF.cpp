@@ -19,6 +19,12 @@
 //  Code by Michael Oborne
 //
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 #include "AP_GPS_GSOF.h"
 #include <apm/serial_port.hpp>
 #include <quan/stm32/millis.hpp>

@@ -29,7 +29,11 @@
 /// TinyGPS parser by Mikal Hart.
 ///
 
-
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
 
 #include <cctype>
 #include <cstdint>

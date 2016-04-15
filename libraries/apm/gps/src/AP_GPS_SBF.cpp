@@ -19,6 +19,12 @@
 //  Code by Michael Oborne
 //
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 #include <cstring>
 #include <apm/math.hpp>
 #include <apm/serial_port.hpp>

@@ -21,6 +21,12 @@
 //	GPS configuration : Custom protocol per "DIYDrones Custom Binary Sentence Specification V1.1"
 //
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 
 #include "AP_GPS_MTK.h"
 #include <apm/math.hpp>

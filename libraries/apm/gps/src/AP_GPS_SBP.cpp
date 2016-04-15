@@ -21,6 +21,12 @@
 //  Swift Binary Protocol format: http://docs.swift-nav.com/
 //
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 #include <cstring>
 
 #include <quan/stm32/millis.hpp>

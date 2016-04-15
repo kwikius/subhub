@@ -22,6 +22,12 @@
 //
 // Note - see AP_GPS_MTK16.h for firmware 1.6 and later.
 //
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 #ifndef APM_GPS_MTK_HPP_INCLUDED
 #define APM_GPS_MTK_HPP_INCLUDED
 

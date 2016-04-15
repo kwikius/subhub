@@ -20,6 +20,12 @@
 //
 //	GPS configuration : Custom protocol per "Customize Function Specification, 3D Robotics, v1.6, v1.7, v1.8, v1.9"
 //
+
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
 #ifndef APM_GPS_MTK19_HPP_INCLUDED
 #define APM_GPS_MTK19_HPP_INCLUDED
 

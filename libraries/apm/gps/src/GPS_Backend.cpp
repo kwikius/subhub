@@ -14,6 +14,12 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+#############################
+Changed by Andy Little Apr 2016
+###########################
+*/
+
 #include <apm/math.hpp>
 #include <quan/stm32/millis.hpp>
 
