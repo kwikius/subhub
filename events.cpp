@@ -17,9 +17,6 @@
 
 #include "events.hpp"
 
-namespace zapp1{
-   void frsky_send_message();
-}
 
 namespace{
    periodic_event* events[3] = {nullptr, nullptr,nullptr};

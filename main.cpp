@@ -16,31 +16,10 @@
  along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-/* 
- 1 setup channel to FC
- Either the config of the subhub is fixed
-so stup is fixed
- or FC sends config and setup is dependet on that
-
-In fact only variable is whether RC in or GPS
-can use both unless want SBUS or Frsky telem
-*/
 
 
 #include <apm/gps.hpp>
 #include "serial_port.hpp"
-
-/*
-   input channel
-   output channel use DMA? queue transactions. A single buffer for DMA. load buffer from fifo?
-   
-
-   rc in       : event from rc input. On new rc_in value send to output_channel
-   servos out  : update dc event from chan input
-   mag in out  : periodic every 1/100th sec (say) 1)request 2) read
-   gps in      : event from sp input
-   airspeed in : periodic every 1/100th sec say)
-*/
 
 extern "C" void setup();
 

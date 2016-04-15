@@ -21,8 +21,6 @@
 #include <cstdint>
 #include <quan/time.hpp>
 
-void do_event_ticks();
-
 // periodic_event periodic_event
 // actioned in some multiple of 1 ms
 struct periodic_event{
@@ -66,19 +64,19 @@ private:
 };
 
 // indexes into the events array
-struct event_index{
-   static constexpr uint32_t frsky = 0;
-   static constexpr uint32_t fsk = 1;
-   static constexpr uint32_t heartbeat = 2;
-};
+//struct event_index{
+//   static constexpr uint32_t frsky = 0;
+//   static constexpr uint32_t fsk = 1;
+//   static constexpr uint32_t heartbeat = 2;
+//};
 
 periodic_event * get_event(uint32_t i);
 void set_event(uint32_t i, periodic_event * ev);
-
-void setup_events();
-void setup_frsky_event();
-void setup_fsk_event();
-void setup_heartbeat_event();
+//
+//void setup_events();
+//void setup_frsky_event();
+//void setup_fsk_event();
+//void setup_heartbeat_event();
 
 void do_event_ticks();
 void service_events();
