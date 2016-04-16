@@ -31,10 +31,10 @@ namespace {
    {
      link_sp::serial_port::init();
      link_sp::serial_port::set_baudrate<115200,true>();
-     link_sp::serial_port::set_irq_priority(interrupt_priority::gps_telem_port);
+     link_sp::serial_port::set_irq_priority(interrupt_priority::chennel_port);
 
      aux_sp::serial_port::init();
-     aux_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
+     aux_sp::serial_port::set_irq_priority(interrupt_priority::gps_telem_port);
    }
 }
 
