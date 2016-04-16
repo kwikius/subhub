@@ -23,25 +23,26 @@
 void servo_setup();
 
 namespace {
-//   void setup_events()
-//   {
-//      NVIC_SetPriority(SysTick_IRQn,interrupt_priority::systick_timer);
-//      SysTick_Config(SystemCoreClock / 1000);
-//   }
+   void setup_events()
+   {
+      NVIC_SetPriority(SysTick_IRQn,interrupt_priority::systick_timer);
+      SysTick_Config(SystemCoreClock / 1000);
+   }
 
    void setup_usarts()
    {
      link_sp::serial_port::init();
      link_sp::serial_port::set_baudrate<115200,true>();
-     link_sp::serial_port::set_irq_priority(interrupt_priority::gps_telem_port);
+     link_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
 
      aux_sp::serial_port::init();
-     aux_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
+     aux_sp::serial_port::set_irq_priority(interrupt_priority::gps_telem_port);
    }
 }
 
 extern "C" void setup()
 {
+  setup_events();
   setup_usarts();
   servo_setup();
 }
