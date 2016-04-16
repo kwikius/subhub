@@ -37,7 +37,7 @@ CFLAGS  = -std=c++11 -fno-rtti -fno-exceptions -c -g $(DEFINE_ARGS) $(INCLUDE_AR
   $(PROCESSOR_FLAGS) $(CFLAG_EXTRAS)
 
 LFLAGS  = -T$(LINKER_SCRIPT)  -nostartfiles -nodefaultlibs $(PROCESSOR_FLAGS) $(INIT_LIBS) \
-   --specs=nano.specs $(CFLAG_EXTRAS)
+   --specs=nano.specs $(CFLAG_EXTRAS) -Wl,--gc-sections -Wl,--undefined=_sbrk
 
 #LFLAGS  =  -v
 CPFLAGS = -Obinary
