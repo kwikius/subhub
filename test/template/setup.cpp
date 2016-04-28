@@ -16,16 +16,33 @@
  along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#include <apm/gps.hpp>
-#include "serial_port.hpp"
+#include <stm32f0xx.h>
+#include "../../resources.hpp"
+#include "../../usarts.hpp"
 
-extern "C" void setup();
 
-int main()
-{
-   setup();
+namespace {
+   void setup_events()
+   {
+      NVIC_SetPriority(SysTick_IRQn,interrupt_priority::systick_timer);
+      SysTick_Config(SystemCoreClock / 1000);
+   }
 
-   apm::gps_t gps;
-   gps.init(get_gps_sp());
-   gps.update();
+   void setup_usarts()
+   {
+     link_sp::serial_port::init();
+     link_sp::serial_port::set_baudrate<115200,true>();
+     link_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
+
+     aux_sp::serial_port::init();
+     aux_sp::serial_port::set_irq_priority(interrupt_priority::gps_telem_port);
+   }
 }
+
+extern "C" void setup()
+{
+  setup_events();
+  setup_usarts();
+
+}
+

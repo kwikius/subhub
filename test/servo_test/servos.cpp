@@ -12,10 +12,6 @@ pwm servos on TIM2
 Servo2 on PA1   TIM2_CH2
 */
 
-
-
-
-
 namespace {
 
    typedef quan::stm32::tim2 rc_out_timer;

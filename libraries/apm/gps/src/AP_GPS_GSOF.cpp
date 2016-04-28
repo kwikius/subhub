@@ -70,12 +70,10 @@ bool apm::AP_GPS_GSOF::read(void)
 
 bool apm::AP_GPS_GSOF::parse(uint8_t temp)
 {
-    switch (gsof_msg.gsof_state)
-    {
+    switch (gsof_msg.gsof_state) {
     default:
     case gsof_msg_parser_t::STARTTX:
-        if (temp == GSOF_STX)
-        {
+        if (temp == GSOF_STX) {
             gsof_msg.starttx = temp;
             gsof_msg.gsof_state = gsof_msg_parser_t::STATUS;
             gsof_msg.read = 0;
@@ -101,16 +99,14 @@ bool apm::AP_GPS_GSOF::parse(uint8_t temp)
         gsof_msg.data[gsof_msg.read] = temp;
         gsof_msg.read++;
         gsof_msg.checksumcalc += temp;
-        if (gsof_msg.read >= gsof_msg.length)
-        {
+        if (gsof_msg.read >= gsof_msg.length) {
             gsof_msg.gsof_state = gsof_msg_parser_t::CHECKSUM;
         }
         break;
     case gsof_msg_parser_t::CHECKSUM:
         gsof_msg.checksum = temp;
         gsof_msg.gsof_state = gsof_msg_parser_t::ENDTX;
-        if (gsof_msg.checksum == gsof_msg.checksumcalc)
-        {
+        if (gsof_msg.checksum == gsof_msg.checksumcalc) {
             return process_message();
         }
         break;
@@ -229,69 +225,53 @@ bool apm::AP_GPS_GSOF::process_message(void)
     if (gsof_msg.packettype == 0x40) { // GSOF
         int valid = 0;
         // want 1 2 8 9 12
-        for (uint32_t a = 3; a < gsof_msg.length; a++)
-        {
+        for (uint32_t a = 3; a < gsof_msg.length; a++) {
             uint8_t output_type = gsof_msg.data[a];
             a++;
             uint8_t output_length = gsof_msg.data[a];
             a++;
             //Debug("GSOF type: " + output_type + " len: " + output_length);
-            if (output_type == 1) // pos time
-            {
+            if (output_type == 1) { // pos time
                 gps.state.time_week_ms = SwapUint32(gsof_msg.data, a);
                 gps.state.time_week = SwapUint16(gsof_msg.data, a + 4);
                 gps.state.num_sats = gsof_msg.data[a + 6];
                 uint8_t posf1 = gsof_msg.data[a + 7];
                 uint8_t posf2 = gsof_msg.data[a + 8];
                 //Debug("POSTIME: " + posf1 + " " + posf2);
-                if ((posf1 & 1) == 1)
-                {
+                if ((posf1 & 1) == 1) {
                     gps.state.status = gps_t::GPS_OK_FIX_3D;
-                    if ((posf2 & 1) == 1)
-                    {
+                    if ((posf2 & 1) == 1) {
                         gps.state.status = gps_t::GPS_OK_FIX_3D_DGPS;
-                        if ((posf2 & 4) == 4)
-                        {
+                        if ((posf2 & 4) == 4) {
                             gps.state.status = gps_t::GPS_OK_FIX_3D_RTK;
                         }
                     }
-                }
-                else
-                {
+                } else {
                     gps.state.status = gps_t::NO_FIX;
                 }
                 valid++;
-            }
-            else if (output_type == 2) // position
-            {
-                gps.state.location.lat = gps_t::lat_lon_type{RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a)) * 1e7}; // deg1e7
-                gps.state.location.lon = gps_t::lat_lon_type{RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a + 8)) * 1e7}; // deg1e7
-                gps.state.location.alt = gps_t::altitude_type{SwapDouble(gsof_msg.data, a + 16) * 1e2}; //cm
+            } else if (output_type == 2) { // position
+                gps.state.location.lat = gps_t::lat_lon_type {RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a)) * 1e7}; // deg1e7
+                gps.state.location.lon = gps_t::lat_lon_type {RAD_TO_DEG_DOUBLE * (SwapDouble(gsof_msg.data, a + 8)) * 1e7}; // deg1e7
+                gps.state.location.alt = gps_t::altitude_type {SwapDouble(gsof_msg.data, a + 16) * 1e2}; //cm
 
                 gps.state.last_gps_time_ms = gps.state.time_week_ms;
 
                 valid++;
-            }
-            else if (output_type == 8) // velocity
-            {
+            } else if (output_type == 8) { // velocity
                 uint8_t vflag = gsof_msg.data[a];
-                if ((vflag & 1) == 1)
-                {
+                if ((vflag & 1) == 1) {
                     gps.state.ground_speed = SwapFloat(gsof_msg.data, a + 1);
                     gps.state.ground_course_cd = (int32_t)(ToDeg(SwapFloat(gsof_msg.data, a + 5)) * 100);
                     fill_3d_velocity();
-                    gps.state.velocity.z = gps_t::velocity_type{-SwapFloat(gsof_msg.data, a + 9)};
+                    gps.state.velocity.z = gps_t::velocity_type {-SwapFloat(gsof_msg.data, a + 9)};
                     gps.state.have_vertical_velocity = true;
                 }
                 valid++;
-            }
-            else if (output_type == 9) //dop
-            {
+            } else if (output_type == 9) { //dop
                 gps.state.hdop = (uint16_t)(SwapFloat(gsof_msg.data, a + 4) * 100);
                 valid++;
-            }
-            else if (output_type == 12) // position sigma
-            {
+            } else if (output_type == 12) { // position sigma
                 gps.state.horizontal_accuracy = (SwapFloat(gsof_msg.data, a + 4) + SwapFloat(gsof_msg.data, a + 8)) / 2;
                 gps.state.vertical_accuracy = SwapFloat(gsof_msg.data, a + 16);
                 gps.state.have_horizontal_accuracy = true;
@@ -319,6 +299,6 @@ void apm::AP_GPS_GSOF::inject_data(uint8_t *data, uint8_t len)
         last_injected_data_ms = quan::stm32::millis().numeric_value();
         gps.port->write(data, len);
     } else {
-       // Debug("GSOF: Not enough TXSPACE");
+        // Debug("GSOF: Not enough TXSPACE");
     }
 }

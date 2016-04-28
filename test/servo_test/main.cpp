@@ -29,6 +29,7 @@ int main()
    for(;;){
       auto const now = millis();
       if ( (now - sp_out_last) > quan::time_<int64_t>::ms{100}){
+         sp_out_last = now;
          if ( link_sp::serial_port::tx_reg_empty()){
         
             link_sp::serial_port::write("srv1 = ");
@@ -103,7 +104,7 @@ extern "C" void USART1_IRQHandler()
    quan::stm32::usart::irq_handler<link_sp::serial_port>();
 }
 
-int64_t volatile quan::stm32::detail::systick_tick::current = 0;
+uint32_t volatile quan::stm32::detail::systick_tick::current = 0;
 
 extern "C" void SysTick_Handler()
 {

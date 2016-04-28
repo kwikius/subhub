@@ -46,4 +46,6 @@ struct aux_sp{
    > serial_port;
 };
 
+void panic(const char* str);
+
 #endif // QUANTRACKER_SERIAL_PORTS_HPP_INCLUDED
