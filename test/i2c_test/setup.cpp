@@ -39,14 +39,15 @@ namespace {
      aux_sp::serial_port::init();
      aux_sp::serial_port::set_irq_priority(interrupt_priority::gps_telem_port);
 
-     i2c::init();
+    
    }
 }
 
 extern "C" void setup()
 {
+  i2c::init();
   setup_events();
   setup_usarts();
-
+  
 }
 

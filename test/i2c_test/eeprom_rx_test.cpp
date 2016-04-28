@@ -2,11 +2,19 @@
 #include <quan/stm32/millis.hpp>
 #include "../../i2c.hpp"
 #include "../../usarts.hpp"
-
+#include <quan/stm32/gpio.hpp>
 #include <quan/conversion/itoa.hpp>
 #include "led.hpp"
 
 using quan::stm32::millis;
+
+namespace {
+
+  // typedef quan::stm32::i2c1 i2c_type;
+
+   typedef quan::mcu::pin<quan::stm32::gpiob,6> scl_pin;
+   typedef quan::mcu::pin<quan::stm32::gpiob,7> sda_pin;
+}
 
 void print_flags(const char * name, uint32_t flags)
 {
@@ -34,8 +42,10 @@ struct eeprom_reader{
 
 #if 1
 
+#if 0
   RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
 	
+
   /* (1) open drain for I2C signals */
   /* (2) AF1 for I2C signals */
   /* (3) Select AF mode (10) on PB6 and PB7 */
@@ -45,6 +55,32 @@ struct eeprom_reader{
   GPIOB->MODER = (GPIOB->MODER & ~(GPIO_MODER_MODER6 | GPIO_MODER_MODER7)) \
                  | (GPIO_MODER_MODER6_1 | GPIO_MODER_MODER7_1); /* (3) */
 
+#else
+      quan::stm32::module_enable<scl_pin::port_type>();
+      
+      quan::stm32::apply<
+      scl_pin
+      ,quan::stm32::gpio::mode::af1  
+      ,quan::stm32::gpio::otype::open_drain
+      ,quan::stm32::gpio::pupd::none         //  Use external pullup 5V tolerant pins
+      ,quan::stm32::gpio::ospeed::slow 
+   >();
+
+   quan::stm32::module_enable<sda_pin::port_type>();
+   quan::stm32::apply<
+      sda_pin
+      ,quan::stm32::gpio::mode::af1
+      ,quan::stm32::gpio::otype::open_drain
+      ,quan::stm32::gpio::pupd::none     //  Use external pullup 5V tolerant pins
+      ,quan::stm32::gpio::ospeed::slow 
+   >();
+#endif
+
+//   print_flags("moder", (uint32_t)GPIOB->MODER);
+//   print_flags("afr[0]",(uint32_t) GPIOB->AFR[0]);
+//   print_flags("otypr",(uint32_t) GPIOB->OTYPER);
+//
+//   while (1) {;}
 RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
  RCC->CFGR3 |= RCC_CFGR3_I2C1SW;
 
