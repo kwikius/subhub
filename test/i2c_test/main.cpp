@@ -21,9 +21,10 @@ int main()
 
    link_sp::serial_port::write("i2c Test\n");
 
-//   auto now = millis();
-//   typedef decltype (now) ms;
-//   while ( (millis() - now) < ms{1000} ){;}
+// Need to wait a short time afterstartup for eeprom to get powered up.
+   auto now = millis();
+   typedef decltype (now) ms;
+   while ( (millis() - now) < ms{500} ){;}
 
   // led::off();
    eeprom_rx_test();
