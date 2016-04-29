@@ -33,45 +33,6 @@ namespace {
    typedef quan::mcu::pin<quan::stm32::gpiob,7> sda_pin;
 }
 
-void verify_i2c()
-{
-   link_sp::serial_port::write("verifying i2c addresses\n");
-   static_assert( (uint32_t)i2c_type::get() == 0x40005400 ,"invalid i2c addr");  
-   if( ((uint32_t)&i2c_type::get()->cr1) != 0x40005400){
-      panic("invalid i2c->cr1 addr");
-   }
-   if( ((uint32_t)&i2c_type::get()->cr2) != 0x40005404){
-      panic("invalid i2c->cr2 addr");
-   }
-   if( ((uint32_t)&i2c_type::get()->oar1) != 0x40005408){
-      panic("invalid i2c->oar1 addr");
-   }
-   if( ((uint32_t)&i2c_type::get()->oar2) != 0x4000540C){
-      panic("invalid i2c->oar2 addr");
-   }
-   if( ((uint32_t)&i2c_type::get()->timingr) != 0x40005410){
-      panic("invalid i2c->timingr addr");
-   }
-   if( ((uint32_t)&i2c_type::get()->timeoutr) != 0x40005414){
-      panic("invalid i2c->timeoutr addr");
-   }
-   if( ((uint32_t)&i2c_type::get()->isr) != 0x40005418){
-      panic("invalid i2c->isr addr");
-   }
-   if( ((uint32_t)&i2c_type::get()->icr) != 0x4000541C){
-      panic("invalid i2c->icr addr");
-   }
-   if( ((uint32_t)&i2c_type::get()->pecr) != 0x40005420){
-      panic("invalid i2c->pecr addr");
-   }
-   if( ((uint32_t)&i2c_type::get()->rxdr) != 0x40005424){
-      panic("invalid i2c->rxdr addr");
-   }
-   if( ((uint32_t)&i2c_type::get()->txdr) != 0x40005428){
-      panic("invalid i2c->txdr addr");
-   }
-}
-
 volatile bool i2c::m_bus_taken_token=false;
 void (* volatile i2c::pfn_event_handler)() = i2c::default_event_handler;
 void (* volatile i2c::pfn_dma_handler)()   = i2c::default_dma_handler;
@@ -211,27 +172,19 @@ void i2c::set_slave_address_7bit(uint8_t address)
 void i2c::init()
 {
 
-#if 1
-
-#else
-  verify_i2c();
   // set up rcc clock config for system clock rcc cfgr3 bit 4 I2C1SW
   // 1 is sysclock 0 is HSI
    quan::stm32::rcc::get()->cfgr3.setbit<3>();
 
-   quan::stm32::module_reset<i2c_type>();
+
   // enable the module
    quan::stm32::module_enable<i2c_type>();
 
-   if ( ( quan::stm32::rcc::get()->apb1enr.get() & (1 << 21)) == 0){
-      link_sp::serial_port::write("i2c not turned on\n");
-   }else{
-      link_sp::serial_port::write("i2c turned on\n");
-   }
- #endif
+   quan::stm32::module_reset<i2c_type>();
 
-#if 1
+
  // setup the pins
+   quan::stm32::module_enable<scl_pin::port_type>();
    quan::stm32::apply<
       scl_pin
       ,quan::stm32::gpio::mode::af1  
@@ -240,6 +193,7 @@ void i2c::init()
       ,quan::stm32::gpio::ospeed::slow 
    >();
 
+   quan::stm32::module_enable<sda_pin::port_type>();
    quan::stm32::apply<
       sda_pin
       ,quan::stm32::gpio::mode::af1
@@ -247,7 +201,7 @@ void i2c::init()
       ,quan::stm32::gpio::pupd::none     //  Use external pullup 5V tolerant pins
       ,quan::stm32::gpio::ospeed::slow 
    >();
-#else
+
    {
       // filters
       // anfof and DNF[3:0] in cr1
@@ -270,14 +224,14 @@ void i2c::init()
       timingr = (timingr & ~(0xFF << 0)) | ( 0x13 << 0); // (SCLL)
       i2c_type::get()->timingr.set(timingr);
    }
-  #endif
+ 
    NVIC_EnableIRQ(I2C1_IRQn);
    NVIC_SetPriority(I2C1_IRQn, 0);
 // dma channel 2_3
    NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
    NVIC_SetPriority(DMA1_Channel2_3_IRQn, 0);
 
-   // dont enable the peripheral
+   i2c::enable();
 
 }
 

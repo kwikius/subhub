@@ -8,14 +8,6 @@
 
 using quan::stm32::millis;
 
-namespace {
-
-  // typedef quan::stm32::i2c1 i2c_type;
-
-   typedef quan::mcu::pin<quan::stm32::gpiob,6> scl_pin;
-   typedef quan::mcu::pin<quan::stm32::gpiob,7> sda_pin;
-}
-
 void print_flags(const char * name, uint32_t flags)
 {
    link_sp::serial_port::write(name);
@@ -30,7 +22,6 @@ struct eeprom_reader{
 
    static void error_handler()
    {
-      
       i2c::clear_irq_flags();
       i2c::disable_interrupts();
       link_sp::serial_port::write( "got i2c errors\n");
@@ -40,105 +31,22 @@ struct eeprom_reader{
    {
       if (i2c::get_bus()){
 
-#if 1
-
-#if 0
-  RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
-	
-
-  /* (1) open drain for I2C signals */
-  /* (2) AF1 for I2C signals */
-  /* (3) Select AF mode (10) on PB6 and PB7 */
-  GPIOB->OTYPER |= GPIO_OTYPER_OT_6 | GPIO_OTYPER_OT_7; /* (1) */
-  GPIOB->AFR[0] = (GPIOB->AFR[0] & ~(GPIO_AFRL_AFRL6 | GPIO_AFRL_AFRL7)) \
-                  | (1 << ( 6 * 4 )) | (1 << (7 * 4)); /* (2) */
-  GPIOB->MODER = (GPIOB->MODER & ~(GPIO_MODER_MODER6 | GPIO_MODER_MODER7)) \
-                 | (GPIO_MODER_MODER6_1 | GPIO_MODER_MODER7_1); /* (3) */
-
-#else
-      quan::stm32::module_enable<scl_pin::port_type>();
-      
-      quan::stm32::apply<
-      scl_pin
-      ,quan::stm32::gpio::mode::af1  
-      ,quan::stm32::gpio::otype::open_drain
-      ,quan::stm32::gpio::pupd::none         //  Use external pullup 5V tolerant pins
-      ,quan::stm32::gpio::ospeed::slow 
-   >();
-
-   quan::stm32::module_enable<sda_pin::port_type>();
-   quan::stm32::apply<
-      sda_pin
-      ,quan::stm32::gpio::mode::af1
-      ,quan::stm32::gpio::otype::open_drain
-      ,quan::stm32::gpio::pupd::none     //  Use external pullup 5V tolerant pins
-      ,quan::stm32::gpio::ospeed::slow 
-   >();
-#endif
-
-//   print_flags("moder", (uint32_t)GPIOB->MODER);
-//   print_flags("afr[0]",(uint32_t) GPIOB->AFR[0]);
-//   print_flags("otypr",(uint32_t) GPIOB->OTYPER);
-//
-//   while (1) {;}
-RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
- RCC->CFGR3 |= RCC_CFGR3_I2C1SW;
-
-  /* Configure I2C2, master */
-  /* (1) Timing register value is computed with the AN4235 xls file,
-   fast Mode @400kHz with I2CCLK = 48MHz, rise time = 140ns, fall time = 40ns */
-  /* (2) Periph enable */
-  /* (3) Slave address = 0x5A, write transfer, 1 byte to transmit, autoend */
-  I2C1->TIMINGR = (uint32_t)0x00B01A4B; /* (1) */
-  I2C1->CR1 = I2C_CR1_PE | I2C_CR1_TXIE; /* (2) */
-  I2C1->CR2 =  I2C_CR2_AUTOEND | (2<<16) | ((uint32_t)device_address); /* (3) */
-
-#else
-        
-          i2c::enable();
          m_p_data = data;
          m_data_length = len;
          m_data_address[0] = static_cast<uint8_t>((data_address & 0xFF00) >> 8U);
          m_data_address[1] = static_cast<uint8_t>(data_address & 0xFF);
          m_device_address = device_address ; // write address
-//
-         i2c::set_transmit_mode(); //ck
-         i2c::set_slave_address_7bit(device_address); //ck
-         i2c::set_transfer_size(2);  // want to write the address //ck
-         i2c::set_autoend(false); //ck
-         i2c::set_reload(false); //ck
+
+         i2c::set_transmit_mode();
+         i2c::set_slave_address_7bit(device_address); 
+         i2c::set_transfer_size(2);  // 2 buytes to write the address  in eeprom to read from
+         i2c::set_autoend(false); 
+         i2c::set_reload(false); 
          i2c::set_event_handler(on_data_address1);
- 
-        
-#endif
-        i2c::set_event_handler(on_data_address1);
-         uint32_t flags = i2c::get_status();
-         print_flags("isr",flags);
-         if ( flags & 1){
-             i2c::send_data(m_data_address[0]);
-         }
-         
          i2c::request_start_condition();
-         i2c::enable_error_irqs(true); //
-         i2c::enable_tx_irq(true); //ck
+         i2c::enable_error_irqs(true);
+         i2c::enable_tx_irq(true); 
 
-
-         auto const now = millis();
-         typedef decltype (now) ms;
-         while ( (millis() - now ) < ms{500}){
-            if ( i2c::get_status() & (1 << 1) ){
-               link_sp::serial_port::write("got txis\n");
-               break;
-            }
-            if (  i2c::get_status() != flags){
-               link_sp::serial_port::write("got status change\n");
-               print_flags("isr",i2c::get_status());
-               break;
-            }
-         ;}
-         print_flags("cr1", i2c::get_cr1());
-         print_flags("cr2", i2c::get_cr2());
-    
          return true;
       }else{
          link_sp::serial_port::write("couldnt get bus\n");
@@ -149,13 +57,13 @@ RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
    // txis
    static void on_data_address1()
    {
-       led::on();
+       
        if (i2c::have_errors()) {
           error_handler();
+          return;
        }
        i2c::set_event_handler(on_data_address2);
        i2c::send_data(m_data_address[0]);  // clears txis irq
-       
    }
 
    // txis
@@ -163,6 +71,7 @@ RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
    {
        if (i2c::have_errors()) {
           error_handler();
+          return;
        }
        i2c::enable_tx_irq(false);
        i2c::enable_tc_irq(true);
@@ -174,8 +83,10 @@ RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
      // tc
    static void on_data_address_tc()
    {
+      led::on();
       if (i2c::have_errors()) {
          error_handler();
+         return;
       }
       i2c::set_receive_mode();
       i2c::set_slave_address_7bit(m_device_address); // redo the address
@@ -191,6 +102,7 @@ RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
    {
       if (i2c::have_errors()) {
          error_handler();
+         return;
       }
       *m_p_data = i2c::receive_data(); // clears rxne irq
       ++m_p_data;
@@ -206,6 +118,7 @@ RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
    {  
        if (i2c::have_errors()) {
          error_handler();
+         return;
        }
        i2c::clear_stop_flag();
        i2c::enable_stop_irq(false);
@@ -240,11 +153,22 @@ void eeprom_rx_test()
 
    if (i2c::is_busy()){
       link_sp::serial_port::write( "i2c still busy ... hung\n");
+   }else{
+       link_sp::serial_port::write( "i2c not busy ... OK\n");
    }
    // if timeout or i2c::is_busy() 
    link_sp::serial_port::write( result? "success":"fail");
    link_sp::serial_port::write(" got ");
    link_sp::serial_port::write(data_in,8);
    link_sp::serial_port::put('\n');
+
+
+   for (uint8_t i = 0; i < numbytes; ++i){
+      char buf[ 20];
+      quan::itoasc(data_in[i],buf,16);
+      link_sp::serial_port::write(" --> ");
+      link_sp::serial_port::write( buf);
+      link_sp::serial_port::put('\n');
+   }
    
 }
