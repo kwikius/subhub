@@ -7,6 +7,11 @@
 #include "led.hpp"
 #include <quan/stm32/millis.hpp>
 
+/*
+Test of I2C using a 24LC128 eeprom
+ A led is set up on Servo 1 port for diagnostics
+*/
+
 extern "C" void setup();
 
 void eeprom_tx_test();
@@ -14,13 +19,15 @@ void eeprom_rx_test();
 
 using quan::stm32::millis;
 
+namespace {
+   typedef link_sp::serial_port xout;
+}
+
 int main()
 {
    setup();
 
-  // led::on();
-
-   link_sp::serial_port::write("i2c Test\n");
+   xout::write("i2c Test\n");
 
 // Need to wait a short time after startup for eeprom to get powered up.
    auto now = millis();
@@ -31,7 +38,8 @@ int main()
 
    eeprom_rx_test();
 
-   link_sp::serial_port::write("i2c Test done\n");
+   xout::write("i2c Test done\n");
+
    while (1){;}
 
 }
@@ -53,7 +61,7 @@ extern "C" void USART1_IRQHandler()
 {
    static_assert(
       std::is_same<
-         link_sp::serial_port::usart_type,quan::stm32::usart1
+         xout::usart_type,quan::stm32::usart1
       >::value
    ,"invalid usart for serial_port irq");
 

@@ -8,7 +8,7 @@ using namespace quan::stm32;
 
 namespace {
 
-//  Use Servo1 on PA5 TIM2_CH1
+//  Use Servo1 on PA5 TIM2_CH1 as LED
    typedef quan::mcu::pin<gpioa,5> led1;
 }
 

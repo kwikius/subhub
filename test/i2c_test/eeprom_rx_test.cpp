@@ -8,14 +8,18 @@
 
 using quan::stm32::millis;
 
+namespace {
+   typedef link_sp::serial_port xout;
+}
+
 void print_flags(const char * name, uint32_t flags)
 {
-   link_sp::serial_port::write(name);
-   link_sp::serial_port::write( "= 0x");
+   xout::write(name);
+   xout::write( "= 0x");
    char buf [ 50];
    quan::itoasc(flags,buf,16);
-   link_sp::serial_port::write(buf);
-   link_sp::serial_port::put('\n');
+   xout::write(buf);
+   xout::put('\n');
 }
 
 struct eeprom_reader{
@@ -24,7 +28,7 @@ struct eeprom_reader{
    {
       i2c::clear_irq_flags();
       i2c::disable_interrupts();
-      link_sp::serial_port::write( "got i2c errors\n");
+      xout::write( "got i2c errors\n");
    }
 
    static bool apply(uint8_t device_address,uint16_t data_address, uint8_t* data, uint16_t len)
@@ -49,7 +53,7 @@ struct eeprom_reader{
 
          return true;
       }else{
-         link_sp::serial_port::write("couldnt get bus\n");
+         xout::write("couldnt get bus\n");
          return false;
       }
    }
@@ -154,23 +158,23 @@ void eeprom_rx_test()
    while ( (millis() - now ) < ms{500}){;}
 
    if (i2c::is_busy()){
-      link_sp::serial_port::write( "i2c still busy ... hung\n");
+      xout::write( "i2c still busy ... hung\n");
    }else{
-       link_sp::serial_port::write( "i2c not busy ... OK\n");
+       xout::write( "i2c not busy ... OK\n");
    }
    // if timeout or i2c::is_busy() 
-   link_sp::serial_port::write( result? "success":"fail");
-   link_sp::serial_port::write(" got ");
-   link_sp::serial_port::write(data_in,8);
-   link_sp::serial_port::put('\n');
+   xout::write( result? "success":"fail");
+   xout::write(" got ");
+   xout::write(data_in,8);
+   xout::put('\n');
 
 
    for (uint8_t i = 0; i < numbytes; ++i){
       char buf[ 20];
       quan::itoasc(data_in[i],buf,16);
-      link_sp::serial_port::write(" --> ");
-      link_sp::serial_port::write( buf);
-      link_sp::serial_port::put('\n');
+      xout::write(" --> ");
+      xout::write( buf);
+      xout::put('\n');
    }
    
 }

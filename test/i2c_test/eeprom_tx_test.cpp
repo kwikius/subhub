@@ -7,13 +7,17 @@
 #include <quan/conversion/itoa.hpp>
 #include "led.hpp"
 
+namespace {
+   typedef link_sp::serial_port xout;
+}
+
 struct eeprom_writer{
 
     static void error_handler()
    {
       i2c::clear_irq_flags();
       i2c::disable_interrupts();
-      link_sp::serial_port::write( "got i2c errors\n");
+      xout::write( "got i2c errors\n");
    }
     static bool apply(uint8_t device_address,uint16_t data_address, uint8_t const* data, uint16_t len)
     {
@@ -37,7 +41,7 @@ struct eeprom_writer{
 
          return true;
       }else{
-         link_sp::serial_port::write("couldnt get bus\n");
+         xout::write("couldnt get bus\n");
          return false;
       }
     }
@@ -88,7 +92,6 @@ struct eeprom_writer{
        i2c::clear_stop_flag();
        i2c::enable_stop_irq(false);
        i2c::set_default_handlers();
-       led::on();
        i2c::release_bus();
    }
 private:
@@ -120,12 +123,12 @@ void eeprom_tx_test()
    while ( (millis() - now ) < ms{500}){;}
 
    if (i2c::is_busy()){
-      link_sp::serial_port::write( "i2c still busy ... hung\n");
+      xout::write( "i2c still busy ... hung\n");
    }else{
-       link_sp::serial_port::write( "i2c not busy ... OK\nWriter ");
+      xout::write( "i2c not busy ... OK\nWriter ");
    }
    // if timeout or i2c::is_busy() 
-   link_sp::serial_port::write( result? "success":"fail");
+   xout::write( result? "success":"fail");
   
-   link_sp::serial_port::put('\n');
+   xout::put('\n');
 }
