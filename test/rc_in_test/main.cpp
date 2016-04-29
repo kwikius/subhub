@@ -12,7 +12,7 @@ using quan::stm32::millis;
 
 namespace {
 
-   typedef decltype(millis()) ms;
+
    typedef link_sp::serial_port xout;
 
    // output a servo channel
@@ -27,6 +27,12 @@ namespace {
       xout::write(buf);
    }
 
+   typedef decltype(millis()) ms;
+   ms operator "" _ms(unsigned long long int v)
+   {
+      return static_cast<ms>(v);
+   }
+
 } // ~namespace
 
 int main()
@@ -39,7 +45,7 @@ int main()
 
    for(;;) {
       auto now = millis();
-      if((now - elapsed) > ms{200} && rc_inputs::have_new_input()) {
+      if((now - elapsed) > 200_ms && rc_inputs::have_new_input()) {
          elapsed = now;
          auto const nchan = rc_inputs::get_num_channels();
          for(uint8_t chan = 0; chan < nchan; ++chan) {
