@@ -83,7 +83,7 @@ struct eeprom_reader{
      // tc
    static void on_data_address_tc()
    {
-      led::on();
+     
       if (i2c::have_errors()) {
          error_handler();
          return;
@@ -123,6 +123,8 @@ struct eeprom_reader{
        i2c::clear_stop_flag();
        i2c::enable_stop_irq(false);
        i2c::set_default_handlers();
+       i2c::release_bus();
+       
    }
 
 private:

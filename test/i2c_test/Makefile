@@ -1,7 +1,9 @@
 
 include ../../common/mk/stm32f0_make_flags.mk
 
-object_files = main.o setup.o led.o i2c.o eeprom_rx_test.o
+object_files = main.o setup.o led.o i2c.o eeprom_tx_test.o \
+eeprom_rx_test.o
+
 objects = $(patsubst %.o,obj/%.o,$(object_files))
 
 lib_files =  system.a 

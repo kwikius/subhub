@@ -9,6 +9,7 @@
 
 extern "C" void setup();
 
+void eeprom_tx_test();
 void eeprom_rx_test();
 
 using quan::stm32::millis;
@@ -21,12 +22,13 @@ int main()
 
    link_sp::serial_port::write("i2c Test\n");
 
-// Need to wait a short time afterstartup for eeprom to get powered up.
+// Need to wait a short time after startup for eeprom to get powered up.
    auto now = millis();
    typedef decltype (now) ms;
    while ( (millis() - now) < ms{500} ){;}
 
-  // led::off();
+   eeprom_tx_test();
+
    eeprom_rx_test();
 
    link_sp::serial_port::write("i2c Test done\n");
