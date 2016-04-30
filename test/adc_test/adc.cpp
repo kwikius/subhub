@@ -75,20 +75,19 @@ void adc_setup()
       adc_timer::get()->cr2.set(cr2.value);
    }
 
-  
+   // enable adc in rcc apb2 bit 9
+   quan::stm32::rcc::get()->apb2enr.setbit<9>();
+
    // setup adc clock
    // set up clock mode N.B ADC must be disabled
    // set to internal clock (pclk) at pclk/4
-
    ADC1->CFGR2 = (0b10 << 30); //(CKMODE[1:0])
-
-   // enable adc in rcc apb2 bit 9
-   quan::stm32::rcc::get()->apb2enr.setbit<9>();
 
 // calibration step ( takes approx 6 usec )
    ADC1->CR |= (1 << 31);
    while (  ADC1->CR & (1 << 31)) {;}
    
+   // enable a2d module
    ADC1->CR |= (1 << 0) ; // (ADEN)
 
    // select channels to be converted PA0 --> ADC_IN0, PA2 --> ADC_IN2
@@ -163,5 +162,3 @@ extern "C" void ADC1_COMP_IRQHandler()
       ++ cur_adc_chan;
    }
 }
-
-
