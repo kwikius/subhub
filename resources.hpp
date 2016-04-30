@@ -22,6 +22,15 @@
 #include <quan/stm32/gpio.hpp>
 #include <quan/stm32/tim.hpp>
 
+/*
+  timers
+   Systick for millis() fun
+   TIM2   servos out
+   TIM14  for PPM in
+   TIM15 for ADC timer
+
+*/
+
 typedef quan::mcu::pin<quan::stm32::gpioa,5>    servo1_out_pin;
 typedef quan::mcu::pin<quan::stm32::gpioa,1>    servo2_out_pin;
 
