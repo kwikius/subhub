@@ -4,18 +4,56 @@
 #include "../../usarts.hpp"
 #include <quan/stm32/usart/irq_handler.hpp>
 #include <quan/conversion/itoa.hpp>
+#include "../../adc.hpp"
 
 extern "C" void setup();
 
 using quan::stm32::millis;
 
+namespace{
+
+ typedef  link_sp::serial_port xout;
+
+ // output an adc channel
+ void output_channel(uint8_t channel)
+   {
+      xout::write("ch[");
+      char buf[20];
+      quan::itoasc(channel,buf,10);
+      xout::write(buf);
+      xout::write("] = ");
+      quan::itoasc(adc::read(channel),buf,10);
+      xout::write(buf);
+   }
+
+   typedef decltype(millis()) ms;
+   ms operator "" _ms(unsigned long long int v)
+   {
+      return static_cast<ms>(v);
+   }
+}
+
 int main()
 {
    setup();
 
-   link_sp::serial_port::write("ADC Test\n");
+   xout::write("ADC Test\n");
 
-   while (1){;}
+   ms elapsed = millis();
+
+   for(;;) {
+      auto now = millis();
+      if((now - elapsed) > 200_ms ) {
+         elapsed = now;
+         for(uint8_t chan = 0; chan < 2; ++chan) {
+            if(chan > 0) {
+               xout::write(" ,");
+            }
+            output_channel(chan);
+         }
+         xout::put('\n');
+      }
+   }
 
 }
 

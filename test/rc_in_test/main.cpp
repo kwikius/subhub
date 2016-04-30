@@ -12,7 +12,6 @@ using quan::stm32::millis;
 
 namespace {
 
-
    typedef link_sp::serial_port xout;
 
    // output a servo channel

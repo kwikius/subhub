@@ -7,19 +7,17 @@
 #include <quan/stm32/gpio.hpp>
 #include <quan/stm32/rcc.hpp>
 #include <quan/constrain.hpp>
+#include "../../adc.hpp"
+#include "led.hpp"
 
 /*
    ADC on 
-   PA0  e.g airspeed
+   PA0 (airspeed)
    PA2(RSSI)
 
    ADC DMA on dma channel 1
 
-   ADC can be triggered by  TIM1, TIM2, TIM3 or TIM15
-
-  // trigger adc at 100 Hz
-  // use tim15
-   
+   ADC triggered at 10Hz by  TIM15
 */
 
 namespace {
@@ -41,6 +39,15 @@ namespace {
          ,quan::stm32::gpio::pupd::none
       >();
    };
+}
+
+uint16_t adc::read(uint8_t channel)
+{
+   if ( channel < 2 ){
+     return adc_results[channel];
+   }else{
+      return 0;
+   }
 }
 
 void adc_setup()
@@ -68,55 +75,88 @@ void adc_setup()
       adc_timer::get()->cr2.set(cr2.value);
    }
 
+  
+   // setup adc clock
+   // set up clock mode N.B ADC must be disabled
+   // set to internal clock (pclk) at pclk/4
+
+   ADC1->CFGR2 = (0b10 << 30); //(CKMODE[1:0])
+
    // enable adc in rcc apb2 bit 9
    quan::stm32::rcc::get()->apb2enr.setbit<9>();
-// calibration step
+
+// calibration step ( takes approx 6 usec )
    ADC1->CR |= (1 << 31);
    while (  ADC1->CR & (1 << 31)) {;}
    
    ADC1->CR |= (1 << 0) ; // (ADEN)
-   // setup adc clock
-   // set up clock mode N.B ADC must be disabled
-   // set to internal clock (pclk) at pclk/4
-   ADC1->CFGR2 = (0b10 << 30); //(CKMODE[1:0])
+
    // select channels to be converted PA0 --> ADC_IN0, PA2 --> ADC_IN2
    ADC1->CHSELR = (1 << 0) | ( 1 << 2); 
+
    // scan direction up 
    ADC1->CFGR1 &= ~( 1<< 2);
+
    // sampling time Min 1 us for 12 bit accuracy
    // clock is 12 MHz . Say 2 us for simplicity 
    // so min 24 cycles nearest available is 28.5 cyc ( according to d/s 25 k input impedance ok)
    ADC1->SMPR = 0b011;
+
    // set 12 bit resolution
-   ADC1->CFGR1 &= ~(0b11 << 3); // 
-   // to start with just use irq
+   ADC1->CFGR1 &= ~(0b11 << 3); // (RES[1:0])
+
    // single conversion triggered by tim15 overflow
    ADC1->CFGR1 &= ~(1 << 13U); // (CONT)
+
    // select trigger 4 which is TIM15 ref man table 32
    ADC1->CFGR1 = (ADC1->CFGR1 & ~(0b111 << 6)) | ( 0b100 << 6); // (EXTSEL[2:0])
+
    // select rising edge
    ADC1->CFGR1 = (ADC1->CFGR1 & ~(0b11 << 10)) | ( 0b01 << 10); // (EXTEN[1:0])
-   // right aligned
+
+   // right aligned ( ie towards lsb)
    ADC1->CFGR1 &= ~(1 << 5);// (ALIGN)
+
    // do whole sequence  get EOSEQ irq
-   ADC1->CFGR1 |= (1<<16);// (DISCEN)
+   ADC1->CFGR1 |= (1 << 16);// (DISCEN)
+
    // start timer
    adc_timer::get()->cr1.setbit<0>(); //(CEN)
+
+   NVIC_SetPriority(ADC1_COMP_IRQn,15); // low priority
+   NVIC_EnableIRQ(ADC1_COMP_IRQn);
+
+   // wait for the converter to be ready
+   while ((ADC1->ISR & (1 << 0)) == false) {;} //(ADRDY)
+
    // enable interrupts
-   ADC1->IER |= (1 << 3) | (1 << 2) ; // (EOSEQIE) (EOCIE)
+   ADC1->IER |= ((1 << 3) | (1 << 2)) ; // (EOSEQIE) (EOCIE)
+
+   // start the a2d
    ADC1->CR |= (1 << 2); // (ADSTRT)
+}
+
+void adc::init()
+{
+   adc_setup();
 }
 
 namespace {
 
+   uint32_t count = 0;
    uint8_t cur_adc_chan = 0;
 }
 
 extern "C" void ADC1_COMP_IRQHandler() __attribute__ ((interrupt ("IRQ")));
 extern "C" void ADC1_COMP_IRQHandler()
 {
+  
    adc_results[cur_adc_chan] = ADC1->DR; // clears EOC
-   if (ADC1->ISR & ( 1 << 3)){ // (EOSEQ)
+   if (ADC1->ISR & (1 << 3)){ // (EOSEQ)
+      if ( ++ count == 100){
+      count = 0;
+      led::complement();
+      }
       ADC1->ISR |= (1 << 3);   // clear EOSEQ
       cur_adc_chan = 0;
    }else{

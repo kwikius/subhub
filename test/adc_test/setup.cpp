@@ -19,7 +19,8 @@
 #include <stm32f0xx.h>
 #include "../../resources.hpp"
 #include "../../usarts.hpp"
-
+#include "../../adc.hpp"
+#include "led.hpp"
 
 namespace {
    void setup_events()
@@ -41,8 +42,9 @@ namespace {
 
 extern "C" void setup()
 {
-  setup_events();
-  setup_usarts();
-
+   led::setup();
+   adc::init();
+   setup_events();
+   setup_usarts();
 }
 
