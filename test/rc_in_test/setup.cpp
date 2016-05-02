@@ -45,6 +45,6 @@ extern "C" void setup()
 {
   setup_events();
   setup_usarts();
-  rc_inputs::init();
+  rc_inputs::initialise();
 }
 

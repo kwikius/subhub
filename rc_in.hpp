@@ -9,7 +9,7 @@ extern "C" void setup();
       static uint8_t  get_num_channels() ;
       static uint16_t get_channel(uint8_t ch);
    private:
-      static void     init();
+      static void     initialise();
       friend void     ::setup();
       rc_inputs() = delete;
       rc_inputs (rc_inputs const &) = delete;

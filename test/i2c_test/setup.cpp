@@ -23,6 +23,7 @@
 #include "led.hpp"
 
 namespace {
+
    void setup_events()
    {
       NVIC_SetPriority(SysTick_IRQn,interrupt_priority::systick_timer);
@@ -31,7 +32,7 @@ namespace {
 
    void setup_usarts()
    {
-     led::setup();
+     
      link_sp::serial_port::init();
      link_sp::serial_port::set_baudrate<115200,true>();
      link_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
@@ -39,15 +40,14 @@ namespace {
      aux_sp::serial_port::init();
      aux_sp::serial_port::set_irq_priority(interrupt_priority::gps_telem_port);
 
-    
    }
 }
 
 extern "C" void setup()
 {
-  i2c::init();
+  led::initialise();
+  i2c::initialise();
   setup_events();
   setup_usarts();
-  
 }
 

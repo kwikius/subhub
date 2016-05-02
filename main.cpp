@@ -26,6 +26,6 @@ int main()
    setup();
 
    apm::gps_t gps;
-   gps.init(get_gps_sp());
+   gps.initialise(get_gps_sp());
    gps.update();
 }

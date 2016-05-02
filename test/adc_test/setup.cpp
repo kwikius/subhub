@@ -42,8 +42,8 @@ namespace {
 
 extern "C" void setup()
 {
-   led::setup();
-   adc::init();
+   led::initialise();
+   adc::initialise();
    setup_events();
    setup_usarts();
 }

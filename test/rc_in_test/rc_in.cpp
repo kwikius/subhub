@@ -146,7 +146,7 @@ extern "C" void TIM14_IRQHandler()
    on_edge();
 }
 
-void rc_inputs::init()
+void rc_inputs::initialise()
 {
    for ( auto & pulse : m_input_rc_channels){ 
       pulse = (min_pulsewidth + max_pulsewidth)/2;

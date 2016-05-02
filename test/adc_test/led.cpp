@@ -27,7 +27,7 @@ void led::complement()
    quan::stm32::complement<led1>();
 }
 
-void led::setup()
+void led::initialise()
 {
    module_enable<led1::port_type>();
    apply<

@@ -4,7 +4,7 @@ include ../../common/mk/stm32f0_make_flags.mk
 object_files = main.o 
 objects = $(patsubst %.o,obj/%.o,$(object_files))
 
-lib_files = gps.a ap_math.a ap_gps.a
+lib_files = apm/gps.a apm/math.a system.a
 libs = $(patsubst %.a,../../lib/%.a,$(lib_files))
 
 all: test

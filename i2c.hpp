@@ -10,7 +10,7 @@ struct i2c{
    
    static void disable();
    static void enable();
-   static void init();
+   static void initialise();
    static bool is_busy() ;
 
    static bool get_bus();

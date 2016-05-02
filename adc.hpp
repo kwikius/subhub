@@ -9,7 +9,7 @@ struct adc{
 
 private:
    friend void ::setup();
-   static void init();
+   static void initialise();
 };
 
 #endif // QUAN_SUBHUB_ADC_HPP_INCLUDED

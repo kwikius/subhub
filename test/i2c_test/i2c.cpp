@@ -169,7 +169,7 @@ void i2c::set_slave_address_7bit(uint8_t address)
    p->cr2.set( (p->cr2.get() & and_mask) | ( static_cast<uint32_t>(address) ));
 }
 
-void i2c::init()
+void i2c::initialise()
 {
 
   // set up rcc clock config for system clock rcc cfgr3 bit 4 I2C1SW

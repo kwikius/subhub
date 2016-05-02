@@ -43,7 +43,7 @@ namespace apm{
        typedef quan::three_d::vect<quan::length_<int32_t>::mm>  position_error_type; 
 
        /// Startup initialisation.
-       void init(abc_serial_port& sp); // change to open ?
+       void initialise(abc_serial_port& sp); // change to open ?
 
        /// Update GPS state based on possible bytes received from the module.
        /// This routine must be called periodically (typically at 10Hz or

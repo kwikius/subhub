@@ -135,7 +135,7 @@ void adc_setup()
    ADC1->CR |= (1 << 2); // (ADSTRT)
 }
 
-void adc::init()
+void adc::initialise()
 {
    adc_setup();
 }

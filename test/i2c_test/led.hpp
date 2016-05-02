@@ -6,7 +6,7 @@ struct led{
    static void on();
    static void off();
    static void complement();
-   static void setup();
+   static void initialise();
 
 };
 

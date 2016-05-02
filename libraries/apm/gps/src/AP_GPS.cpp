@@ -50,7 +50,7 @@ apm::gps_t::gps_t()
 
 
 /// Startup initialisation.
-void apm::gps_t::init(abc_serial_port& sp)
+void apm::gps_t::initialise(abc_serial_port& sp)
 {port = &sp;}
 
 // baudrates to try to detect GPSes with
