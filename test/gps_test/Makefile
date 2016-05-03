@@ -1,7 +1,7 @@
 
 include ../../common/mk/stm32f0_make_flags.mk
 
-object_files = main.o 
+object_files = main.o setup.o gps_sp.o
 objects = $(patsubst %.o,obj/%.o,$(object_files))
 
 lib_files = apm/gps.a apm/math.a system.a
@@ -39,6 +39,9 @@ cleanlibs:
 	for libdir in $(patsubst %.a,%,$(lib_files)) ; do \
       make -C ../../libraries/$$libdir/src clean; \
    done
+
+clean_gps:
+	make -C ../../libraries/apm/gps/src clean
 
 upload : test
 	st-flash write bin/main.bin 0x8000000
