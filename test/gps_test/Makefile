@@ -1,7 +1,7 @@
 
 include ../../common/mk/stm32f0_make_flags.mk
 
-object_files = main.o setup.o gps_sp.o led.o
+object_files = main.o setup.o gps_sp.o led.o passthrough.o
 objects = $(patsubst %.o,obj/%.o,$(object_files))
 
 lib_files = apm/gps.a apm/math.a system.a

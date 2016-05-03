@@ -11,6 +11,8 @@ extern "C" void setup();
 
 using quan::stm32::millis;
 
+void passthrough();
+
 namespace {
 
    typedef decltype(millis()) ms;
@@ -21,8 +23,17 @@ namespace {
    }
 
    typedef link_sp::serial_port xout;
+   typedef link_sp::serial_port xin;
 
    //void do_state(apm::gps_t & gps);
+
+   void flush_input()
+   {
+     while (xin::in_avail())
+     {
+        (void) xin::get(); 
+     }
+   }
 
 }
 
@@ -33,31 +44,25 @@ int main()
 {
    setup();
 
-//   apm::gps_t gps;
-//   gps.initialise(get_gps_sp()); // just attaches the port
-
-   // want to see what if any GPS we have 
-
    xout::write("GPS test\n\n");
 
-   apm::abc_serial_port & sp = get_gps_sp();
+   flush_input();
+   
+   xout::write("options\n\n");
+   xout::write("passthrough = \'P\'");
 
-   sp.begin(38400);
+   while (!xin::in_avail()){;}
 
-   auto elapsed = millis();
-
-   led_on();
-   while ( (millis() - elapsed) < 1000_ms){;}
-   led_off();
-   elapsed = millis();
-   while ( (millis() - elapsed) < 1000_ms){;}
-
-
-   elapsed = millis();
    for (;;){
-     if ( sp.available()){
-         xout::put(sp.read());
-     }
+      switch ( xin::get()){
+         case 'P':
+         case 'p':
+            passthrough();
+         break;
+         default:
+            xout::write("invalid option\n");
+         break;
+      }
    }
 }
 
@@ -128,18 +133,6 @@ namespace {
 
 }
 #endif
-
-//extern "C" void USART2_IRQHandler() __attribute__ ((interrupt ("IRQ")));
-//extern "C" void USART2_IRQHandler()
-//{
-//   static_assert(
-//      std::is_same<
-//         aux_sp::serial_port::usart_type,quan::stm32::usart2
-//      >::value
-//   ,"invalid usart for serial_port irq");
-//
-//   quan::stm32::usart::irq_handler<aux_sp::serial_port>();
-//}
 
 extern "C" void USART1_IRQHandler() __attribute__ ((interrupt ("IRQ")));
 extern "C" void USART1_IRQHandler()
