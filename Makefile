@@ -38,6 +38,10 @@ cleanlibs:
 
 cleanall: clean cleanlibs
 
+clean_gps:
+	make -C libraries/apm/gps/src clean
+
+
 upload : test
 	st-flash write bin/main.bin 0x8000000
 
