@@ -24,11 +24,11 @@ int main()
 
    auto elapsed = millis();
    bool servo1_dir = true;
-   quan::time_<int64_t>::ms sp_out_last{0};
+   quan::time_<uint32_t>::ms sp_out_last{0};
    bool servo2_dir = false;
    for(;;){
       auto const now = millis();
-      if ( (now - sp_out_last) > quan::time_<int64_t>::ms{100}){
+      if ( (now - sp_out_last) > quan::time_<uint32_t>::ms{100U}){
          sp_out_last = now;
          if ( link_sp::serial_port::tx_reg_empty()){
         
@@ -104,7 +104,7 @@ extern "C" void USART1_IRQHandler()
    quan::stm32::usart::irq_handler<link_sp::serial_port>();
 }
 
-uint32_t volatile quan::stm32::detail::systick_tick::current = 0;
+//uint32_t volatile quan::stm32::detail::systick_tick::current = 0;
 
 extern "C" void SysTick_Handler()
 {

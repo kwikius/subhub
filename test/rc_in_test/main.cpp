@@ -82,7 +82,7 @@ extern "C" void USART1_IRQHandler()
    quan::stm32::usart::irq_handler<link_sp::serial_port>();
 }
 
-volatile uint32_t quan::stm32::detail::systick_tick::current = 0;
+//volatile uint32_t quan::stm32::detail::systick_tick::current = 0;
 
 extern "C" void SysTick_Handler()
 {

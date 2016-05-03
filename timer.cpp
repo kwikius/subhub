@@ -21,7 +21,7 @@
 
 void do_event_ticks();
 
-int64_t volatile quan::stm32::detail::systick_tick::current = 0;
+//int64_t volatile quan::stm32::detail::systick_tick::current = 0;
 
 extern "C" void SysTick_Handler()
 {
