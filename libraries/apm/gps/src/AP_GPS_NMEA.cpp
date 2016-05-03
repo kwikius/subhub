@@ -110,7 +110,7 @@ const char apm::AP_GPS_NMEA::_gpvtg_string[] = "GPVTG";
 #define hexdigit(x) ((x)>9?'A'+(x):'0'+(x))
 
 apm::AP_GPS_NMEA::AP_GPS_NMEA(apm::gps_t &_gps) 
-:AP_GPS_Backend(_gps),
+:AP_GPS_Backend(_gps,"NMEA",apm::gps_t::GPS_TYPE_NMEA),
     _parity(0),
     _is_checksum_term(false),
     _sentence_type(0),
@@ -306,7 +306,7 @@ bool apm::AP_GPS_NMEA::_term_complete()
                     make_gps_time(_new_date, _new_time * 10);
                     gps.state.last_gps_time_ms = quan::stm32::millis().numeric_value();
                     // To-Do: add support for proper reporting of 2D and 3D fix
-                    gps.state.status           = gps_t::GPS_OK_FIX_3D;
+                    gps.state.status           = gps_t::FIX_3D;
                     fill_3d_velocity();
                     break;
                 case _GPS_SENTENCE_GPGGA:
@@ -316,7 +316,7 @@ bool apm::AP_GPS_NMEA::_term_complete()
                     gps.state.num_sats      = _new_satellite_count;
                     gps.state.hdop          = _new_hdop;
                     // To-Do: add support for proper reporting of 2D and 3D fix
-                    gps.state.status        = gps_t::GPS_OK_FIX_3D;
+                    gps.state.status        = gps_t::FIX_3D;
                     break;
                 case _GPS_SENTENCE_GPVTG:
                     gps.state.ground_speed     = _new_speed*0.01f;

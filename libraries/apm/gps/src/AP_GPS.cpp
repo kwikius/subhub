@@ -38,13 +38,16 @@ Changed by Andy Little Apr 2016
 #define GPS_RTK_INJECT_TO_ALL 127
 
 apm::gps_t::gps_t()
-: m_preset_firmware_type{1} // auto
+: m_preset_firmware_type{GPS_TYPE_AUTO} // auto
 ,_navfilter{GPS_ENGINE_AIRBORNE_4G}
 ,_min_dgps{100}
 ,_sbas_mode{2}
 ,_min_elevation{-100}
 ,_gnss_mode{0}
 ,_save_config{0}
+,drivers{nullptr}
+,port{nullptr}
+,port_locked{false}
 {
 }
 
@@ -116,14 +119,14 @@ void apm::gps_t::detect()
     state.status = NO_GPS;
     state.hdop = 9999;
 
-	// by default the sbf/trimble gps outputs no data on its port, until configured.
-	if (m_preset_firmware_type == GPS_TYPE_SBF) {
-		//hal.console->print(" SBF ");
-		new_gps = new AP_GPS_SBF(*this);
-	} else if ((m_preset_firmware_type == GPS_TYPE_GSOF)) {
-		//hal.console->print(" GSOF ");
-		new_gps = new AP_GPS_GSOF(*this);
-	}
+//	// by default the sbf/trimble gps outputs no data on its port, until configured.
+//	if (m_preset_firmware_type == GPS_TYPE_SBF) {
+//		//hal.console->print(" SBF ");
+//		new_gps = new AP_GPS_SBF(*this);
+//	} else if ((m_preset_firmware_type == GPS_TYPE_GSOF)) {
+//		//hal.console->print(" GSOF ");
+//		new_gps = new AP_GPS_GSOF(*this);
+//	}
 
     // record the time when we started detection. This is used to try
     // to avoid initialising a uBlox as a NMEA GPS
@@ -201,13 +204,13 @@ void apm::gps_t::detect()
 	}
 }
 
-apm::gps_t::GPS_Status 
+apm::gps_t::fix_type_t 
 apm::gps_t::get_highest_supported_status() const
 {
    if (drivers != NULL){
       return drivers->highest_supported_status();
    }else{
-      return apm::gps_t::GPS_OK_FIX_3D;
+      return apm::gps_t::FIX_3D;
    }
 }
 
@@ -228,7 +231,25 @@ uint64_t apm::gps_t::get_time_epoch_usec()
     return (fix_time_ms + (quan::stm32::millis().numeric_value() - istate.last_gps_time_ms)) * 1000ULL;
 }
 
-//apm::gps_t::GPS_Status 
+const char* apm::gps_t::get_driver_name() const
+{
+    if (drivers != nullptr){
+      return drivers->get_driver_name();
+   }else{
+      return "NONE";
+   }
+}
+
+apm::gps_t::driver_id_t apm::gps_t::get_driver_id() const
+{
+   if (drivers != nullptr){
+      return drivers->get_driver_id();
+   }else{
+      return apm::gps_t::GPS_TYPE_NONE;
+   }
+}
+
+//apm::gps_t::fix_type_t 
 //apm::gps_t::highest_supported_status(void) const
 //{
 //    if (drivers[primary_instance] != NULL)
@@ -287,7 +308,7 @@ void apm::gps_t::update()
         }
     } else {
         timing.last_message_time_ms = tnow;
-        if (state.status >= GPS_OK_FIX_2D) {
+        if (state.status >= FIX_2D) {
             timing.last_fix_time_ms = tnow;
         }
     }

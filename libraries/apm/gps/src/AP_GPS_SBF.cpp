@@ -33,7 +33,7 @@ Changed by Andy Little Apr 2016
 #include "AP_GPS_SBF.h"
 
 apm::AP_GPS_SBF::AP_GPS_SBF(apm::gps_t &_gps) :
-    AP_GPS_Backend(_gps)
+    AP_GPS_Backend(_gps,"SBF",apm::gps_t::GPS_TYPE_SBF)
 {	
    sbf_msg.sbf_state = sbf_msg_parser_t::PREAMBLE1;
 	gps.port->write((const uint8_t*)_initialisation_blob[0], strlen(_initialisation_blob[0]));
@@ -229,35 +229,35 @@ bool apm::AP_GPS_SBF::process_message(void)
                 gps.state.status = gps_t::NO_FIX;
                 break;
             case 1: // standalone
-                gps.state.status = gps_t::GPS_OK_FIX_3D;
+                gps.state.status = gps_t::FIX_3D;
                 break;
             case 2: // dgps
-                gps.state.status = gps_t::GPS_OK_FIX_3D_DGPS;
+                gps.state.status = gps_t::FIX_3D_DGPS;
                 break;
             case 3: // fixed location
-                gps.state.status = gps_t::GPS_OK_FIX_3D;
+                gps.state.status = gps_t::FIX_3D;
                 break;
             case 4: // rtk fixed
-                gps.state.status = gps_t::GPS_OK_FIX_3D_RTK;
+                gps.state.status = gps_t::FIX_3D_RTK;
                 break;
             case 5: // rtk float
-                gps.state.status = gps_t::GPS_OK_FIX_3D_DGPS;
+                gps.state.status = gps_t::FIX_3D_DGPS;
                 break;
             case 6: // sbas
-                gps.state.status = gps_t::GPS_OK_FIX_3D;
+                gps.state.status = gps_t::FIX_3D;
                 break;
             case 7: // moving rtk fixed
-                gps.state.status = gps_t::GPS_OK_FIX_3D_RTK;
+                gps.state.status = gps_t::FIX_3D_RTK;
                 break;
             case 8: // moving rtk float
-                gps.state.status = gps_t::GPS_OK_FIX_3D_DGPS;
+                gps.state.status = gps_t::FIX_3D_DGPS;
                 break;
         }
         
         if ((temp.Mode & 64) > 0) // gps is in base mode
             gps.state.status = gps_t::NO_FIX;
         if ((temp.Mode & 128) > 0) // gps only has 2d fix
-            gps.state.status = gps_t::GPS_OK_FIX_2D;
+            gps.state.status = gps_t::FIX_2D;
                     
         return true;
     }

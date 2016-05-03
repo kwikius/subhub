@@ -77,7 +77,7 @@ namespace apm{
        // Methods
        bool read();
 
-       gps_t::GPS_Status highest_supported_status(void) { return gps_t::GPS_OK_FIX_3D_DGPS; }
+       gps_t::fix_type_t highest_supported_status(void) { return gps_t::FIX_3D_DGPS; }
 
        static bool _detect(struct UBLOX_detect_state &state, uint8_t data);
 
@@ -429,7 +429,7 @@ namespace apm{
        bool        _parse_gps();
 
        // used to update fix between status and position packets
-       gps_t::GPS_Status next_fix;
+       gps_t::fix_type_t next_fix;
 
        uint8_t rate_update_step;
        uint32_t _last_5hz_time;

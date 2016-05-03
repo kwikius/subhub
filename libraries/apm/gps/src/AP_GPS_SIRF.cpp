@@ -44,7 +44,7 @@ const uint8_t apm::AP_GPS_SIRF::_initialisation_blob[] = {
 };
 
 apm::AP_GPS_SIRF::AP_GPS_SIRF(gps_t &_gps) :
-    AP_GPS_Backend(_gps),
+    AP_GPS_Backend(_gps,"SIRF",apm::gps_t::GPS_TYPE_SIRF),
     _step(0),
     _gather(false),
     _payload_length(0),
@@ -186,9 +186,9 @@ bool apm::AP_GPS_SIRF::_parse_gps(void)
         if (_buffer.nav.fix_invalid) {
             gps.state.status = gps_t::NO_FIX;
         }else if ((_buffer.nav.fix_type & FIX_MASK) == FIX_3D) {
-            gps.state.status = gps_t::GPS_OK_FIX_3D;
+            gps.state.status = gps_t::FIX_3D;
         }else{
-            gps.state.status = gps_t::GPS_OK_FIX_2D;
+            gps.state.status = gps_t::FIX_2D;
         }
         gps.state.location.lat      = gps_t::lat_lon_type{swap_int32(_buffer.nav.latitude)};
         gps.state.location.lon      = gps_t::lat_lon_type{swap_int32(_buffer.nav.longitude)};

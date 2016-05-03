@@ -33,7 +33,7 @@ namespace apm{
 
    class AP_GPS_Backend{
    public:
-      AP_GPS_Backend(gps_t &_gps);
+
        virtual ~AP_GPS_Backend(void) {}
 
        // The read() method is the only one needed in each driver. It
@@ -45,8 +45,11 @@ namespace apm{
 
        // Highest status supported by this GPS. 
        // Allows external system to identify type of receiver connected.
-       virtual gps_t::GPS_Status highest_supported_status(void) { return gps_t::GPS_OK_FIX_3D; }
+       virtual gps_t::fix_type_t highest_supported_status(void) { return gps_t::FIX_3D; }
+       apm::gps_t::driver_id_t get_driver_id()const { return m_driver_id;}
+       const char* get_driver_name() const { return m_driver_name;}
    protected:
+       AP_GPS_Backend(gps_t &_gps,const char* driver_name, apm::gps_t::driver_id_t driver_id);
        gps_t &gps;                ///< access to frontend 
        // common utility functions
        static int32_t swap_int32(int32_t v);
@@ -62,6 +65,10 @@ namespace apm{
           assumes MTK19 millisecond form of bcd_time
        */
        void make_gps_time(uint32_t bcd_date, uint32_t bcd_milliseconds);
+       
+     private:
+       apm::gps_t::driver_id_t m_driver_id;
+       const char* const m_driver_name;
    };
 
 }// apm

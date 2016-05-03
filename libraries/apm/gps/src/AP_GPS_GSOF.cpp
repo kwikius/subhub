@@ -31,7 +31,7 @@ Changed by Andy Little Apr 2016
 #include <apm/math.hpp>
 
 apm::AP_GPS_GSOF::AP_GPS_GSOF(apm::gps_t &_gps) :
-    apm::AP_GPS_Backend(_gps)
+    apm::AP_GPS_Backend{_gps,"GSOF", apm::gps_t::GPS_TYPE_GSOF}
 {
     gsof_msg.gsof_state = gsof_msg_parser_t::STARTTX;
 
@@ -239,11 +239,11 @@ bool apm::AP_GPS_GSOF::process_message(void)
                 uint8_t posf2 = gsof_msg.data[a + 8];
                 //Debug("POSTIME: " + posf1 + " " + posf2);
                 if ((posf1 & 1) == 1) {
-                    gps.state.status = gps_t::GPS_OK_FIX_3D;
+                    gps.state.status = gps_t::FIX_3D;
                     if ((posf2 & 1) == 1) {
-                        gps.state.status = gps_t::GPS_OK_FIX_3D_DGPS;
+                        gps.state.status = gps_t::FIX_3D_DGPS;
                         if ((posf2 & 4) == 4) {
-                            gps.state.status = gps_t::GPS_OK_FIX_3D_RTK;
+                            gps.state.status = gps_t::FIX_3D_RTK;
                         }
                     }
                 } else {

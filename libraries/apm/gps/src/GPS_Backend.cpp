@@ -26,8 +26,8 @@ Changed by Andy Little Apr 2016
 #include <apm/gps.hpp>
 #include "GPS_Backend.h"
 
-apm::AP_GPS_Backend::AP_GPS_Backend(apm::gps_t &_gps) :
-    gps(_gps)
+apm::AP_GPS_Backend::AP_GPS_Backend(apm::gps_t & gps_in, const char* driver_name, apm::gps_t::driver_id_t driver_id_in) 
+:gps(gps_in),m_driver_name(driver_name), m_driver_id{driver_id_in}
 {
     gps.state.have_speed_accuracy = false;
     gps.state.have_horizontal_accuracy = false;

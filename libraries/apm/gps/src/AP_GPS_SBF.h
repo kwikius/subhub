@@ -42,7 +42,7 @@ namespace apm{
    public:
        AP_GPS_SBF(gps_t &_gps);
 
-       gps_t::GPS_Status highest_supported_status(void) { return gps_t::GPS_OK_FIX_3D_RTK; }
+       gps_t::fix_type_t highest_supported_status(void) { return gps_t::FIX_3D_RTK; }
 
        // Methods
        bool read();

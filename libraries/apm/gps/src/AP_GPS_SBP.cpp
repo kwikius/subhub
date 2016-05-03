@@ -43,7 +43,7 @@ bool apm::AP_GPS_SBP::logging_started = false;
 
 
 apm::AP_GPS_SBP::AP_GPS_SBP(apm::gps_t &_gps) :
-    apm::AP_GPS_Backend(_gps),
+    apm::AP_GPS_Backend(_gps,"SBP",apm::gps_t::GPS_TYPE_SBP),
 
     last_injected_data_ms(0),
     last_iar_num_hypotheses(0),
@@ -273,12 +273,19 @@ bool apm::AP_GPS_SBP::_attempt_state_update()
         gps.state.location.alt      = gps_t::altitude_type{pos_llh->height*1e2};
         gps.state.num_sats          = pos_llh->n_sats;
 
-        if (pos_llh->flags == 0)
-            gps.state.status = gps_t::GPS_OK_FIX_3D;
-        else if (pos_llh->flags == 2)
-            gps.state.status = gps_t::GPS_OK_FIX_3D_DGPS;
-        else if (pos_llh->flags == 1)
-            gps.state.status = gps_t::GPS_OK_FIX_3D_RTK;
+        switch (pos_llh->flags){
+           case 0:
+               gps.state.status = gps_t::FIX_3D;
+               break;
+           case 2:
+               gps.state.status = gps_t::FIX_3D_DGPS;
+               break;
+           case 1:
+               gps.state.status = gps_t::FIX_3D_RTK;
+               break;
+            default:
+               break;
+        }
  
         last_full_update_tow = last_vel_ned.tow;
         last_full_update_cpu_ms = now;

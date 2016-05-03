@@ -37,7 +37,7 @@ Changed by Andy Little Apr 2016
 const char apm::AP_GPS_MTK::_initialisation_blob[] = MTK_OUTPUT_5HZ SBAS_ON WAAS_ON MTK_NAVTHRES_OFF;
 
 apm::AP_GPS_MTK::AP_GPS_MTK(apm::gps_t &_gps) :
-    AP_GPS_Backend(_gps),
+    AP_GPS_Backend(_gps,"MTK",apm::gps_t::GPS_TYPE_MTK),
     _step(0),
     _payload_counter(0)
 {
@@ -144,9 +144,9 @@ restart:
 
             // set fix type
             if (_buffer.msg.fix_type == FIX_3D) {
-                gps.state.status = gps_t::GPS_OK_FIX_3D;
+                gps.state.status = gps_t::FIX_3D;
             }else if (_buffer.msg.fix_type == FIX_2D) {
-                gps.state.status = gps_t::GPS_OK_FIX_2D;
+                gps.state.status = gps_t::FIX_2D;
             }else{
                 gps.state.status = gps_t::NO_FIX;
             }
@@ -157,7 +157,7 @@ restart:
             gps.state.ground_course_cd  = wrap_360_cd(swap_int32(_buffer.msg.ground_course) / 10000);
             gps.state.num_sats          = _buffer.msg.satellites;
 
-            if (gps.state.status >= gps_t::GPS_OK_FIX_2D) {
+            if (gps.state.status >= gps_t::FIX_2D) {
                 make_gps_time(0, swap_int32(_buffer.msg.utc_time)*10);
             }
             // we don't change _last_gps_time as we don't know the

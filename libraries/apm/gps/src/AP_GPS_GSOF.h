@@ -36,9 +36,9 @@ namespace apm{
    public:
        AP_GPS_GSOF(gps_t &_gps);
 
-       gps_t::GPS_Status highest_supported_status(void) 
+       gps_t::fix_type_t highest_supported_status(void) 
        {
-           return gps_t::GPS_OK_FIX_3D_RTK;
+           return gps_t::FIX_3D_RTK;
        }
 
        // Methods

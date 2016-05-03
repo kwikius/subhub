@@ -43,7 +43,7 @@ namespace apm{
        typedef quan::three_d::vect<quan::length_<int32_t>::mm>  position_error_type; 
 
        /// Startup initialisation.
-       void initialise(abc_serial_port& sp); // change to open ?
+       void initialise(abc_serial_port& sp); 
 
        /// Update GPS state based on possible bytes received from the module.
        /// This routine must be called periodically (typically at 10Hz or
@@ -51,7 +51,7 @@ namespace apm{
        void update();
 
        // GPS driver types
-       enum GPS_Type {
+       enum driver_id_t {
            GPS_TYPE_NONE  = 0,
            GPS_TYPE_AUTO  = 1,
            GPS_TYPE_UBLOX = 2,
@@ -66,14 +66,17 @@ namespace apm{
            GPS_TYPE_GSOF  = 11,
        };
 
+       driver_id_t get_driver_id() const;
+       const char* get_driver_name() const;
+
        /// GPS status codes
-       enum GPS_Status {
+       enum fix_type_t {
            NO_GPS = 0,             ///< No GPS connected/detected
            NO_FIX = 1,             ///< Receiving valid GPS messages but no lock
-           GPS_OK_FIX_2D = 2,      ///< Receiving valid messages and 2D lock
-           GPS_OK_FIX_3D = 3,      ///< Receiving valid messages and 3D lock
-           GPS_OK_FIX_3D_DGPS = 4, ///< Receiving valid messages and 3D lock with differential improvements
-           GPS_OK_FIX_3D_RTK = 5,  ///< Receiving valid messages and 3D lock, with relative-positioning improvements
+           FIX_2D = 2,      ///< Receiving valid messages and 2D lock
+           FIX_3D = 3,      ///< Receiving valid messages and 3D lock
+           FIX_3D_DGPS = 4, ///< Receiving valid messages and 3D lock with differential improvements
+           FIX_3D_RTK = 5,  ///< Receiving valid messages and 3D lock, with relative-positioning improvements
        };
 
        // GPS navigation engine settings. Not all GPS receivers support
@@ -90,18 +93,14 @@ namespace apm{
            GPS_ENGINE_AIRBORNE_4G = 8
        };
 
-       /*
-         The GPS_State structure is filled in by the backend driver as it
-         parses each message from the GPS.
-        */
-      
-       GPS_Status get_status(void) const 
+ 
+       fix_type_t get_status(void) const 
        {
            return state.status;
        }
 
        // Query the highest status this GPS supports
-       GPS_Status get_highest_supported_status() const;
+       fix_type_t get_highest_supported_status() const;
 
        const position_type & get_location() const 
        {
@@ -222,7 +221,7 @@ namespace apm{
 
         struct GPS_State {
            // all the following fields must all be filled by the backend driver
-           GPS_Status status;                  ///< driver fix status
+           fix_type_t status;                  ///< driver fix status
            uint32_t time_week_ms;              ///< GPS time (milliseconds from start of GPS week)
            uint16_t time_week;                 ///< GPS week number
            position_type location;                  ///< last fix location
@@ -260,7 +259,7 @@ namespace apm{
        void inject_data(uint8_t *data, uint8_t len);
 
        // configuration parameters
-       int8_t m_preset_firmware_type; // [GPS_MAX_INSTANCES];
+       int8_t m_preset_firmware_type; 
        int8_t _navfilter;
       // int8_t _auto_switch;
        int8_t _min_dgps;

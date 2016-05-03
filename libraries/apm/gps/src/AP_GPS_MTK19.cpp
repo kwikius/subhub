@@ -37,7 +37,7 @@ Changed by Andy Little Apr 2016
 #include "AP_GPS_MTK.h"
 
 apm::AP_GPS_MTK19::AP_GPS_MTK19(apm::gps_t &_gps) :
-    AP_GPS_Backend(_gps),
+    AP_GPS_Backend(_gps,"MTK19",apm::gps_t::GPS_TYPE_MTK19),
     _step(0),
     _payload_counter(0),
     _mtk_revision(0),
@@ -136,9 +136,9 @@ restart:
 
             // parse fix
             if (_buffer.msg.fix_type == FIX_3D || _buffer.msg.fix_type == FIX_3D_SBAS) {
-                gps.state.status = gps_t::GPS_OK_FIX_3D;
+                gps.state.status = gps_t::FIX_3D;
             }else if (_buffer.msg.fix_type == FIX_2D || _buffer.msg.fix_type == FIX_2D_SBAS) {
-                gps.state.status = gps_t::GPS_OK_FIX_2D;
+                gps.state.status = gps_t::FIX_2D;
             }else{
                 gps.state.status = gps_t::NO_FIX;
             }
@@ -156,7 +156,7 @@ restart:
             gps.state.num_sats          = _buffer.msg.satellites;
             gps.state.hdop              = _buffer.msg.hdop;
             
-            if (gps.state.status >= gps_t::GPS_OK_FIX_2D) {
+            if (gps.state.status >= gps_t::FIX_2D) {
                 if (_fix_counter == 0) {
                     uint32_t bcd_time_ms;
                     bcd_time_ms = _buffer.msg.utc_time;

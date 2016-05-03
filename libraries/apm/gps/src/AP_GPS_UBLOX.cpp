@@ -40,7 +40,7 @@ Changed by Andy Little Apr 2016
 #endif
 
 apm::AP_GPS_UBLOX::AP_GPS_UBLOX(apm::gps_t &_gps) :
-    apm::AP_GPS_Backend(_gps),
+    apm::AP_GPS_Backend(_gps,"UBLOX",apm::gps_t::GPS_TYPE_UBLOX),
     _step(0),
     _msg_id(0),
     _payload_length(0),
@@ -551,11 +551,11 @@ bool apm::AP_GPS_UBLOX::_parse_gps(void)
         if (_buffer.status.fix_status & NAV_STATUS_FIX_VALID) {
             if( (_buffer.status.fix_type == AP_GPS_UBLOX::FIX_3D) &&
                 (_buffer.status.fix_status & AP_GPS_UBLOX::NAV_STATUS_DGPS_USED)) {
-                next_fix = gps_t::GPS_OK_FIX_3D_DGPS;
+                next_fix = gps_t::FIX_3D_DGPS;
             }else if( _buffer.status.fix_type == AP_GPS_UBLOX::FIX_3D) {
-                next_fix = gps_t::GPS_OK_FIX_3D;
+                next_fix = gps_t::FIX_3D;
             }else if (_buffer.status.fix_type == AP_GPS_UBLOX::FIX_2D) {
-                next_fix = gps_t::GPS_OK_FIX_2D;
+                next_fix = gps_t::FIX_2D;
             }else{
                 next_fix = gps_t::NO_FIX;
                 gps.state.status = gps_t::NO_FIX;
@@ -580,11 +580,11 @@ bool apm::AP_GPS_UBLOX::_parse_gps(void)
         if (_buffer.solution.fix_status & NAV_STATUS_FIX_VALID) {
             if( (_buffer.solution.fix_type == AP_GPS_UBLOX::FIX_3D) &&
                 (_buffer.solution.fix_status & AP_GPS_UBLOX::NAV_STATUS_DGPS_USED)) {
-                next_fix = gps_t::GPS_OK_FIX_3D_DGPS;
+                next_fix = gps_t::FIX_3D_DGPS;
             }else if( _buffer.solution.fix_type == AP_GPS_UBLOX::FIX_3D) {
-                next_fix = gps_t::GPS_OK_FIX_3D;
+                next_fix = gps_t::FIX_3D;
             }else if (_buffer.solution.fix_type == AP_GPS_UBLOX::FIX_2D) {
-                next_fix = gps_t::GPS_OK_FIX_2D;
+                next_fix = gps_t::FIX_2D;
             }else{
                 next_fix = gps_t::NO_FIX;
                 gps.state.status = gps_t::NO_FIX;
@@ -597,7 +597,7 @@ bool apm::AP_GPS_UBLOX::_parse_gps(void)
             gps.state.hdop = _buffer.solution.position_DOP;
         }
         gps.state.num_sats    = _buffer.solution.satellites;
-        if (next_fix >= gps_t::GPS_OK_FIX_2D) {
+        if (next_fix >= gps_t::FIX_2D) {
             gps.state.last_gps_time_ms = quan::stm32::millis().numeric_value();
             if (gps.state.time_week == _buffer.solution.week &&
                 gps.state.time_week_ms + 200 == _buffer.solution.time) {
