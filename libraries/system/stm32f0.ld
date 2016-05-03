@@ -17,10 +17,10 @@
 */
 
 /* Heap size will be set to this if allocing memmory*/
-_HeapSize = 0x0;
+_HeapSize = 0x800;
 
 /* linker checks that stack is bigger than this */
-_MinStackSize = 0x200; 
+_MinStackSize = 0x800; 
 
 /*STM32F051K8XXX  */
 MEMORY

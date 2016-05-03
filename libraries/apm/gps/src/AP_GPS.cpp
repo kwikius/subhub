@@ -34,6 +34,8 @@ Changed by Andy Little Apr 2016
 
 #include <quan/stm32/millis.hpp>
 
+void console_out(const char*);
+
 #define GPS_BAUD_TIME_MS 1200
 #define GPS_RTK_INJECT_TO_ALL 127
 
@@ -49,6 +51,12 @@ apm::gps_t::gps_t()
 ,port{nullptr}
 ,port_locked{false}
 {
+   detect_state.detect_started_ms = 0U;
+   detect_state.last_baud_change_ms = 0U;
+   detect_state.last_baud = 0U;
+
+   detect_state.nmea_detect_state.step = 0;
+   detect_state.nmea_detect_state.ck = 0;
 }
 
 
@@ -107,8 +115,10 @@ void apm::gps_t::send_blob_update()
  */
 void apm::gps_t::detect()
 {
+   // console_out("in detect\n");
     if (port == NULL) {
         // UART not available
+        // console_out("no port\n");
         return;
     }
 
@@ -134,8 +144,11 @@ void apm::gps_t::detect()
         dstate->detect_started_ms = now;
     }
 
-    if (now - dstate->last_baud_change_ms > GPS_BAUD_TIME_MS) {
-        // try the next baud rate
+    if ((now - dstate->last_baud_change_ms) > GPS_BAUD_TIME_MS) {
+     // console_out("next baud\n");
+      // todo
+      // dstate->last_baud_idx = (dstate->last_baud_idx + 1) % ARRAY_SIZE(_baudrates);
+      // try the next baud rate
 		dstate->last_baud++;
 		if (dstate->last_baud == ARRAY_SIZE(_baudrates)) {
 			dstate->last_baud = 0;
@@ -151,6 +164,18 @@ void apm::gps_t::detect()
     while (initblob_state.remaining == 0 && port->available() > 0
             && new_gps == NULL) {
         uint8_t data = port->read();
+
+      if ( AP_GPS_NMEA::_detect(dstate->nmea_detect_state, data)){
+
+         new_gps = new AP_GPS_NMEA(*this);
+      
+        state.status = NO_FIX;
+        drivers = new_gps;
+        timing.last_message_time_ms = now;
+      }
+
+#if 0
+        
         /*
           running a uBlox at less than 38400 will lead to packet
           corruption, as we can't receive the packets in the 200ms
@@ -158,6 +183,8 @@ void apm::gps_t::detect()
           the uBlox into 38400 no matter what rate it is configured
           for.
         */
+
+     // console_out("at here\n");
         if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_UBLOX) &&
             //pgm_read_dword(&_baudrates[dstate->last_baud]) >= 38400 && 
             _baudrates[dstate->last_baud] >= 38400 && 
@@ -195,6 +222,7 @@ void apm::gps_t::detect()
 				new_gps = new AP_GPS_NMEA(*this);
 			}
 		}
+#endif
 	}
 
 	if (new_gps != NULL) {

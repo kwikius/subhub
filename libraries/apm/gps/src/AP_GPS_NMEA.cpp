@@ -431,17 +431,22 @@ bool apm::AP_GPS_NMEA::_term_complete()
     return false;
 }
 
+void console_out(const char*);
+
 /*
   detect a NMEA GPS. Adds one byte, and returns true if the stream
   matches a NMEA string
  */
 bool apm::AP_GPS_NMEA::_detect(struct NMEA_detect_state &det_state, uint8_t data)
 {
+   
 	switch (det_state.step) {
 	case 0:
 		det_state.ck = 0;
+     
 		if ('$' == data) {
 			det_state.step++;
+         
 		}
 		break;
 	case 1:
@@ -464,6 +469,9 @@ bool apm::AP_GPS_NMEA::_detect(struct NMEA_detect_state &det_state, uint8_t data
 		}
 		det_state.step = 0;
 		break;
+    default:
+       console_out("nmea unknown\n");
+      break;
     }
     return false;
 }

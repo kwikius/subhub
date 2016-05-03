@@ -12,6 +12,7 @@ extern "C" void setup();
 using quan::stm32::millis;
 
 void passthrough();
+void run_gps();
 
 namespace {
 
@@ -34,7 +35,6 @@ namespace {
         (void) xin::get(); 
      }
    }
-
 }
 
 void led_on();
@@ -49,8 +49,8 @@ int main()
    flush_input();
    
    xout::write("options\n\n");
-   xout::write("passthrough = \'P\'");
-
+   xout::write("passthrough = \'p\'");
+   xout::write("run gps     = \'r\'");
    while (!xin::in_avail()){;}
 
    for (;;){
@@ -59,6 +59,10 @@ int main()
          case 'p':
             passthrough();
          break;
+         case 'R':
+         case 'r':
+            run_gps();
+         break;
          default:
             xout::write("invalid option\n");
          break;
@@ -66,73 +70,7 @@ int main()
    }
 }
 
-#if 0
-namespace {
 
-   void output( float v )
-   {
-      char buf[50];
-      quan::float_to_ascii<7>(v,buf);
-      xout::write(buf);
-   }
-
-   void output_location(apm::gps_t::position_type const & loc)
-   {
-      
-      xout::write("lat = ");
-      output(loc.lat.numeric_value());
-      xout::write("\nlon = ");
-      output(loc.lon.numeric_value());
-      xout::write("\nalt = ");
-      output(loc.lat.numeric_value());
-      xout::put('\n');
-   }
-
-   enum class gps_state_t {
-      unknown,   have_driver, have_fix
-   };
-
-   gps_state_t gps_state = gps_state_t::unknown; 
-
-   ms elapsed = 0_ms;
-
-   void do_state(apm::gps_t & gps)
-   {
-      gps.update();
-
-      switch (gps_state) {
-      case gps_state_t::unknown:
-         if ( gps.get_driver_id() != apm::gps_t::GPS_TYPE_NONE ){
-            xout::write("got driver ");
-            xout::write(gps.get_driver_name());
-            xout::put('\n');
-            gps_state = gps_state_t::have_driver;
-         }else{
-            if (millis() - elapsed > 2000_ms){
-               elapsed = millis();
-               xout::write("no driver\n");
-            }
-         }
-         break;
-      case gps_state_t::have_driver:
-         if ( gps.have_3d_fix()){
-            xout::write("Have 3D fix\n");
-            gps_state = gps_state_t::have_fix;
-         }
-         break;
-      case gps_state_t::have_fix:
-         if ( (millis() - elapsed ) > 500_ms ){
-            elapsed = millis();
-            output_location(gps.get_location());
-         }
-         break;
-      default:
-         break;
-      }
-   }
-
-}
-#endif
 
 extern "C" void USART1_IRQHandler() __attribute__ ((interrupt ("IRQ")));
 extern "C" void USART1_IRQHandler()

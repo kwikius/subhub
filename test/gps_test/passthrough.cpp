@@ -57,6 +57,10 @@ namespace {
    }
 }
 
+/*
+   when baud is changed just start typing next baud rate to change
+*/
+
 void passthrough()
 {
    apm::abc_serial_port & gps_sp = get_gps_sp();

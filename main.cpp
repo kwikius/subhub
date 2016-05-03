@@ -21,6 +21,11 @@
 
 extern "C" void setup();
 
+void console_out(const char* text)
+{
+   //todo  writetext to link sp
+}
+
 int main()
 {
    setup();
