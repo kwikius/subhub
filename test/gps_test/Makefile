@@ -1,13 +1,14 @@
 
 include ../../common/mk/stm32f0_make_flags.mk
 
-object_files = main.o setup.o gps_sp.o
+object_files = main.o setup.o gps_sp.o led.o
 objects = $(patsubst %.o,obj/%.o,$(object_files))
 
 lib_files = apm/gps.a apm/math.a system.a
 libs = $(patsubst %.a,../../lib/%.a,$(lib_files))
 
 all: test
+
 
 test: bin/main.elf
 	@ echo "...copying"
@@ -44,5 +45,5 @@ clean_gps:
 	make -C ../../libraries/apm/gps/src clean
 
 upload : test
-	st-flash write bin/main.bin 0x8000000
+	/home/andy/bin/stm32flash -b 115200 -f -v -w bin/main.bin /dev/ttyUSB0
 
