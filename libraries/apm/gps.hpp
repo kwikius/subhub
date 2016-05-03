@@ -93,8 +93,12 @@ namespace apm{
            GPS_ENGINE_AIRBORNE_4G = 8
        };
 
- 
-       fix_type_t get_status(void) const 
+       bool have_3d_fix()const
+       {
+          return static_cast<uint32_t>(state.status) > static_cast<uint32_t>(fix_type_t::FIX_2D);
+       }
+
+       fix_type_t get_fix_type() const 
        {
            return state.status;
        }
