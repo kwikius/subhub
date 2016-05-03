@@ -19,6 +19,7 @@
 #include <stm32f0xx.h>
 #include "../../resources.hpp"
 #include "../../usarts.hpp"
+#include "led.hpp"
 
 void servo_setup();
 
@@ -37,6 +38,7 @@ namespace {
      link_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
 
      aux_sp::serial_port::init();
+    // aux_sp::serial_port::set_baudrate<38400,false>();
      aux_sp::serial_port::set_irq_priority(interrupt_priority::gps_telem_port);
    }
 }
@@ -45,5 +47,6 @@ extern "C" void setup()
 {
   setup_events();
   setup_usarts();
+  led::initialise();
 }
 
