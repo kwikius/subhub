@@ -36,6 +36,7 @@ Changed by Andy Little Apr 2016
 
 void console_out(const char*);
 
+ // time to output a baud rate before trying another
 #define GPS_BAUD_TIME_MS 1200
 #define GPS_RTK_INJECT_TO_ALL 127
 
