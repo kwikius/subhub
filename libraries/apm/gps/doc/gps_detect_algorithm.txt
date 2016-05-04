@@ -1,0 +1,49 @@
+
+
+/*
+ Detect algorithm for the Ardupilot GPS driver
+   https://github.com/ArduPilot/ardupilot/tree/master/libraries/AP_GPS
+   on a particular port
+   try to detect a gps "driver"
+   Function is stateful
+   keep re-entering until
+   a driver is detected
+*/
+detect()
+{
+  
+   for (driver_name in SBF, GSOF, QURT , PX4){
+      if (want_specific_driver(driver_name){
+         driver = get_driver(driver_name);
+         assert(driver);
+         init_driver();
+         return;
+      }
+   }
+
+   if ( detect_started_time == 0){
+      detect_started_time = millis()
+   }
+
+   if ( been long enough at this baudrate){
+      do next baudrate() // update baud and restart sending the init_blob at this baud
+   }
+
+   if ( input_blob has finished sending at this baud){
+      
+      if ( in.avail() {
+         byte input = in.get()
+
+         for ( driver_name in UBLOX,MTK19,MTK,SBBP,SIRF,ERB,NMEA ){
+            // slightly simplified some detect only at higher bauds after a certain time etc
+            driver = detect(driver_name, input);
+            if ( driver ){
+              init_driver(driver)
+              return;
+            }
+         }
+      }
+   }else {
+      update sending the init_blob 
+   }
+}
