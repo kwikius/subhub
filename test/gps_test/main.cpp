@@ -48,9 +48,9 @@ int main()
 
    flush_input();
    
-   xout::write("options\n\n");
-   xout::write("passthrough = \'p\'");
-   xout::write("run gps     = \'r\'");
+   xout::write("options:\n");
+   xout::write("   passthrough = \'p\'\n");
+   xout::write("   run gps     = \'r\'\n");
    while (!xin::in_avail()){;}
 
    for (;;){

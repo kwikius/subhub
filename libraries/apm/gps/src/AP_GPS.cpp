@@ -112,67 +112,55 @@ void apm::gps_t::send_blob_update()
   run detection step If this finds a GPS then it
   will fill in drivers and change state.status
   from NO_GPS to NO_FIX.
+
+   conditions
+   on entry drivers is nullptr
  */
 void apm::gps_t::detect()
 {
    // console_out("in detect\n");
     if (port == NULL) {
-        // UART not available
-        // console_out("no port\n");
         return;
     }
 
-    AP_GPS_Backend *new_gps = NULL;
-    struct detect_state *dstate = &detect_state;
+   // struct detect_state *dstate = &detect_state;
     uint32_t now = quan::stm32::millis().numeric_value();
 
     state.status = NO_GPS;
     state.hdop = 9999;
 
-//	// by default the sbf/trimble gps outputs no data on its port, until configured.
-//	if (m_preset_firmware_type == GPS_TYPE_SBF) {
-//		//hal.console->print(" SBF ");
-//		new_gps = new AP_GPS_SBF(*this);
-//	} else if ((m_preset_firmware_type == GPS_TYPE_GSOF)) {
-//		//hal.console->print(" GSOF ");
-//		new_gps = new AP_GPS_GSOF(*this);
-//	}
-
     // record the time when we started detection. This is used to try
     // to avoid initialising a uBlox as a NMEA GPS
-    if (dstate->detect_started_ms == 0) {
-        dstate->detect_started_ms = now;
+    if (detect_state.detect_started_ms == 0) {
+        detect_state.detect_started_ms = now;
     }
 
-    if ((now - dstate->last_baud_change_ms) > GPS_BAUD_TIME_MS) {
+    if ((now - detect_state.last_baud_change_ms) > GPS_BAUD_TIME_MS) {
      // console_out("next baud\n");
       // todo
-      // dstate->last_baud_idx = (dstate->last_baud_idx + 1) % ARRAY_SIZE(_baudrates);
+      // detect_state.last_baud_idx = (detect_state.last_baud_idx + 1) % ARRAY_SIZE(_baudrates);
       // try the next baud rate
-		dstate->last_baud++;
-		if (dstate->last_baud == ARRAY_SIZE(_baudrates)) {
-			dstate->last_baud = 0;
+		detect_state.last_baud++;
+		if (detect_state.last_baud == ARRAY_SIZE(_baudrates)) {
+			detect_state.last_baud = 0;
 		}
-      uint32_t baudrate = _baudrates[dstate->last_baud];
+      uint32_t baudrate = _baudrates[detect_state.last_baud];
 		port->begin(baudrate);
-		dstate->last_baud_change_ms = now;
-      send_blob_start( _initialisation_blob, sizeof(_initialisation_blob));
+		detect_state.last_baud_change_ms = now;
+     // send_blob_start( _initialisation_blob, sizeof(_initialisation_blob));
     }
 
-    send_blob_update();
+   // send_blob_update();
 
-    while (initblob_state.remaining == 0 && port->available() > 0
-            && new_gps == NULL) {
-        uint8_t data = port->read();
-
-      if ( AP_GPS_NMEA::_detect(dstate->nmea_detect_state, data)){
-
-         new_gps = new AP_GPS_NMEA(*this);
-      
-        state.status = NO_FIX;
-        drivers = new_gps;
-        timing.last_message_time_ms = now;
-      }
+   // while (initblob_state.remaining == 0 && port->available() > 0
+    while (port->available() > 0 ) {
+         uint8_t data = port->read();
+         if ( AP_GPS_NMEA::_detect(detect_state.nmea_detect_state, data)){
+            drivers = new AP_GPS_NMEA(*this);
+            state.status = NO_FIX;
+            timing.last_message_time_ms = now;
+            return;
+         }
 
 #if 0
         
@@ -186,50 +174,50 @@ void apm::gps_t::detect()
 
      // console_out("at here\n");
         if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_UBLOX) &&
-            //pgm_read_dword(&_baudrates[dstate->last_baud]) >= 38400 && 
-            _baudrates[dstate->last_baud] >= 38400 && 
-            AP_GPS_UBLOX::_detect(dstate->ublox_detect_state, data)) {
+            //pgm_read_dword(&_baudrates[detect_state.last_baud]) >= 38400 && 
+            _baudrates[detect_state.last_baud] >= 38400 && 
+            AP_GPS_UBLOX::_detect(detect_state.ublox_detect_state, data)) {
             //hal.console->print(" ublox ");
             new_gps = new AP_GPS_UBLOX(*this);
         } 
 		  else if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_MTK19) &&
-                 AP_GPS_MTK19::_detect(dstate->mtk19_detect_state, data)) {
+                 AP_GPS_MTK19::_detect(detect_state.mtk19_detect_state, data)) {
 			//hal.console->print(" MTK19 ");
 			new_gps = new AP_GPS_MTK19(*this);
 		} 
 		else if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_MTK) &&
-                 AP_GPS_MTK::_detect(dstate->mtk_detect_state, data)) {
+                 AP_GPS_MTK::_detect(detect_state.mtk_detect_state, data)) {
 			//hal.console->print(" MTK ");
 			new_gps = new AP_GPS_MTK(*this);
 		}
         else if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_SBP) &&
-                 AP_GPS_SBP::_detect(dstate->sbp_detect_state, data)) {
+                 AP_GPS_SBP::_detect(detect_state.sbp_detect_state, data)) {
             //hal.console->print(" SBP ");
             new_gps = new AP_GPS_SBP(*this);
         }
 		// save a bit of code space on a 1280
 		else if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_SIRF) &&
-                 AP_GPS_SIRF::_detect(dstate->sirf_detect_state, data)) {
+                 AP_GPS_SIRF::_detect(detect_state.sirf_detect_state, data)) {
 			//hal.console->print(" SIRF ");
 			new_gps = new AP_GPS_SIRF(*this);
 		}
-		else if (now - dstate->detect_started_ms > (ARRAY_SIZE(_baudrates) * GPS_BAUD_TIME_MS)) {
+		else if (now - detect_state.detect_started_ms > (ARRAY_SIZE(_baudrates) * GPS_BAUD_TIME_MS)) {
 			// prevent false detection of NMEA mode in
 			// a MTK or UBLOX which has booted in NMEA mode
 			if ((m_preset_firmware_type == GPS_TYPE_AUTO || m_preset_firmware_type == GPS_TYPE_NMEA) &&
-                AP_GPS_NMEA::_detect(dstate->nmea_detect_state, data)) {
+                AP_GPS_NMEA::_detect(detect_state.nmea_detect_state, data)) {
 				//hal.console->print(" NMEA ");
 				new_gps = new AP_GPS_NMEA(*this);
 			}
 		}
 #endif
 	}
-
-	if (new_gps != NULL) {
-        state.status = NO_FIX;
-        drivers = new_gps;
-        timing.last_message_time_ms = now;
-	}
+//
+//	if (new_gps != NULL) {
+//        state.status = NO_FIX;
+//        drivers = new_gps;
+//        timing.last_message_time_ms = now;
+//	}
 }
 
 apm::gps_t::fix_type_t 
@@ -313,7 +301,7 @@ void apm::gps_t::update()
         return;
     }
 
-    send_blob_update();
+  //  send_blob_update();
 
     // we have an active driver for this instance
     bool result = drivers->read();

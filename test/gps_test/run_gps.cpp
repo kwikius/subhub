@@ -103,7 +103,30 @@ void run_gps()
          }else{
             if ( (millis() - elapsed ) > 500_ms ){
                elapsed = millis();
-               xout::write("No fix\n");
+               switch( gps.get_fix_type()){
+               case apm::gps_t::NO_GPS:
+                  xout::write("No GPS");
+                  break;
+               case apm::gps_t::NO_FIX:
+                  xout::write("No fix");
+                  break;
+               case apm::gps_t::FIX_2D:
+                  xout::write("2F fix\n");
+                  break;
+               case apm::gps_t::FIX_3D:
+                  xout::write("3D fix\n");
+                  break;
+               case apm::gps_t::FIX_3D_DGPS:
+                  xout::write("3D fix DGPS\n");
+                  break;
+               case  apm::gps_t::FIX_3D_RTK: 
+                  xout::write("3D fix RTK\n");
+                  break;
+               default:
+                  xout::write("unknow fix status\n");
+                  break;
+               }
+               xout::put('\n');
             }
          }
          break;
