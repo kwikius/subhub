@@ -38,7 +38,7 @@ Changed by Andy Little Apr 2016
 #include <cctype>
 #include <cstdint>
 #include <cstdlib>
-#include <cstring> 
+#include <cstring>
 #include <apm/math.hpp>
 #include <quan/stm32/millis.hpp>
 #include <apm/serial_port.hpp>
@@ -107,9 +107,9 @@ const char apm::AP_GPS_NMEA::_gpvtg_string[] = "GPVTG";
 // Convenience macros //////////////////////////////////////////////////////////
 //
 #define DIGIT_TO_VAL(_x)        (_x - '0')
-#define hexdigit(x) ((x)>9?'A'+(x):'0'+(x))
+#define hexdigit(x) ((x)>9?'A'+((x)-10):'0'+(x))
 
-apm::AP_GPS_NMEA::AP_GPS_NMEA(apm::gps_t &_gps) 
+apm::AP_GPS_NMEA::AP_GPS_NMEA(apm::gps_t &_gps)
 :AP_GPS_Backend(_gps,"NMEA",apm::gps_t::GPS_TYPE_NMEA),
     _parity(0),
     _is_checksum_term(false),
@@ -273,7 +273,7 @@ bool apm::AP_GPS_NMEA::_have_new_message()
         now - _last_GPGGA_ms > 150) {
         return false;
     }
-    if (_last_GPVTG_ms != 0 && 
+    if (_last_GPVTG_ms != 0 &&
         now - _last_GPVTG_ms > 150) {
         return false;
     }
@@ -439,14 +439,14 @@ void console_out(const char*);
  */
 bool apm::AP_GPS_NMEA::_detect(struct NMEA_detect_state &det_state, uint8_t data)
 {
-   
+
 	switch (det_state.step) {
 	case 0:
 		det_state.ck = 0;
-     
+
 		if ('$' == data) {
 			det_state.step++;
-         
+
 		}
 		break;
 	case 1:
