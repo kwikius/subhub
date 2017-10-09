@@ -28,20 +28,15 @@ int main()
 
    xout::write("Touch Test\n");
 
-   ms elapsed = millis();
-
    for(;;) {
 
       if ( !touch::start_conversion()){
          xout::write("start touch conv failed\n");
          break;
       }
-
+      auto const start_time = millis();
       while (!touch::conversion_complete()){
-
-         auto now1 = millis();
-         if ( (now1 - elapsed) > 10_ms ) {
-            elapsed = now1;
+         if ( (millis() - start_time) > 10_ms ) {
             xout::write("stalled, got touch count of ");
             uint32_t const n = touch::get_count();
             char buf[sizeof(uint32_t)*8 + 3];
@@ -50,7 +45,6 @@ int main()
             xout::write("\n");
             if ( touch::timeout()){
                xout::write("touch timed out\n");
-               break;
             }
             break;
          }
@@ -68,10 +62,7 @@ int main()
       }else{
          xout::write("touch conv failed\n");
       }
-
-      while (!xout::tx_reg_empty()){
-        asm volatile ("nop":::);
-      }
+      xout::flush_tx();
    }
 }
 
