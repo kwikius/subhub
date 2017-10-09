@@ -8,8 +8,18 @@ using namespace quan::stm32;
 
 namespace {
 
-//  Use Servo1 on PA5 TIM2_CH1 as LED
+  /* on STM32F0 discovery board  
+     LED3 is on PC9
+     LED4 is on PC8
+  */
+
+//  for subhub board Use Servo1 on PA5 TIM2_CH1 as LED
+#if defined (QUAN_STM32F0_DISCOVERY_BOARD)
+   typedef quan::mcu::pin<gpioc,9> led1;
+#else
    typedef quan::mcu::pin<gpioa,5> led1;
+#endif
+
 }
 
 void led::on()
