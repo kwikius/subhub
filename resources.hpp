@@ -31,7 +31,7 @@
 
 */
 
-typedef quan::mcu::pin<quan::stm32::gpioa,0>    analog1_in_pin;
+typedef quan::mcu::pin<quan::stm32::gpioa,0>    analog1_in_pin; // user button on disco
 
 typedef quan::mcu::pin<quan::stm32::gpioa,1>    servo2_out_pin;
 typedef quan::mcu::pin<quan::stm32::gpioa,2>    analog_rssi_in_pin;
@@ -40,7 +40,7 @@ typedef quan::mcu::pin<quan::stm32::gpioa,5>    servo1_out_pin;
 typedef quan::mcu::pin<quan::stm32::gpioa,9>    link_txo_pin; 
 typedef quan::mcu::pin<quan::stm32::gpioa,10>   link_rxi_pin; 
 
-typedef quan::mcu::pin<quan::stm32::gpioa,14>   uart_txo_pin;
+typedef quan::mcu::pin<quan::stm32::gpioa,14>   uart_txo_pin; // swclk on disco
 typedef quan::mcu::pin<quan::stm32::gpioa,15>   uart_rxi_pin;
 
 typedef quan::mcu::pin<quan::stm32::gpiob,1>    ppm_in_pin;
