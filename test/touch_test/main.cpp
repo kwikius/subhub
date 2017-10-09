@@ -31,11 +31,7 @@ int main()
    ms elapsed = millis();
 
    for(;;) {
-      auto now = millis();
-      if((now - elapsed) > 500_ms ) {
-         elapsed = now;
-         led::complement();
-      }
+
       if ( !touch::start_conversion()){
          xout::write("start touch conv failed\n");
          break;
@@ -44,41 +40,39 @@ int main()
       while (!touch::conversion_complete()){
 
          auto now1 = millis();
-         if ( (now1 - elapsed) > 1000_ms ) {
-         xout::write("stalled, got touch count of ");
-         uint32_t const n = touch::get_count();
-         char buf[sizeof(uint32_t)*8 + 3];
-         quan::itoasc(n,buf,10);
-         xout::write(buf);
-         xout::write("\n");
-         if ( touch::timeout()){
-            xout::write("touch timed out\n");
+         if ( (now1 - elapsed) > 10_ms ) {
+            elapsed = now1;
+            xout::write("stalled, got touch count of ");
+            uint32_t const n = touch::get_count();
+            char buf[sizeof(uint32_t)*8 + 3];
+            quan::itoasc(n,buf,10);
+            xout::write(buf);
+            xout::write("\n");
+            if ( touch::timeout()){
+               xout::write("touch timed out\n");
+               break;
+            }
             break;
          }
-          break;
-         }
       }
+      // conv completed
 
       if ( touch::conversion_good()){
-         xout::write("got touch count of ");
-         uint32_t n = touch::get_count();
-         char buf[sizeof(uint32_t)*8 + 3];
-         quan::itoasc(n,buf,10);
-         xout::write(buf);
-         xout::write("\n");
-         //delay
-         auto now1 = millis();
-         while ((millis() - now1) < 250_ms){
-           asm volatile ("nop":::);
+  
+         uint32_t const n = touch::get_count();
+         if ( n < 215){
+            led::on();
+         }else{
+            led::off();
          }
       }else{
          xout::write("touch conv failed\n");
       }
+
       while (!xout::tx_reg_empty()){
         asm volatile ("nop":::);
       }
    }
-
 }
 
 extern "C" void USART2_IRQHandler() __attribute__ ((interrupt ("IRQ")));
