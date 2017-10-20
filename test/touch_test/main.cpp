@@ -8,6 +8,7 @@
 #include "led.hpp"
 
 extern "C" void setup();
+void set_pwm(uint32_t val);
 
 using quan::stm32::millis;
 
@@ -20,13 +21,31 @@ namespace{
    {
       return static_cast<ms>(v);
    }
+   constexpr auto count_on_threshold = 210U;
+
+   constexpr auto count_idle = 205.f;
+   constexpr auto count_saturated = 155.f;
+   constexpr auto count_diff = count_idle - count_saturated;
+
+   void do_pwm(uint32_t n)
+   {
+      if ( n < count_idle){
+         float v = (count_idle - n) * 100U / count_diff;
+         set_pwm (static_cast<uint32_t>(v));
+      }else{
+         set_pwm(0U);
+      }
+   }
 }
+
+
 
 int main()
 {
    setup();
 
    xout::write("Touch Test\n");
+   auto last_out = millis();
 
    for(;;) {
 
@@ -50,14 +69,20 @@ int main()
          }
       }
       // conv completed
-
       if ( touch::conversion_good()){
-  
+         
          uint32_t const n = touch::get_count();
-         if ( n < 215){
+         do_pwm(n);
+         if ( n < count_on_threshold){
             led::on();
          }else{
             led::off();
+         }
+         auto now = millis();
+         if ( (now - last_out) > 100_ms){
+             last_out = now;
+             xout::printf<100>("count = %u\n",n);
+             
          }
       }else{
          xout::write("touch conv failed\n");

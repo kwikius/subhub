@@ -1,7 +1,7 @@
 
 include ../../common/mk/stm32f0_make_flags.mk
 
-object_files = main.o touch.o led.o setup.o 
+object_files = main.o touch.o led.o pwm.o setup.o 
 objects = $(patsubst %.o,obj/%.o,$(object_files))
 
 lib_files =  system.a 

@@ -22,6 +22,8 @@
 #include "../../touch.hpp"
 #include "led.hpp"
 
+void setup_pwm();
+
 namespace {
    void setup_events()
    {
@@ -44,5 +46,6 @@ extern "C" void setup()
    touch::initialise();
    setup_events();
    setup_usarts();
+   setup_pwm();
 }
 
