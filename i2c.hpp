@@ -23,7 +23,7 @@ struct i2c{
    static void set_event_handler( void(*pfn_event)());
    static void set_dma_handler( void(*pfn_event)());
 
-   static void set_slave_address_7bit(uint8_t address);
+   static void set_slave_address_7bit(uint8_t address); // The 7 bits of the address shifted left by 1
    static void set_transmit_mode();
    static void set_receive_mode();
    static void set_autoend(bool b);
