@@ -23,8 +23,8 @@ namespace{
    }
    constexpr auto count_on_threshold = 210U;
 
-   constexpr auto count_idle = 205.f;
-   constexpr auto count_saturated = 155.f;
+   constexpr auto count_idle = 210.f;
+   constexpr auto count_saturated = 145.f;
    constexpr auto count_diff = count_idle - count_saturated;
 
    void do_pwm(uint32_t n)
@@ -37,8 +37,6 @@ namespace{
       }
    }
 }
-
-
 
 int main()
 {
