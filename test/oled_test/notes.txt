@@ -1,0 +1,5 @@
+pclk(peripheral clock )is same as sysclk e.g 48 MHz
+hclk (AHB clock)  is same as sysyclk e.g 48 MHz
+
+heartbeat message
+
