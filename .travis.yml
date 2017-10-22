@@ -1,0 +1,37 @@
+language: cpp
+sudo: false
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - build-essential
+    - g++-4.8
+    - gcc-4.8
+    - lib32bz2-1.0
+    - lib32ncurses5
+    - lib32z1
+
+before_install:
+# install the quantracker dependencies
+   - move to a tmpdir
+   - wget & unzip The Compiler
+   - wget and unzip the stm32 std perip lib for f0
+   - wget and unzip quan
+   - 
+
+install:
+   - cd /home/travis/build/kwikius/subhub
+   - export TOOLCHAIN_PREFIX="/opt/gcc-arm-none-eabi-4_7-2013q2/"
+   - export TOOLCHAIN_GCC_VERSION="4.7.4"
+   - export QUAN_INCLUDE_PATH="/home/andy/website/quan-trunk"
+   - export STM32_STD_PERIPH_LIB_DIR="/opt/stm32f0/STM32F0xx_StdPeriph_Lib_V1.1.0/Libraries/"
+   
+script: > 
+    make quan 
+    && cd /home/travis/build/kwikius/ardupilot/libraries/AP_HAL_Quan/test/AnalogIn && make quan 
+    && cd ../GPIO && make quan
+    && cd ../RCInput && make quan
+    && cd ../RCOutput && make quan
+

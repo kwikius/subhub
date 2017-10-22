@@ -37,7 +37,7 @@ void sh1106_oled::initialise()
     //do startup delay
 
     xout::write("in oled::initialise\n");
-    set_buffer_to(0b0);
+    set_buffer_to(0x00);
 
     delay(100_ms);
     //xout::write("display off\n");
@@ -88,14 +88,15 @@ void sh1106_oled::set_pixel(uint32_t x, uint32_t y, bool colour)
 
 void sh1106_oled::write_buffer()
 {
+   apply(or_cmd::set_display_start_line, 0x00); 
    // set the page, column
    uint16_t buffer_idx = 0U;
-   for ( uint8_t row = 0U; row < rows; ++row){
-      apply(or_cmd::set_page_address,row);
+   for ( uint8_t page = 0U; page < 8U; ++page){
+      apply(or_cmd::set_page_address,page);
       apply(or_cmd::set_lower_column_address, 0);
       apply(or_cmd::set_higher_column_address, 0);
-      write_data(buffer+buffer_idx,columns / 8);
-      buffer_idx += columns / 8;
+      write_data(buffer+buffer_idx,132);
+      buffer_idx += 132;
    }
 }
 

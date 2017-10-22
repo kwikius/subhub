@@ -17,7 +17,6 @@ struct sh1106_oled{
        ,set_contrast = 0x81  // arg: 0 to FF, current increaseas a svalue increases
        ,set_vertical_scroll_area = 0xA3
        ,set_multiplex_ratio = 0xA8 // arg: 0 to 63 to chnage multiplex ratio
-       ,set_page_address = 0xB0  // arg : page 0 to 15
        ,set_display_offset = 0xD3 //arg : 0 to 64
        ,set_display_clock_divide_ratio = 0xD5//arg: rtm suggested 0x80
        ,set_vcom_deselect_level = 0xDB //arg: rtm

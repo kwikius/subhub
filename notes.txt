@@ -1,0 +1,98 @@
+5 channels of dma
+
+use DMA for USART transmit ( USART1_TX channel / USART2_TX gps rc frsky etc)
+// but not receive since parsing of input packets is reqd I think atm
+Technically the id could be used to predicate packet length but may cause problems
+if an invalid packet is received. Cant really use it till it has ben validated
+
+i2c can use DMA since all data lengths are known in advance
+
+Potential dma
+
+Usart
+i2c
+adc
+
+Peripheral    dma channel
+--------------------------
+ADC        |    1
+I2C1_TX    |    2 
+I2C1_RX    |    3
+USART1_TX  |    4
+USART1_RX  |    5
+
+decided on a format for init of libs, naming etc
+each lib has a static function  either called init or setup
+Which to use?
+Wheteher o have a deinit 
+
+use RTOS or not
+Whether to filter a2d results using a LP filter
+Use DMA for A2D?
+
+rc in
+rc out
+adc
+
+Message passing protocol
+
+Most important goal is low latency
+3 parts to latency
+1 serialisation
+2 transport
+3 deserialisation
+------------------
+look at Capnproto
+Protocol Buffers
+
+cite tridge mavlink 2 doc 
+Mavlink1 fixed length of 17 bytes
+   framing byte ;    // 0xFE not needed with COBS
+   message length;   // 9 ? // not necessary. Can be done per message
+   sequence number;  // not needed if packet is variable size
+   system id;        // not needed for point to point link
+   component id;     // not needed for point to point link
+   message id   ;    // 1 byte is not sufficient 
+   9 bytes payload ; // Inflexible
+   2 bytes checksum ; // Can specify checksum per message. Some messages dont need checksum
+                      // some do 
+
+Mavlink2
+   security          // no need on a hobby wire system. Lets KISS
+
+link message format Variable message length of up to 255 bytes
+max length message takes 2.55 ms to transmit.
+Ideally messages are shorter during running.
+Longer messages cab sent during initialisation
+Messages should be restricted to some lengt for latency guarantees
+Parsing time of messages
+
+  Messages are framed with cobs. What time to encapsulate
+  // Can encoding be combined with checksum/crc? impl really
+  Each message has an id of 2 bytes giving 65536
+  Add an 8 bit flags byte
+  
+  The format of the messages after the header 
+
+  Semantic messages
+
+gps detection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
