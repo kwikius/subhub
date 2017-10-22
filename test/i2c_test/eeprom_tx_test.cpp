@@ -108,7 +108,7 @@ private:
 
 
 constexpr uint16_t numbytes = 8U;
-char data_out[numbytes] = {"1234567"};  // the data to write n.b in dma available memory
+char data_out[numbytes] = {"7654321"};  // the data to write n.b in dma available memory
 
 using quan::stm32::millis;
 
