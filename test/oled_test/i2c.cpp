@@ -215,6 +215,8 @@ void i2c::initialise()
    }
    {
       uint32_t timingr = i2c_type::get()->timingr.get();
+     #if 0
+      // 100 kHz
       // PRESC [3:0]  = 0xB
       timingr = (timingr & ~(0b1111 << 28)) | (0xB << 28); // (PRESC)
       // SCLDEL[3:0] = 0x4
@@ -225,6 +227,20 @@ void i2c::initialise()
       timingr = (timingr & ~(0xFF << 8)) | ( 0xF << 8);  // (SCLH)
       // SCLL[7:0]   = 0x13
       timingr = (timingr & ~(0xFF << 0)) | ( 0x13 << 0); // (SCLL)
+     #else
+     // 400 kHz
+ // PRESC [3:0]  = 0x5
+      timingr = (timingr & ~(0b1111 << 28)) | (0x5 << 28); // (PRESC)
+      // SCLDEL[3:0] = 0x3
+      timingr = (timingr & ~(0b1111 << 20)) | ( 0x3 << 20); // (SCLDEL)
+      // SDADEL[3:0] = 0x3
+      timingr = (timingr & ~(0b1111 << 16)) | ( 0x3 << 16); // (SDADEL)
+      // SCLH[7:0]   = 0x3
+      timingr = (timingr & ~(0xFF << 8)) | ( 0x3 << 8);  // (SCLH)
+      // SCLL[7:0]   = 0x9
+      timingr = (timingr & ~(0xFF << 0)) | ( 0x9 << 0); // (SCLL)
+
+      #endif
       i2c_type::get()->timingr.set(timingr);
    }
  

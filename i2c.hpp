@@ -15,6 +15,7 @@ struct i2c{
 
    static bool get_bus();
    static bool release_bus();
+   static bool bus_is_free();
 
    static void default_event_handler();
    static void default_dma_handler();
