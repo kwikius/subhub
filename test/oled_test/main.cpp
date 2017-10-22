@@ -58,8 +58,13 @@ int main()
 
       sh1106_oled::set_buffer_to(0xF0);
       sh1106_oled::write_buffer();
+
       delay(500_ms);
 
+      sh1106_oled::set_buffer_to(0x0);
+      sh1106_oled::write_buffer();
+
+      delay(500_ms);
    }
 
    xout::write("oled Test complete\n");

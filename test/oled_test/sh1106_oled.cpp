@@ -120,11 +120,11 @@ void sh1106_oled::write_buffer()
    // set the page, column
    uint16_t buffer_idx = 0U;
    for ( uint8_t page = 0U; page < 8U; ++page){
-      apply(or_cmd::set_lower_column_address, 2);
+      apply(or_cmd::set_lower_column_address, 0);
       apply(or_cmd::set_higher_column_address, 0);
       apply(or_cmd::set_page_address,page);
-      write_data(buffer+buffer_idx,128);
-      buffer_idx += 128U;
+      write_data(buffer+buffer_idx,132);
+      buffer_idx += 132U;
    }
 }
 

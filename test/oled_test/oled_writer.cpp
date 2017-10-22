@@ -148,11 +148,7 @@ bool sh1106_oled::do_command_tail( bool in)
    if ( in && wait_for_command_complete){
       auto start = quan::stm32::millis();
       while ( (millis() - start) < max_cmd_wait){
-         if (!i2c::is_busy()){
-            start= quan::stm32::millis();
-            while ( (millis() - start) < 2_ms){
-               asm volatile("nop":::);
-            }
+         if ( !i2c::is_busy() && i2c::bus_is_free() ){
             return true;
          }
       }

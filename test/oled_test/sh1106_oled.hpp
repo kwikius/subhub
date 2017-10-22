@@ -8,7 +8,7 @@ extern "C" void setup();
 
 struct sh1106_oled{
 
-    static constexpr uint32_t columns = 128;
+    static constexpr uint32_t columns = 132;
     static constexpr uint32_t rows = 64;
     static constexpr uint8_t i2c_address = (0x3C << 1U); // n.b the 7 bits of the address shifted by 1
     enum class cmd : uint8_t {

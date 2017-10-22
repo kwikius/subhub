@@ -261,6 +261,11 @@ bool i2c::get_bus()
    return m_bus_taken_token = true;
 }
 
+bool i2c::bus_is_free()
+{
+    return m_bus_taken_token == false;
+}
+
 bool i2c::release_bus()
 {
    m_bus_taken_token = false;
