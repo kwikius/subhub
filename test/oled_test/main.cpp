@@ -28,10 +28,10 @@ int main()
 
    xout::write("oled Test\n");
 
-// Need to wait a short time after startup for eeprom to get powered up.
-   auto now = millis();
-   typedef decltype (now) ms;
-   while ( (millis() - now) < ms{500} ){;}
+//// Need to wait a short time after startup for eeprom to get powered up.
+//   auto now = millis();
+//   typedef decltype (now) ms;
+//   while ( (millis() - now) < ms{500} ){;}
 
    xout::write("oled Test complete\n");
    while (1){;}

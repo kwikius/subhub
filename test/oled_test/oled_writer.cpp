@@ -22,20 +22,27 @@ struct oled_writer{
       i2c::disable_interrupts();
       xout::write( "got i2c errors\n");
    }
-    static bool apply(uint8_t device_address,uint8_t const* data, uint8_t len)
+    static bool apply(uint8_t device_address,uint8_t const* data, uint8_t len, uint8_t const * preamble_byte = nullptr)
     {
 
       if (i2c::get_bus()){
          m_p_data = data;
          m_data_length = len;
          m_device_address = device_address ; // write address
-
+         
          i2c::set_transmit_mode();
          i2c::set_slave_address_7bit(device_address); 
-         i2c::set_transfer_size(len); 
+         
          i2c::set_autoend(true); 
          i2c::set_reload(false); 
-         i2c::set_event_handler(on_data);
+         if ( preamble_byte != nullptr){
+            i2c::set_transfer_size(len+1); 
+            m_preamble_byte = preamble_byte[0];
+            i2c::set_event_handler(on_preamble_byte);
+         }else{
+            i2c::set_transfer_size(len); 
+            i2c::set_event_handler(on_data);
+         }
          i2c::request_start_condition();
          i2c::enable_error_irqs(true);
          i2c::enable_tx_irq(true); 
@@ -46,6 +53,16 @@ struct oled_writer{
          return false;
       }
     }
+
+   static void on_preamble_byte()
+   {
+      if (i2c::have_errors()) {
+         error_handler();
+         return;
+      }
+      i2c::set_event_handler(on_data);
+      i2c::send_data(m_preamble_byte);
+   }
 
    static void on_data()
    {
@@ -77,12 +94,14 @@ struct oled_writer{
 private:
    static uint8_t const* m_p_data;  
    static uint8_t m_data_length; 
-   static uint8_t  m_device_address;
+   static uint8_t m_device_address;
+   static uint8_t m_preamble_byte;
 };
 
    uint8_t const*    oled_writer::m_p_data = nullptr;
    uint8_t           oled_writer::m_data_length = 0U;
    uint8_t           oled_writer::m_device_address = 0U;
+   uint8_t           oled_writer::m_preamble_byte = 0U;
 
    constexpr uint8_t i2c_buffer_len = 20;
    uint8_t i2c_buffer[i2c_buffer_len];
@@ -104,7 +123,6 @@ bool sh1106_oled::apply(cmd c)
    i2c_buffer[0] = 0U;
    i2c_buffer[1] = static_cast<uint8_t>(c);
    return do_command_tail(oled_writer::apply(i2c_address,i2c_buffer,2U));
-
 }
 
 bool sh1106_oled::apply(or_cmd c, uint8_t arg)
@@ -143,6 +161,12 @@ bool sh1106_oled::do_command_tail( bool in)
    }else{
       return in;
    }
+}
+
+bool sh1106_oled::write_data(uint8_t* buf, uint16_t len)
+{
+    uint8_t const preamble_byte = 0x40;
+    return do_command_tail( oled_writer::apply(i2c_address,buf,len,&preamble_byte));
 }
 
 

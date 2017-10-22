@@ -47,9 +47,12 @@ struct sh1106_oled{
     static bool apply(or_cmd c, uint8_t v);
     static bool apply(cmd c, uint8_t arg);
 
-   static void set_pixel(int16_t x, int16_t y, bool colour);
+   static void set_pixel(uint32_t x, uint32_t y, bool colour);
    private:
    friend void ::setup();
+   static void set_buffer_to(int val);
+   static void write_buffer();
+   static bool write_data(uint8_t* buf, uint16_t len);
    static void initialise();
    static bool do_command_tail( bool in);
    static uint8_t buffer[];
