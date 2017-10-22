@@ -193,7 +193,7 @@ void i2c::initialise()
       ,quan::stm32::gpio::mode::af1  
       ,quan::stm32::gpio::otype::open_drain
       ,quan::stm32::gpio::pupd::none         //  Use external pullup 5V tolerant pins
-      ,quan::stm32::gpio::ospeed::slow 
+      ,quan::stm32::gpio::ospeed::fast
    >();
 
    quan::stm32::module_enable<sda_pin::port_type>();
@@ -202,7 +202,7 @@ void i2c::initialise()
       ,quan::stm32::gpio::mode::af1
       ,quan::stm32::gpio::otype::open_drain
       ,quan::stm32::gpio::pupd::none     //  Use external pullup 5V tolerant pins
-      ,quan::stm32::gpio::ospeed::slow 
+      ,quan::stm32::gpio::ospeed::fast
    >();
 
    {

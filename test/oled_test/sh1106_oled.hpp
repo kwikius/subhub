@@ -36,7 +36,7 @@ struct sh1106_oled{
        ,set_entire_display = 0xA4 // arg : 1 for all on (white?), 0 for normal
        ,set_invert_display = 0xA6 // arg 1 to invert, 0 to not invert
        ,set_display_on = 0xAE  // arg: 1 to turn on, 0 to turn off
-       ,set_page_address = 0B0 // arg 0 to 7
+       ,set_page_address = 0xB0 // arg 0 to 7
        ,read_modify_write =0xE0  // arg 0 to start 0xE to end
    };
 
@@ -47,10 +47,11 @@ struct sh1106_oled{
     static bool apply(cmd c, uint8_t arg);
 
    static void set_pixel(uint32_t x, uint32_t y, bool colour);
-   private:
-   friend void ::setup();
    static void set_buffer_to(int val);
    static void write_buffer();
+   private:
+   friend void ::setup();
+
    static bool write_data(uint8_t* buf, uint16_t len);
    static void initialise();
    static bool do_command_tail( bool in);

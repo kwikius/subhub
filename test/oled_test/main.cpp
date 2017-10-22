@@ -1,11 +1,11 @@
 
 #include <stm32f0xx.h>
 #include <quan/stm32/millis.hpp>
-#include "../../usarts.hpp"
 #include <quan/stm32/usart/irq_handler.hpp>
 #include <quan/conversion/itoa.hpp>
+#include "../../usarts.hpp"
 #include "led.hpp"
-#include <quan/stm32/millis.hpp>
+#include "sh1106_oled.hpp"
 
 /*
 Test of I2C using a 24LC128 eeprom
@@ -13,6 +13,25 @@ Test of I2C using a 24LC128 eeprom
 */
 
 extern "C" void setup();
+
+using quan::stm32::millis;
+namespace {
+
+   typedef decltype(millis()) ms;
+
+   ms operator "" _ms(unsigned long long int v)
+   {
+      return static_cast<ms>(v);
+   }
+   void delay(ms t)
+   {
+      ms elapsed = millis();
+      while ((millis() - elapsed) < t) {;}
+   }
+
+   typedef link_sp::serial_port xout;
+
+}
 
 
 
@@ -26,12 +45,22 @@ int main()
 {
    setup();
 
-   xout::write("oled Test\n");
+   for (;;){
+      sh1106_oled::set_buffer_to(0x0F);
+      sh1106_oled::write_buffer();
 
-//// Need to wait a short time after startup for eeprom to get powered up.
-//   auto now = millis();
-//   typedef decltype (now) ms;
-//   while ( (millis() - now) < ms{500} ){;}
+      delay(500_ms);
+
+      sh1106_oled::set_buffer_to(0xFF);
+      sh1106_oled::write_buffer();
+
+      delay(500_ms);
+
+      sh1106_oled::set_buffer_to(0xF0);
+      sh1106_oled::write_buffer();
+      delay(500_ms);
+
+   }
 
    xout::write("oled Test complete\n");
    while (1){;}

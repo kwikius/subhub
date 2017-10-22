@@ -165,8 +165,9 @@ bool sh1106_oled::do_command_tail( bool in)
 
 bool sh1106_oled::write_data(uint8_t* buf, uint16_t len)
 {
-    uint8_t const preamble_byte = 0x40;
-    return do_command_tail( oled_writer::apply(i2c_address,buf,len,&preamble_byte));
+    uint8_t const preamble_byte = 0x40U;
+    bool result = oled_writer::apply(i2c_address,buf,len,&preamble_byte);
+    return do_command_tail(result);
 }
 
 
