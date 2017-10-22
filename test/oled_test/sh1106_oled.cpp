@@ -36,11 +36,12 @@ void sh1106_oled::initialise()
 
     //do startup delay
 
-    xout::write("in oled::initialaise\n");
- #if 1
+    xout::write("in oled::initialise\n");
+
     delay(100_ms);
     //xout::write("display off\n");
     apply(or_cmd::set_display_on,0); // turn off display
+
     //xout::write("set display clk ratio\n");
     apply(cmd::set_display_clock_divide_ratio,0x80);
    // xout::write("set multiplex ratio\n");
@@ -63,6 +64,6 @@ void sh1106_oled::initialise()
     delay(100_ms);
 
     apply(or_cmd::set_display_on,1); // turn on display
-    xout::write("in oled::initialaise complete\n");
-#endif
+    xout::write("oled::initialise complete\n");
+
 }

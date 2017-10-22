@@ -29,7 +29,7 @@ struct oled_writer{
 
          i2c::set_transmit_mode();
          i2c::set_slave_address_7bit(device_address); 
-         i2c::set_transfer_size(len);  // + 2 bytes to write the address  in eeprom to read from
+         i2c::set_transfer_size(len);  
          i2c::set_autoend(true); 
          i2c::set_reload(false); 
          i2c::set_event_handler(on_data);
@@ -39,7 +39,7 @@ struct oled_writer{
 
          return true;
       }else{
-         xout::write("couldnt get bus\n");
+         xout::write("apply couldnt get bus\n");
          return false;
       }
     }

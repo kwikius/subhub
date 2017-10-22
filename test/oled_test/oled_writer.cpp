@@ -2,6 +2,7 @@
 #include <quan/stm32/millis.hpp>
 #include <quan/stm32/gpio.hpp>
 #include <quan/conversion/itoa.hpp>
+#include <quan/fixed_quantity/literal.hpp>
 #include "../../i2c.hpp"
 #include "../../usarts.hpp"
 #include "led.hpp"
@@ -9,6 +10,9 @@
 
 namespace {
    typedef link_sp::serial_port xout;
+
+   QUAN_QUANTITY_LITERAL(time,ms)
+   
 
 struct oled_writer{
 
@@ -124,9 +128,13 @@ using quan::stm32::millis;
 bool sh1106_oled::do_command_tail( bool in)
 {
    if ( in && wait_for_command_complete){
-      auto const start = quan::stm32::millis();
+      auto start = quan::stm32::millis();
       while ( (millis() - start) < max_cmd_wait){
          if (!i2c::is_busy()){
+            start= quan::stm32::millis();
+            while ( (millis() - start) < 2_ms){
+               asm volatile("nop":::);
+            }
             return true;
          }
       }
