@@ -40,10 +40,10 @@ cleanlibs:
       make -C ../../libraries/$$libdir/src clean; \
    done
 
-upload : test
+upload_st : test
 	/home/andy/bin/stm32flash -b 115200 -f -v -w bin/main.bin /dev/ttyUSB0
 
-upload_st: test
+upload: test
 	st-flash write bin/main.bin 0x8000000
 
 #upload : test
