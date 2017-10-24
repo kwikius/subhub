@@ -4,9 +4,6 @@
 #include "../../usarts.hpp"
 #include "sh1106_oled.hpp"
 
-/*
-from adafruit ssh1106 lib
-*/
 
 uint8_t sh1106_oled::buffer[(rows * columns) / 8U] = {0U};
 bool sh1106_oled::wait_for_command_complete = true;
@@ -33,45 +30,8 @@ namespace {
 
 void sh1106_oled::initialise()
 {
-
-    //do startup delay
-
-    xout::write("in oled::initialise\n");
-//    set_buffer_to(0x00);
-//
-      delay(100_ms);
-//    //xout::write("display off\n");
- //   apply(or_cmd::set_display_on,0); // turn off display
-      delay(200_ms);
-//
-//    //xout::write("set display clk ratio\n");
-//    apply(cmd::set_display_clock_divide_ratio,0x80);
-//   // xout::write("set multiplex ratio\n");
-//    apply(cmd::set_multiplex_ratio,0x3F);
-//    apply(cmd::set_display_offset,0x00);
-//    apply(or_cmd::set_display_start_line, 0x00); 
-// //   apply(cmd::set_charge_pump,0x8B); 
-//  //  apply(or_cmd::set_charge_pump_voltage,0x02); // 8.4 V
-//    
-//    apply(cmd::set_memory_addressing_mode,0x00);
-//    apply(or_cmd::set_segment_remap, 0x01);
-//    apply(or_cmd::set_common_output_scan_direction,0x08);
-//    apply(cmd::set_common_pads_hardware_config,0x12);
-//    apply(cmd::set_contrast,0xCF);
-//    apply(cmd::set_precharge_period,0xF1);
-//    apply(cmd::set_vcom_deselect_level,0x40);
-//    // deactivate scroll, output ram to display?
-//    apply(or_cmd::set_invert_display,0);
-//
-//    delay(100_ms);
-//
-//    write_buffer();
-//
-  //  apply(cmd::set_memory_addressing_mode,0x10);
-   // delay(200_ms);
+    delay(200_ms);
     apply(or_cmd::set_display_on,1); // turn on display
-    xout::write("oled::initialise complete\n");
-
 }
 
 void sh1106_oled::set_pixel(uint32_t x, uint32_t y, bool colour)
@@ -88,31 +48,6 @@ void sh1106_oled::set_pixel(uint32_t x, uint32_t y, bool colour)
        }
    }
 }
-/*
-
-void Adafruit_SH1106::display(void) {
-	
-   SH1106_command(SH1106_SETSTARTLINE | 0x0); // line #0
-
-   int p = 0;
-
-   for ( byte i = 0; i < 8; i++) {
-
-      SH1106_command(0xB0 | i);//set page address
-      SH1106_command(0x0 | 2);//set lower column address
-      SH1106_command(0x10 | 0);//set higher column address
-
-      for( byte j = 0; j < 8; j++){        
-         Wire.beginTransmission(_i2caddr);
-         Wire.write(0x40);
-         for ( byte k = 0; k < 16; k++, p++) {
-            Wire.write(buffer[p]);
-         }
-         Wire.endTransmission();
-      }
-   }
-}
-*/
 
 void sh1106_oled::write_buffer()
 {
