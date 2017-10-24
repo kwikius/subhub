@@ -12,7 +12,7 @@ struct touch{
    static bool timeout();
 
 private:
-
+   friend void ::setup();
    static void initialise();
 };
 
