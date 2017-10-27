@@ -12,11 +12,13 @@
 #include "../../led_sequence.hpp"
 #include "../../usarts.hpp"
 
+//#define QUAN_USE_DMA
+
 /*
   uses spi2,  mosi on pb15
   if reqd spi2 clk on pb13
 */
-uint8_t  led_sequence::led_data [led_data_size] __attribute__ ((aligned (2))) = {0U};
+uint8_t  led_sequence::led_data [led_data_size + 1U] __attribute__ ((aligned (2))) = {0U};
 
 
 using quan::stm32::millis;
@@ -31,12 +33,19 @@ namespace{
       return static_cast<ms>(v);
    }
 
+   void delay(ms const & t)
+   {
+      auto const now = millis();
+      while ( (millis() - now ) < t){
+        asm volatile ("nop":::);
+      }
+   }
 }
 
 void led_sequence::initialise()
 {
    // clear the array, then set the bits
-   memset(led_data ,0,led_data_size);
+   memset(led_data ,0,led_data_size + 2U);
    // each led uses 24 bits , each led bit uses 3 bits
    uint32_t constexpr num_ar_bits = num_leds * 24U * 3U;
    for ( uint32_t i = 0U; i < num_ar_bits; i += 3U){
@@ -44,14 +53,14 @@ void led_sequence::initialise()
    }
 
   // init the led sequence spi pin
-   quan::stm32::module_enable<spi2_sck_pin::port_type>();
-   quan::stm32::apply<
-      spi2_sck_pin
-      ,quan::stm32::gpio::mode::af0
-      ,quan::stm32::gpio::otype::push_pull
-      ,quan::stm32::gpio::pupd::pull_down
-      ,quan::stm32::gpio::ospeed::fast
-   >();
+//   quan::stm32::module_enable<spi2_sck_pin::port_type>();
+//   quan::stm32::apply<
+//      spi2_sck_pin
+//      ,quan::stm32::gpio::mode::af0
+//      ,quan::stm32::gpio::otype::push_pull
+//      ,quan::stm32::gpio::pupd::pull_down
+//      ,quan::stm32::gpio::ospeed::fast
+//   >();
    // init the led sequence spi pin
    quan::stm32::module_enable<led_sequence_pin::port_type>();
    quan::stm32::apply<
@@ -62,9 +71,14 @@ void led_sequence::initialise()
       ,quan::stm32::gpio::ospeed::fast
    >();
 
+#if defined QUAN_USE_DMA
+   static constexpr uint32_t dma_en_bit = 0U;
+   quan::stm32::rcc::get()->ahbenr |= (0b1 << dma_en_bit); //(DMA_EN)
+#endif
    // turn on the spi rcc module
    static constexpr uint8_t spi2_en_bit = 14U;
    quan::stm32::rcc::get()->apb1enr |= (1U << spi2_en_bit); //(SPI2_EN)
+
    // reset spi
    quan::stm32::rcc::get()->apb1rstr |= ( 1U << spi2_en_bit ); // (SPI2_RsT)
    quan::stm32::rcc::get()->apb1rstr &= ~( 1U << spi2_en_bit ); // (SPI2_RST)
@@ -145,8 +159,9 @@ f) Initialize LDMA_TX and LDMA_RX bits if DMA is used in packed mode.
    no CRC
 */
   SPI2->CRCPR = 7U;
-/*
 
+#if defined QUAN_USE_DMA
+/*
 5. Write proper DMA registers: Configure DMA streams dedicated for SPI Tx and Rx in
 DMA registers if the DMA streams are used.
 
@@ -154,58 +169,62 @@ DMA registers if the DMA streams are used.
    memory to peripheral
    inc memory
 */
-//   static constexpr uint32_t dma_en_bit = 0U;
-//   quan::stm32::rcc::get()->ahbenr |= (0b1 << dma_en_bit); //(DMA_EN)
-//   
-//   // 8 bit default
-//   DMA1_Channel5->CCR  =
-//      (0b1 << 7U) // (MINC)
-//    | (0b1 << 4U) // (DIR) read from memory 
-//   ;
-//
-//   DMA1->IFCR = (0b1111 << 16U);
-//   NVIC_EnableIRQ(DMA1_Channel4_5_IRQn);
+
+   // 8 bit default
+   DMA1_Channel5->CCR  =
+      (0b1 << 7U) // (MINC)
+    | (0b1 << 4U) // (DIR) read from memory 
+   ;
+
+   DMA1->IFCR = (0b1111 << 16U);
+   DMA1_Channel5->CCR |= ( 0b1 << 1U); // (TCIE)
+   NVIC_EnableIRQ(DMA1_Channel4_5_IRQn);
+   SPI2->CR2 |= (0b1 << 1U); // (TXDMAEN)
+#endif
+   *(__IO uint8_t *)&SPI2->DR = 0U;
+   SPI2->CR1 |= (0b1 << 6U); // (SPE)
+   delay (1_ms);
+
+
 }
 
 void led_sequence::send()
 {
-//    // Clear DMA flags
-//   DMA1->IFCR = (0b1111 << 16U);
-//
-//   DMA1_Channel5->CPAR = (uint32_t)&SPI2->DR;
-//   DMA1_Channel5->CMAR = (uint32_t)led_data;
-//   DMA1_Channel5->CNDTR = led_data_size;
-//
-//   // enable DMA transfer complete interrupt flag
-//   DMA1_Channel5->CCR |= ( 0b1 << 1U); // (TCIE)
-//   
-//   // enable DMA
-//   DMA1_Channel5->CCR |= (0b1 << 0U); // (OE)
-//   // TXDMAEN should be set before enabling spi
-//   SPI2->CR2 |= (0b1 << 1U); // (TXDMAEN)
-   // enable the SPI 
-   SPI2->CR1 |= (0b1 << 6U); // (SPE)
+#if defined QUAN_USE_DMA
+   led_data[led_data_size] = 0U;
+   DMA1_Channel5->CCR &= ~(0b1 << 0U); // (OE)
 
-//   SPI2->DR = led_data[0];
-//   xout::printf<100>("spi sr flags = %d\n",static_cast<uint32_t>(SPI2->SR));
-//   
-//   auto const now = millis();
-//   while ( (millis() - now ) < 2_ms){
-//     asm volatile ("nop":::);
-//   }
-//   xout::printf<100>("after 1 ms spi sr flags = %d\n",static_cast<uint32_t>(SPI2->SR));
+   DMA1_Channel5->CPAR = (uint32_t)&SPI2->DR;
+   DMA1_Channel5->CMAR = (uint32_t)led_data;
+   DMA1_Channel5->CNDTR = led_data_size +1U;
+    // Clear DMA flags
+   DMA1->IFCR = (0b1111 << 16U);
+   // enable DMA
+  // *(__IO uint8_t *)&SPI2->DR = 0U;
+   DMA1_Channel5->CCR |= (0b1 << 0U); // (OE)
+   
+   // TXDMAEN should be set before enabling spi
+   
+    //enable the SPI 
+   //*(__IO uint8_t *)&SPI2->DR = 0U;
+   //SPI2->CR1 |= (0b1 << 6U); // (SPE)
+
+#else
+      //enable the SPI 
+   //SPI2->CR1 |= (0b1 << 6U); // (SPE)
    for ( uint32_t i = 0U; i < led_data_size; ++i){
       while ( (SPI2->SR & (0b1 << 1U)) == 0U){
          asm volatile ("nop":::);
       }
     *(__IO uint8_t *)&SPI2->DR = led_data[i];
    }
+#endif
    
 }
 
 void led_sequence::putbit(uint32_t bit_idx_in, bool val)
 {
-   uint32_t const byte_idx = bit_idx_in / 8U;
+   uint32_t const byte_idx = bit_idx_in / 8U ;
    uint32_t const bit_idx  = bit_idx_in  % 8U;
    if ( val ) {
        led_data[byte_idx] |= (0b1 << bit_idx);
@@ -250,6 +269,7 @@ extern "C" void DMA1_Channel4_5_IRQHandler()
  //  DMA1_Channel5->CCR &= ~( 0b1 << 1U); // (TCIE)
    // Clear DMA flags
    DMA1->IFCR = (0b1111 << 16U);
+  *(__IO uint8_t *)&SPI2->DR = 0U;
 
 //   // disable dma
 //   DMA1_Channel5->CCR &= ~(0b1 << 0U); // (OE)
