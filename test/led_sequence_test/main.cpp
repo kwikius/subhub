@@ -48,17 +48,18 @@ int main()
      }
      delay(1_ms);
      led_sequence::send();
+     // xout::write("Led sequence\n");
    }
   #else
-   rgb_value const colours[] = { 
-         {0x0,0x10,0x0},{0x10,0x0,0x0},{0x0,0x0,0x10},{0x8,0x8,0x0},{0x8,0x0,0x8},{0x0,0x8,0x8},{0x5,0x5,0x6}
-   };
+   rgb_value const colour1{0x0f,0x0f,0x0};
+   rgb_value const colour2{0x0,0x10,0x10};
+   
    uint8_t pos = 0;
    for ( ;;){
-     led_sequence::put(pos,{0,0,0});
+     led_sequence::put(pos,colour1);
      pos = (pos + 1U) % 8U;
-     led_sequence::put(pos,colours[pos]);
-     delay (125_ms);
+     led_sequence::put(pos,colour2);
+     delay (500_ms);
      led_sequence::send();
    }
 #endif
