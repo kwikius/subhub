@@ -39,9 +39,13 @@ typedef quan::mcu::pin<quan::stm32::gpioa,1>    servo2_out_pin;
 typedef quan::mcu::pin<quan::stm32::gpioa,2>    analog_rssi_in_pin;
 
 typedef quan::mcu::pin<quan::stm32::gpioa,5>    servo1_out_pin;
+typedef quan::mcu::pin<quan::stm32::gpioa,6>    touch_electrode_pin;
+typedef quan::mcu::pin<quan::stm32::gpioa,7>    touch_cap_pin;
 
 typedef quan::mcu::pin<quan::stm32::gpioa,9>    link_txo_pin; 
 typedef quan::mcu::pin<quan::stm32::gpioa,10>   link_rxi_pin; 
+
+typedef quan::mcu::pin<quan::stm32::gpioa,11>   aux_led1_pin; 
 
 typedef quan::mcu::pin<quan::stm32::gpioa,14>   uart_txo_pin; // swclk on disco
 typedef quan::mcu::pin<quan::stm32::gpioa,15>   uart_rxi_pin;
@@ -53,6 +57,9 @@ typedef quan::mcu::pin<quan::stm32::gpiob,7>    i2c_sda;
 
 // N.B 5V tolerant for connect via res to base of PNP transistor to 5V for LEDs
 typedef quan::mcu::pin<quan::stm32::gpiob,11>    led_pwm_pin;
+
+typedef quan::mcu::pin<quan::stm32::gpiob,13>    spi2_sck_pin;
+typedef quan::mcu::pin<quan::stm32::gpiob,15>    led_sequence_pin;
 
 typedef quan::stm32::usart1  link_uart;
 typedef quan::stm32::usart2  aux_uart;

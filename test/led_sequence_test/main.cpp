@@ -4,7 +4,7 @@
 #include <quan/conversion/itoa.hpp>
 #include <quan/stm32/millis.hpp>
 #include "../../usarts.hpp"
-#include "../../touch.hpp"
+#include "../../led_sequence.hpp"
 #include "led.hpp"
 
 extern "C" void setup();
@@ -44,10 +44,30 @@ int main()
 
    xout::write("Led sequence Test\n");
 
+   led_sequence::put(0U,{128,0,0});
+   led_sequence::put(1U,{0,128,0});
+   led_sequence::put(3U,{0,0,128});
+   led_sequence::put(5U,{100,100,100});
 
-   for(;;) {
+   led_sequence::send();
 
-      
+//   int const bytes_left = led_sequence::transfer_bytes_left();
+//   xout::printf<100>("DMA start bytes = %d\n" ,bytes_left);
+
+//   auto now = quan::stm32::millis();
+//
+//   while( led_sequence::transfer_bytes_left() > 0U){
+//      asm volatile ("nop":::);
+//      if ( (millis() - now) > 100_ms){
+//        xout::printf<100>("Dma failed, DMA bytes left = %d\n" ,bytes_left); 
+//        break;
+//      }
+//   }
+
+   xout::write("Led sequence test completed\n");
+
+   for(;;){
+      asm volatile ("nop":::);
    }
 }
 
