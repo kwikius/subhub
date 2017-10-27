@@ -21,6 +21,14 @@ namespace{
       return static_cast<ms>(v);
    }
 
+   void delay(ms const & t)
+   {
+      auto const now = millis();
+      while ( (millis() - now ) < t){
+        asm volatile ("nop":::);
+      }
+   }
+
 }
 
 int main()
@@ -36,18 +44,18 @@ int main()
 
    led_sequence::send();
 
-//   int const bytes_left = led_sequence::transfer_bytes_left();
-//   xout::printf<100>("DMA start bytes = %d\n" ,bytes_left);
-
-//   auto now = quan::stm32::millis();
-//
-//   while( led_sequence::transfer_bytes_left() > 0U){
-//      asm volatile ("nop":::);
-//      if ( (millis() - now) > 100_ms){
-//        xout::printf<100>("Dma failed, DMA bytes left = %d\n" ,bytes_left); 
-//        break;
-//      }
-//   }
+   for (uint8_t i = 0U; i < 8; ++i){
+     led_sequence::put(i,{0,0,0});
+   }
+   
+   uint8_t pos = 7;
+   for ( ;;){
+     led_sequence::put(pos,{0,0,0});
+     pos = (pos + 1) % 8U;
+     led_sequence::put(pos,{0,64,0});
+     delay (500_ms);
+     led_sequence::send();
+   }
 
    xout::write("Led sequence test completed\n");
 
