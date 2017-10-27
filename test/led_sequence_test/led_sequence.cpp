@@ -6,6 +6,7 @@
 #include <quan/stm32/get_raw_timer_frequency.hpp>
 #include <quan/stm32/gpio.hpp>
 #include <quan/stm32/rcc.hpp>
+#include <quan/stm32/millis.hpp>
 
 #include "../../resources.hpp"
 #include "../../led_sequence.hpp"
@@ -15,11 +16,21 @@
   uses spi2,  mosi on pb15
   if reqd spi2 clk on pb13
 */
-uint8_t  led_sequence::led_data [led_data_size] __attribute__ ((aligned (16))) = {0U};
+uint8_t  led_sequence::led_data [led_data_size] __attribute__ ((aligned (2))) = {0U};
+
+
+using quan::stm32::millis;
 
 namespace{
 
    typedef  link_sp::serial_port xout;
+
+   typedef decltype(millis()) ms;
+   ms operator "" _ms(unsigned long long int v)
+   {
+      return static_cast<ms>(v);
+   }
+
 }
 
 void led_sequence::initialise()
@@ -73,9 +84,10 @@ relationships between the data transfer and the serial clock
 c) Select simplex or half-duplex mode by configuring RXONLY or BIDIMODE and
 BIDIOE 
   no bidi not rxonly no bidioe
+  yes bidi not rxonly yes bidioe
 */
-                  // (BIDIMODE) ( BIDIOE) (RXONLY)
-  SPI2->CR1 &= ~( ( 0b1 << 15U) | (0b1 << 14U) | (0b1 << 10U) ); 
+                  // (BIDIMODE) ( BIDIOE) 
+  SPI2->CR1 -=  ( 0b1 << 15U) | (0b1 << 14U); 
 
 /*
 d) Configure the LSBFIRST bit to define the frame format
@@ -174,16 +186,20 @@ void led_sequence::send()
    // enable the SPI 
    SPI2->CR1 |= (0b1 << 6U); // (SPE)
 
-   SPI2->DR = led_data[0];
-   xout::printf<100>("spi sr flags = %d\n",static_cast<uint32_t>(SPI2->SR));
-   
-
-//   for ( uint32_t i = 0U; i < led_data_size; ++i){
-//      while ( (SPI2->SR & (0b1 << 1U)) != 0U){
-//         asm volatile ("nop":::);
-//  //  *(__IO uint8_t *)&SPI2->DR = led_data[i];
-
-  // }
+//   SPI2->DR = led_data[0];
+//   xout::printf<100>("spi sr flags = %d\n",static_cast<uint32_t>(SPI2->SR));
+//   
+//   auto const now = millis();
+//   while ( (millis() - now ) < 2_ms){
+//     asm volatile ("nop":::);
+//   }
+//   xout::printf<100>("after 1 ms spi sr flags = %d\n",static_cast<uint32_t>(SPI2->SR));
+   for ( uint32_t i = 0U; i < led_data_size; ++i){
+      while ( (SPI2->SR & (0b1 << 1U)) == 0U){
+         asm volatile ("nop":::);
+      }
+    *(__IO uint8_t *)&SPI2->DR = led_data[i];
+   }
    
 }
 
