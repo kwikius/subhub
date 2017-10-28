@@ -40,35 +40,42 @@ int main()
 //   for ( uint8_t i = 0U; i < 8U;++i){
 //     led_sequence::put(i,{0x8,0x1F,0x0});
 //   }
+    rgb_value colours [] = {{12,0,0},{6,6,0},{0,12,0},{0,6,6},{0,0,12},{6,0,6},{12,0,0},{12,0,0}};
 
  #if 0
-   for (;;){
-     for ( uint8_t i = 0U; i < 8U;++i){
-      led_sequence::put(i,{0xF,0xF,0xF});
-     }
-     delay(1_ms);
-     led_sequence::send();
-     // xout::write("Led sequence\n");
+//   uint32_t c = 0;
+//   
+   for (uint8_t i = 0; i < 8; ++i){
+ 
+       led_sequence::put(i,colours[i]);
    }
+   for ( uint8_t i = 0; ; i = ( i+1) % 0x10000){
+      delay (100_ms);
+       for (uint8_t j = 0; j < 8; ++j){
+         led_sequence::put(j,colours[(i + j)%8]);
+       }
+      led_sequence::send();
+   }
+
   #else
-   rgb_value const colour1{0x0f,0x0f,0x0};
-   rgb_value const colour2{0x0,0x10,0x10};
+
    
-   uint8_t pos = 0;
+   uint32_t pos = 0;
    for ( ;;){
-     led_sequence::put(pos,colour1);
+     
+        led_sequence::put((pos) % 8U,{0U,0U,0U});
+        led_sequence::put((pos + 1) % 8U,{0xf,0xf,0xf});
      pos = (pos + 1U) % 8U;
-     led_sequence::put(pos,colour2);
      delay (500_ms);
      led_sequence::send();
    }
 #endif
-//
-//   xout::write("Led sequence test completed\n");
-//
-//   for(;;){
-//      asm volatile ("nop":::);
-//   }
+
+   xout::write("Led sequence test completed\n");
+
+   for(;;){
+      asm volatile ("nop":::);
+   }
 }
 
 extern "C" void USART2_IRQHandler() __attribute__ ((interrupt ("IRQ")));
