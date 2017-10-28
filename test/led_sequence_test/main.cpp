@@ -51,7 +51,7 @@ int main()
        led_sequence::put(i,colours[i]);
    }
    for ( uint8_t i = 0; ; i = ( i+1) % 0x10000){
-      delay (50_ms);
+      delay (250_ms);
        for (uint8_t j = 0; j < 8; ++j){
          led_sequence::put(j,colours[(i + j)%8]);
        }

@@ -12,14 +12,14 @@
 #include "../../led_sequence.hpp"
 #include "../../usarts.hpp"
 
-//#define QUAN_USE_DMA
+#define QUAN_USE_DMA
 //#define QUAN_USE_IRQ
 
 /*
   uses spi2,  mosi on pb15
   if reqd spi2 clk on pb13
 */
-uint8_t  led_sequence::led_data [led_data_size] = {0U};
+uint8_t  led_sequence::led_data [led_data_size + preamble] = {0U};
 
 
 using quan::stm32::millis;
@@ -46,7 +46,7 @@ namespace{
 void led_sequence::initialise()
 {
    // clear the array, then set the bits
-   memset(led_data ,0,led_data_size);
+   memset(led_data ,0,led_data_size + preamble);
    // each led uses 24 bits , each led bit uses 4 bits
    uint32_t constexpr num_ar_bits = num_leds * 24U * 4U;
 
@@ -205,16 +205,22 @@ void led_sequence::send()
 #if defined QUAN_USE_DMA
    //SPI2->CR1 &= ~(0b1 << 6U); // (SPE)
    DMA1_Channel5->CCR &= ~(0b1 << 0U); // (OE)
-
+   while ( DMA1_Channel5->CCR & (0b1 << 0U)){
+      asm volatile ("nop":::);
+   }
+   
    DMA1_Channel5->CPAR = (uint32_t)&SPI2->DR;
    DMA1_Channel5->CMAR = (uint32_t)led_data ;
-   DMA1_Channel5->CNDTR = led_data_size / 2U ;
+   DMA1_Channel5->CNDTR = (led_data_size + preamble) / 2U ;
     // Clear DMA flags
    DMA1->IFCR = (0b1111 << 16U);
    DMA1_Channel5->CCR |= (0b1 << 1U); // (TCIE)
   // SPI2->DR = led_data[0];
    DMA1_Channel5->CCR |= (0b1 << 0U); // (OE)
- //  SPI2->CR1 |= (0b1 << 6U); // (SPE)
+   while ( ! DMA1_Channel5->CCR & (0b1 << 0U)){
+      asm volatile ("nop":::);
+   }
+   SPI2->CR1 |= (0b1 << 6U); // (SPE)
    
 #else
 #if defined  QUAN_USE_IRQ
@@ -229,7 +235,7 @@ void led_sequence::send()
       while ( (SPI2->SR & (0b1 << 1U)) == 0U){
          asm volatile ("nop":::);
       }
-    *(__IO uint8_t *)&SPI2->DR = led_data[i];
+    *(__IO uint8_t *)&SPI2->DR = led_data[i + preamble];
    }
 #endif
 #endif
@@ -241,9 +247,9 @@ void led_sequence::putbit(uint32_t bit_idx_in, bool val)
    uint32_t const byte_idx = bit_idx_in / 8U ;
    uint32_t const bit_idx = bit_idx_in  % 8U;
    if ( val ) {
-       led_data[byte_idx] |= (0b1 << bit_idx);
+       led_data[byte_idx + preamble] |= (0b1 << bit_idx);
    }else{
-       led_data[byte_idx] &= ~(0b1 << bit_idx);
+       led_data[byte_idx + preamble] &= ~(0b1 << bit_idx);
    }
 }
 
@@ -298,7 +304,7 @@ extern "C" void DMA1_Channel4_5_IRQHandler()
  // *(__IO uint8_t *)&SPI2->DR = 0U;
 
 //   // disable dma
-//   DMA1_Channel5->CCR &= ~(0b1 << 0U); // (OE)
+    DMA1_Channel5->CCR &= ~(0b1 << 0U); // (OE)
 //   // disable the SPI 
 //   SPI2->CR1 &= ~(0b1 << 6U); // (SPE)
 //   SPI2->CR2 &= ~(0b1 << 1); // (TXDMAEN)

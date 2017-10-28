@@ -14,6 +14,7 @@ struct rgb_value{
 struct led_sequence{
 
    static constexpr uint32_t num_leds = 8U;
+   static constexpr uint32_t preamble = 40U;
    // put colour v to index index
    static bool put(uint32_t index, rgb_value const & v);
    // do a transfer to all the leds
@@ -27,7 +28,7 @@ private:
    friend void SPI2_IRQHandler();
    static void initialise();
    static constexpr uint32_t led_data_size = 3U * 4U * num_leds;
-   static uint8_t led_data [led_data_size];   
+   static uint8_t led_data [led_data_size + preamble];   
 };
 
 #endif // SUBHUB_TEST_LED_SEQUENCE_HPP_INCLUDED
