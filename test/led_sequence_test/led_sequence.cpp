@@ -13,6 +13,7 @@
 #include "../../usarts.hpp"
 
 //#define QUAN_USE_DMA
+//#define QUAN_USE_IRQ
 
 /*
   uses spi2,  mosi on pb15
@@ -46,11 +47,11 @@ void led_sequence::initialise()
 {
    // clear the array, then set the bits
    memset(led_data ,0,led_data_size);
-   // each led uses 24 bits , each led bit uses 3 bits
-   uint32_t constexpr num_ar_bits = num_leds * 24U * 3U;
+   // each led uses 24 bits , each led bit uses 4 bits
+   uint32_t constexpr num_ar_bits = num_leds * 24U * 4U;
 
-   static_assert(num_ar_bits == (led_data_size * 8u),"unexpected data size");
-   for ( uint32_t i = 0U; i < num_ar_bits; i += 3U){
+  // static_assert(num_ar_bits == (led_data_size * 8U),"unexpected data size");
+   for ( uint32_t i = 0U; i < num_ar_bits; i += 4U){
       putbit(i,true);
    }
 
@@ -99,7 +100,7 @@ BIDIOE
   yes bidi not rxonly yes bidioe
 */
                   // (BIDIMODE) ( BIDIOE) 
-  SPI2->CR1 |=  ( 0b1 << 15U) | (0b1 << 14U); 
+ // SPI2->CR1 |=  ( 0b1 << 15U) | (0b1 << 14U); 
 
 /*
 d) Configure the LSBFIRST bit to define the frame format
@@ -125,12 +126,14 @@ g) Configure the MSTR bit
 */
   SPI2->CR1 |= (0b1 << 2U); //(MSTR)
 
+
+
 /*
 Write to SPI_CR2 register:
 a) Configure the DS[3:0] bits to select the data length for the transfer
    8 bit transfer
 */
-  SPI2->CR2 = ( SPI2->CR2 & ~(0b1111 << 8U) ) | (0b0111 << 8U); // (DS
+  SPI2->CR2 = ( SPI2->CR2 & ~(0b1111 << 8U) ) | (0b1111 << 8U); // (DS
 
 /*
 b) Configure SSOE .
@@ -158,6 +161,9 @@ f) Initialize LDMA_TX and LDMA_RX bits if DMA is used in packed mode.
 */
   SPI2->CRCPR = 7U;
 
+#if defined QUAN_USE_IRQ
+   NVIC_EnableIRQ(SPI2_IRQn);
+#else
 #if defined QUAN_USE_DMA
 /*
 5. Write proper DMA registers: Configure DMA streams dedicated for SPI Tx and Rx in
@@ -172,40 +178,50 @@ DMA registers if the DMA streams are used.
    DMA1_Channel5->CCR  =
       (0b1 << 7U) // (MINC)
     | (0b1 << 4U) // (DIR) read from memory 
-   // | (0b01 << 10U)
-  //  | (0b01 << 8U) // 16 bit periphera
+    | (0b01 << 10U)
+    | (0b01 << 8U) // 16 bit periphera
+    | ( 0b11 << 12U)
    ;
 
    DMA1->IFCR = (0b1111 << 16U);
    DMA1_Channel5->CCR |= ( 0b1 << 1U); // (TCIE)
    NVIC_EnableIRQ(DMA1_Channel4_5_IRQn);
    SPI2->CR2 |= (0b1 << 1U); // (TXDMAEN)
+#else
+   // SPI2->CR1 |= (0b1 << 6U); // (SPE)
+#endif
 #endif
 
-   SPI2->CR1 |= (0b1 << 6U); // (SPE)
+ SPI2->CR1 |= (0b1 << 6U); // (SPE)
    delay (1_ms);
 }
 
 namespace {
 
- uint32_t led_count = 0U;
+ uint32_t data_idx = 0U;
 }
 void led_sequence::send()
 {
 #if defined QUAN_USE_DMA
-   SPI2->CR1 &= ~(0b1 << 6U); // (SPE)
+   //SPI2->CR1 &= ~(0b1 << 6U); // (SPE)
    DMA1_Channel5->CCR &= ~(0b1 << 0U); // (OE)
 
    DMA1_Channel5->CPAR = (uint32_t)&SPI2->DR;
    DMA1_Channel5->CMAR = (uint32_t)led_data ;
-   DMA1_Channel5->CNDTR = 18U;//led_data_size ;
+   DMA1_Channel5->CNDTR = led_data_size / 2U ;
     // Clear DMA flags
    DMA1->IFCR = (0b1111 << 16U);
    DMA1_Channel5->CCR |= (0b1 << 1U); // (TCIE)
   // SPI2->DR = led_data[0];
    DMA1_Channel5->CCR |= (0b1 << 0U); // (OE)
-   SPI2->CR1 |= (0b1 << 6U); // (SPE)
+ //  SPI2->CR1 |= (0b1 << 6U); // (SPE)
    
+#else
+#if defined  QUAN_USE_IRQ
+    data_idx= 0U;
+    SPI2->CR1 &= ~(0b1 << 6U); // (SPE)
+    SPI2->CR2 |= (0b1 << 7U); // TXEIE
+    SPI2->CR1 |= (0b1 << 6U); // (SPE)
 #else
       //enable the SPI 
    //SPI2->CR1 |= (0b1 << 6U); // (SPE)
@@ -215,6 +231,7 @@ void led_sequence::send()
       }
     *(__IO uint8_t *)&SPI2->DR = led_data[i];
    }
+#endif
 #endif
    
 }
@@ -234,18 +251,21 @@ bool led_sequence::put(uint32_t index, rgb_value const & v)
 {
    if ( index < num_leds){
       // bit position of start of the rgb entry in the output array
-      uint32_t const out_arr_bitpos = index * 24U * 3U;
+      uint32_t const out_arr_bitpos = index * 24U * 4U;
       for ( uint32_t i = 0U; i < 8U; ++i){
          uint8_t const bitmask = 1U << i;
 
-         uint32_t const green_bit_pos = out_arr_bitpos + 22U - 3U * i;
+         uint32_t const green_bit_pos = out_arr_bitpos + 29U - 4U * i;
          putbit(green_bit_pos,(v.green & bitmask) != 0U);
+          putbit(green_bit_pos +1U,(v.green & bitmask) != 0U);
 
-         uint32_t const red_bit_pos = green_bit_pos + 24U;
+         uint32_t const red_bit_pos = green_bit_pos + 32U;
          putbit(red_bit_pos,(v.red & bitmask ) != 0U);
+         putbit(red_bit_pos+1U,(v.red & bitmask ) != 0U);
 
-         uint32_t const blue_bit_pos = green_bit_pos + 48U;
+         uint32_t const blue_bit_pos = green_bit_pos + 64U;
          putbit(blue_bit_pos,(v.blue & bitmask) != 0U);
+         putbit(blue_bit_pos +1U,(v.blue & bitmask) != 0U);
       }
       return true;
    }else{
@@ -256,6 +276,15 @@ bool led_sequence::put(uint32_t index, rgb_value const & v)
 uint32_t led_sequence::transfer_bytes_left()
 {
   return DMA1_Channel5->CNDTR;
+}
+
+extern "C" void SPI2_IRQHandler() __attribute__ ((interrupt ("IRQ")));
+extern "C" void SPI2_IRQHandler()
+{
+    *(__IO uint8_t *)&SPI2->DR = led_sequence::led_data[data_idx];
+    if ( ++ data_idx == led_sequence::led_data_size/2U){
+       SPI2->CR2 &= ~(0b1 << 7U); // TXEIE
+    }
 }
 
 extern "C" void DMA1_Channel4_5_IRQHandler() __attribute__ ((interrupt ("IRQ")));

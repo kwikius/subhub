@@ -40,17 +40,18 @@ int main()
 //   for ( uint8_t i = 0U; i < 8U;++i){
 //     led_sequence::put(i,{0x8,0x1F,0x0});
 //   }
-    rgb_value colours [] = {{12,0,0},{6,6,0},{0,12,0},{0,6,6},{0,0,12},{6,0,6},{12,0,0},{12,0,0}};
 
- #if 0
+
+ #if 1
 //   uint32_t c = 0;
 //   
+   rgb_value colours [] = {{12,0,0},{12,0,0},{0,6,6},{0,6,6},{0,0,12},{0,0,12},{0,12,0},{0,12,0}};
    for (uint8_t i = 0; i < 8; ++i){
  
        led_sequence::put(i,colours[i]);
    }
    for ( uint8_t i = 0; ; i = ( i+1) % 0x10000){
-      delay (100_ms);
+      delay (50_ms);
        for (uint8_t j = 0; j < 8; ++j){
          led_sequence::put(j,colours[(i + j)%8]);
        }
