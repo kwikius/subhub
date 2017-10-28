@@ -15,6 +15,9 @@ struct led_sequence{
 
    static constexpr uint32_t num_leds = 8U;
    static constexpr uint32_t preamble = 40U;
+   static constexpr uint32_t bits_per_colorbit = 3U;
+   static constexpr uint32_t bytes_per_neopixel = 3U;
+   static constexpr uint32_t zerobits = 1U;
    // put colour v to index index
    static bool put(uint32_t index, rgb_value const & v);
    // do a transfer to all the leds
@@ -27,7 +30,7 @@ private:
    friend void ::setup();
    friend void SPI2_IRQHandler();
    static void initialise();
-   static constexpr uint32_t led_data_size = 3U * 4U * num_leds;
+   static constexpr uint32_t led_data_size = bytes_per_neopixel * bits_per_colorbit * num_leds;
    static uint8_t led_data [led_data_size + preamble];   
 };
 

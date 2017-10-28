@@ -48,10 +48,10 @@ void led_sequence::initialise()
    // clear the array, then set the bits
    memset(led_data ,0,led_data_size + preamble);
    // each led uses 24 bits , each led bit uses 4 bits
-   uint32_t constexpr num_ar_bits = num_leds * 24U * 4U;
+   uint32_t constexpr num_ar_bits = num_leds * 8 * bytes_per_neopixel * bits_per_colorbit;
 
   // static_assert(num_ar_bits == (led_data_size * 8U),"unexpected data size");
-   for ( uint32_t i = 0U; i < num_ar_bits; i += 4U){
+   for ( uint32_t i = 0U; i < num_ar_bits; i += bits_per_colorbit){
       putbit(i,true);
    }
 
@@ -257,21 +257,19 @@ bool led_sequence::put(uint32_t index, rgb_value const & v)
 {
    if ( index < num_leds){
       // bit position of start of the rgb entry in the output array
-      uint32_t const out_arr_bitpos = index * 24U * 4U;
+
+      uint32_t const out_arr_bitpos = index * 8U * bytes_per_neopixel * bits_per_colorbit;
       for ( uint32_t i = 0U; i < 8U; ++i){
          uint8_t const bitmask = 1U << i;
 
-         uint32_t const green_bit_pos = out_arr_bitpos + 29U - 4U * i;
+         uint32_t const green_bit_pos = out_arr_bitpos + (8U * bytes_per_neopixel - zerobits) - bits_per_colorbit * i;
          putbit(green_bit_pos,(v.green & bitmask) != 0U);
-          putbit(green_bit_pos +1U,(v.green & bitmask) != 0U);
-
-         uint32_t const red_bit_pos = green_bit_pos + 32U;
+   
+         uint32_t const red_bit_pos = green_bit_pos + 8U * bits_per_colorbit;
          putbit(red_bit_pos,(v.red & bitmask ) != 0U);
-         putbit(red_bit_pos+1U,(v.red & bitmask ) != 0U);
 
-         uint32_t const blue_bit_pos = green_bit_pos + 64U;
+         uint32_t const blue_bit_pos = green_bit_pos + 8U * 2U * bits_per_colorbit;
          putbit(blue_bit_pos,(v.blue & bitmask) != 0U);
-         putbit(blue_bit_pos +1U,(v.blue & bitmask) != 0U);
       }
       return true;
    }else{
