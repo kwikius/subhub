@@ -3,6 +3,7 @@
 
 extern "C" void setup();
 extern "C" void SPI2_IRQHandler();
+extern "C" void DMA1_Channel4_5_IRQHandler();
 
 struct rgb_value{
    rgb_value(uint8_t red_in,uint8_t green_in, uint8_t blue_in) : red{red_in},green{green_in},blue{blue_in}{}
@@ -18,6 +19,7 @@ struct led_sequence{
    static constexpr uint32_t bits_per_colorbit = 3U;
    static constexpr uint32_t bytes_per_neopixel = 3U;
    static constexpr uint32_t zerobits = 1U;
+   static constexpr uint16_t num_lead_words = 20U;
    // put colour v to index index
    static bool put(uint32_t index, rgb_value const & v);
    // do a transfer to all the leds
@@ -29,9 +31,13 @@ private:
    static void putbit(uint32_t bit_idx, bool val);
    friend void ::setup();
    friend void SPI2_IRQHandler();
+   friend void ::DMA1_Channel4_5_IRQHandler();
    static void initialise();
    static constexpr uint32_t led_data_size = bytes_per_neopixel * bits_per_colorbit * num_leds;
-   static uint8_t led_data [led_data_size + preamble];   
+   static uint8_t led_data [led_data_size]; 
+
+   static uint16_t lead_byte;  
+   
 };
 
 #endif // SUBHUB_TEST_LED_SEQUENCE_HPP_INCLUDED

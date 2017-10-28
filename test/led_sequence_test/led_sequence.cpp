@@ -19,7 +19,8 @@
   uses spi2,  mosi on pb15
   if reqd spi2 clk on pb13
 */
-uint8_t  led_sequence::led_data [led_data_size + preamble] = {0U};
+uint8_t  led_sequence::led_data [led_data_size] = {0U};
+uint16_t led_sequence::lead_byte = 0U;
 
 
 using quan::stm32::millis;
@@ -46,7 +47,7 @@ namespace{
 void led_sequence::initialise()
 {
    // clear the array, then set the bits
-   memset(led_data ,0,led_data_size + preamble);
+   memset(led_data ,0,led_data_size);
    // each led uses 24 bits , each led bit uses 4 bits
    uint32_t constexpr num_ar_bits = num_leds * 8 * bytes_per_neopixel * bits_per_colorbit;
 
@@ -176,8 +177,9 @@ DMA registers if the DMA streams are used.
 
    // 8 bit default
    DMA1_Channel5->CCR  =
-      (0b1 << 7U) // (MINC)
-    | (0b1 << 4U) // (DIR) read from memory 
+
+     (0b1 << 4U) // (DIR) read from memory 
+  //  | (0b1 << 7U) // (MINC)
     | (0b01 << 10U)
     | (0b01 << 8U) // 16 bit periphera
     | ( 0b11 << 12U)
@@ -199,6 +201,9 @@ DMA registers if the DMA streams are used.
 namespace {
 
  uint32_t data_idx = 0U;
+
+ bool in_preamble = true;
+  
 }
 void led_sequence::send()
 {
@@ -208,10 +213,13 @@ void led_sequence::send()
    while ( DMA1_Channel5->CCR & (0b1 << 0U)){
       asm volatile ("nop":::);
    }
-   
+   DMA1_Channel5->CCR &=  ~(0b1 << 7U) ; //(MINC)
    DMA1_Channel5->CPAR = (uint32_t)&SPI2->DR;
-   DMA1_Channel5->CMAR = (uint32_t)led_data ;
-   DMA1_Channel5->CNDTR = (led_data_size + preamble) / 2U ;
+  // DMA1_Channel5->CMAR = (uint32_t)led_data ;
+   DMA1_Channel5->CMAR = (uint32_t)&lead_byte ;
+  // DMA1_Channel5->CNDTR = (led_data_size + preamble) / 2U ;
+   DMA1_Channel5->CNDTR = num_lead_words;
+   in_preamble = true;
     // Clear DMA flags
    DMA1->IFCR = (0b1111 << 16U);
    DMA1_Channel5->CCR |= (0b1 << 1U); // (TCIE)
@@ -235,7 +243,7 @@ void led_sequence::send()
       while ( (SPI2->SR & (0b1 << 1U)) == 0U){
          asm volatile ("nop":::);
       }
-    *(__IO uint8_t *)&SPI2->DR = led_data[i + preamble];
+    *(__IO uint8_t *)&SPI2->DR = led_data[i];
    }
 #endif
 #endif
@@ -247,9 +255,9 @@ void led_sequence::putbit(uint32_t bit_idx_in, bool val)
    uint32_t const byte_idx = bit_idx_in / 8U ;
    uint32_t const bit_idx = bit_idx_in  % 8U;
    if ( val ) {
-       led_data[byte_idx + preamble] |= (0b1 << bit_idx);
+       led_data[byte_idx ] |= (0b1 << bit_idx);
    }else{
-       led_data[byte_idx + preamble] &= ~(0b1 << bit_idx);
+       led_data[byte_idx ] &= ~(0b1 << bit_idx);
    }
 }
 
@@ -294,18 +302,32 @@ extern "C" void SPI2_IRQHandler()
 extern "C" void DMA1_Channel4_5_IRQHandler() __attribute__ ((interrupt ("IRQ")));
 extern "C" void DMA1_Channel4_5_IRQHandler()
 {
-   
+    DMA1_Channel5->CCR &= ~(0b1 << 0U); // (OE)
    // disable DMA interrupt flag
  //  DMA1_Channel5->CCR &= ~( 0b1 << 1U); // (TCIE)
    // Clear DMA flags
-   DMA1->IFCR = (0b1111 << 16U);
+    DMA1->IFCR = (0b1111 << 16U);
  // *(__IO uint8_t *)&SPI2->DR = 0U;
 
 //   // disable dma
-    DMA1_Channel5->CCR &= ~(0b1 << 0U); // (OE)
+    while (DMA1_Channel5->CCR & (0b1 << 0U)) {
+      asm volatile ("nop":::);
+    };
+    if (in_preamble){
+      in_preamble = false;
+      DMA1_Channel5->CCR |=  (0b1 << 7U) ;// (MINC)
+      DMA1_Channel5->CPAR = (uint32_t)&SPI2->DR;
+  // DMA1_Channel5->CMAR = (uint32_t)led_data ;
+      DMA1_Channel5->CMAR = (uint32_t)led_sequence::led_data ;
+  // DMA1_Channel5->CNDTR = (lled_data_size + preamble) / 2U ;
+      DMA1_Channel5->CNDTR = led_sequence::led_data_size  / 2U;
+      DMA1_Channel5->CCR |= (0b1 << 0U);
+    }else{
+      DMA1_Channel5->CCR &= ~( 0b1 << 1U); // (TCIE)
 //   // disable the SPI 
 //   SPI2->CR1 &= ~(0b1 << 6U); // (SPE)
 //   SPI2->CR2 &= ~(0b1 << 1); // (TXDMAEN)
+    }
 }
 
 
