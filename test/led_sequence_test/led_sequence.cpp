@@ -69,14 +69,14 @@ namespace {
 
    constexpr uint32_t raw_timer_freq = quan::stm32::get_raw_timer_frequency<led_seq_timer>();
    static_assert(raw_timer_freq == 48000000,"unexpected raw freq");
-   constexpr uint32_t reqd_freq = 800000U;
+   constexpr uint32_t reqd_freq = 750000U;
 
    constexpr uint32_t period = (raw_timer_freq / reqd_freq) ;
  //  static_assert(raw_timer_freq % reqd_freq == 0, "inaccurate period");
   // static_assert(period == 60U, "need to redo timer period");
 
-   static constexpr uint32_t zero_pwm = period / 3U -1U;
-   static constexpr uint32_t one_pwm  = (2 * period) / 3U -1U;
+   static constexpr uint32_t zero_pwm = period / 3U -3U;
+   static constexpr uint32_t one_pwm  = (2 * period) / 3U +1U;
 }
 
 void led_sequence::initialise()
@@ -227,6 +227,7 @@ void led_sequence::send()
 
     // enable the output
     led_seq_timer::get()->ccer = (led_seq_timer::get()->ccer.get() & ~(0b1 << 2) ) | ( 0b1 << 0U);
+    delay(1_ms);
    // led_seq_timer::get()->ccer.setbit<0>(); // (CC1E)
       // start  dma
     DMA1_Channel3->CCR |= (0b1 << 0U); // (OE)

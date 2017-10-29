@@ -31,6 +31,16 @@ namespace{
 
 }
 
+rgb_value add_colours(rgb_value const & c1,rgb_value const & c2, float ratio)
+{
+     
+     rgb_value result;
+      result.red = c1.red* ratio + c2.red * (1-ratio);
+      result.green = c1.green* ratio + c2.green * (1-ratio);
+      result.blue = c1.blue* ratio + c2.blue * (1-ratio);
+     return result;
+}
+
 int main()
 {
    setup();
@@ -55,17 +65,31 @@ int main()
 
    rgb_value colours2 [] = {green, blue, red, white,green,blue, red, white,};
 
-   uint8_t j = 0U;
-   for (;;){
+    float ratio = 0.5f;
+    float incr = 0.01f;
+    bool pos_dir = true;
 
-       for (uint32_t i = 0; i < 8; ++i){
-         led_sequence::put(i,colours1[i]);
+   for (;;){
+       if (pos_dir){
+         if( ratio >= 1.f){
+            pos_dir = false;
+            ratio -= incr;
+          }else{
+            ratio += incr;
+          }
+       }else {
+         if ( ratio <= 0.f){
+            pos_dir = true;
+            ratio +=incr;
+         }else{
+            ratio -= incr;
+         }
        }
-       led_sequence::send();
-        delay(500_ms);
        for (uint32_t i = 0; i < 8; ++i){
-         led_sequence::put(i,colours2[i]);
+         rgb_value blend = add_colours(colours1[i],colours2[i],ratio);
+         led_sequence::put(i,blend);
        }
+      
        led_sequence::send();
        delay(500_ms);
   }
@@ -99,7 +123,7 @@ int main()
  // }
 
   #else
-
+ #if 0
    rgb_value color = {0,0,0};
    int state = 0;
    uint32_t pos = 0;
@@ -170,9 +194,26 @@ int main()
            led_sequence::put((pos + i) % 8U,color);
           }
      pos = (pos + 1U) % 8U;
-     delay (250_ms);
+     delay (20_ms);
      led_sequence::send();
    }
+  #else
+    uint32_t pos = 0U;
+   rgb_value red = {12,0,0};
+   rgb_value blue = {3,3,6};
+   rgb_value white = {4,4,4};
+   rgb_value green = {0,12,0};
+    for ( ;;){
+       led_sequence::put(pos,red);
+        pos = (pos +1) % 8;
+        led_sequence::put(pos,green);
+
+       led_sequence::send();
+       delay(125_ms);
+    }
+  #endif
+   
+   
 #endif
 
    xout::write("Led sequence test completed\n");
