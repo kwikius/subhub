@@ -28,6 +28,7 @@
    TIM2   servos out
    TIM14  for PPM in
    TIM15 for ADC timer
+   TIM16  for led_sequence timer
 
 available
   TIM1
