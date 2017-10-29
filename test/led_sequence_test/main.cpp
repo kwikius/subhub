@@ -4,7 +4,6 @@
 #include <quan/conversion/itoa.hpp>
 #include <quan/stm32/millis.hpp>
 #include "../../usarts.hpp"
-#include "../../touch.hpp"
 #include "led.hpp"
 
 extern "C" void setup();
@@ -21,21 +20,7 @@ namespace{
    {
       return static_cast<ms>(v);
    }
-   constexpr auto count_on_threshold = 210U;
 
-   constexpr auto count_idle = 210.f;
-   constexpr auto count_saturated = 145.f;
-   constexpr auto count_diff = count_idle - count_saturated;
-
-   void do_pwm(uint32_t n)
-   {
-      if ( n < count_idle){
-         float v = (count_idle - n) * 100U / count_diff;
-         set_pwm (static_cast<uint32_t>(v));
-      }else{
-         set_pwm(0U);
-      }
-   }
 }
 
 int main()
