@@ -67,9 +67,10 @@ typedef quan::stm32::usart1  link_uart;
 typedef quan::stm32::usart2  aux_uart;
 
 struct interrupt_priority{
-   static constexpr uint32_t systick_timer = 15;
-   static constexpr uint32_t gps_telem_port= 14;
-   static constexpr uint32_t channel_port = 12;
+   static constexpr uint32_t systick_timer = 3;
+   static constexpr uint32_t gps_telem_port= 2;
+   static constexpr uint32_t channel_port = 1;
+   static constexpr uint32_t led_sequence = 0;
 };
 
 #endif // FSK_TX_RESOURCES_HPP_INCLUDED
