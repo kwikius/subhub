@@ -200,12 +200,10 @@ bool led_sequence::put(uint32_t index, rgb_value const & v)
 
 void led_sequence::send()
 {
-   // 
-#if 1
     while (in_progress == true){
       asm volatile ("nop":::);
     }
-   // xout::write("*");
+
     led_data_idx = 0U;
    // load the first 2 leds in the buffer
     led_sequence::refill(0U, led_data_idx);
@@ -239,22 +237,49 @@ void led_sequence::send()
 
     in_progress = true;
    // xout::flush_tx();
-#else
-    led_seq_timer::get()->ccr1 = zero_pwm;
-    led_seq_timer::get()->cr1.setbit<0>(); // (CEN)
-#endif
+
 }
 
-void led_sequence::refill(uint32_t dma_buf_id, uint32_t data_idx)
+inline void led_sequence::refill(uint32_t dma_buf_id, uint32_t data_idx)
 {
    uint32_t const dma_idx = dma_buf_id * 8U * bytes_per_led;
    // green, red, blue
    auto const & led = led_data[data_idx];
+#if 0
    for ( uint8_t i = 0U; i < 8U ; ++i){
       dma_buffer[dma_idx + i] = (((led.green << i) & 0x80) == 0U)?zero_pwm:one_pwm;
       dma_buffer[dma_idx + i + 8U] = (((led.red << i) & 0x80) == 0U)?zero_pwm:one_pwm;
       dma_buffer[dma_idx + i + 16U] = (((led.blue << i) & 0x80) == 0U)?zero_pwm:one_pwm;
    }
+#else
+   dma_buffer[dma_idx] = (((led.green) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 1U] = (((led.green << 1) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 2U] = (((led.green << 2) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 3U] = (((led.green << 3) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 4U] = (((led.green << 4) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 5U] = (((led.green << 5) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 6U] = (((led.green << 6) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 7U] = (((led.green << 7) & 0x80) == 0U)?zero_pwm:one_pwm;
+
+   dma_buffer[dma_idx + 8U] = (((led.red) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 9U] = (((led.red << 1) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 10U] = (((led.red << 2) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 11U] = (((led.red << 3) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 12U] = (((led.red << 4) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 13U] = (((led.red << 5) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 14U] = (((led.red << 6) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 15U] = (((led.red << 7) & 0x80) == 0U)?zero_pwm:one_pwm;
+
+   dma_buffer[dma_idx + 16U] = (((led.red) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 17U] = (((led.red << 1) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 18U] = (((led.red << 2) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 19U] = (((led.red << 3) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 20U] = (((led.red << 4) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 21U] = (((led.red << 5) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 22U] = (((led.red << 6) & 0x80) == 0U)?zero_pwm:one_pwm;
+   dma_buffer[dma_idx + 23U] = (((led.red << 7) & 0x80) == 0U)?zero_pwm:one_pwm;
+
+#endif
 }
 
 extern "C" void DMA1_Channel2_3_IRQHandler() 

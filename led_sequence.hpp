@@ -30,7 +30,7 @@ struct led_sequence{
    static uint32_t transfer_bytes_left();
 private:
    static void putbit(uint32_t bit_idx, bool val);
-   static void refill(uint32_t dma_buf_id, uint32_t data_idx);
+   static inline void refill(uint32_t dma_buf_id, uint32_t data_idx);
    friend void ::setup();
    friend void ::DMA1_Channel2_3_IRQHandler();
    static void initialise();
