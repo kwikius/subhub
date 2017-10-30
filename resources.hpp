@@ -28,7 +28,13 @@
    TIM2   servos out
    TIM14  for PPM in
    TIM15 for ADC timer
+   TIM16  for led_sequence timer
 
+available
+  TIM1
+  TIM3
+  TIM16
+  TIM17
 */
 /*
 N.B on stm32F0, many pins are not 5 volt tolerant so beware
@@ -39,8 +45,14 @@ typedef quan::mcu::pin<quan::stm32::gpioa,1>    servo2_out_pin;
 typedef quan::mcu::pin<quan::stm32::gpioa,2>    analog_rssi_in_pin;
 
 typedef quan::mcu::pin<quan::stm32::gpioa,5>    servo1_out_pin;
-typedef quan::mcu::pin<quan::stm32::gpioa,6>    touch_electrode_pin;
-typedef quan::mcu::pin<quan::stm32::gpioa,7>    touch_cap_pin;
+
+
+// TODO move neopixel_pin to PB8
+//typedef quan::mcu::pin<quan::stm32::gpioa,6>    touch_electrode_pin;
+//typedef quan::mcu::pin<quan::stm32::gpioa,7>    touch_cap_pin;
+
+typedef quan::mcu::pin<quan::stm32::gpioa,6>    neopixel_pin;
+
 
 typedef quan::mcu::pin<quan::stm32::gpioa,9>    link_txo_pin; 
 typedef quan::mcu::pin<quan::stm32::gpioa,10>   link_rxi_pin; 
@@ -59,15 +71,16 @@ typedef quan::mcu::pin<quan::stm32::gpiob,7>    i2c_sda;
 typedef quan::mcu::pin<quan::stm32::gpiob,11>    led_pwm_pin;
 
 typedef quan::mcu::pin<quan::stm32::gpiob,13>    spi2_sck_pin;
-typedef quan::mcu::pin<quan::stm32::gpiob,15>    led_sequence_pin;
+typedef quan::mcu::pin<quan::stm32::gpiob,15>    spi2_mosi_pin;
 
 typedef quan::stm32::usart1  link_uart;
 typedef quan::stm32::usart2  aux_uart;
 
 struct interrupt_priority{
-   static constexpr uint32_t systick_timer = 15;
-   static constexpr uint32_t gps_telem_port= 14;
-   static constexpr uint32_t channel_port = 12;
+   static constexpr uint32_t systick_timer = 3;
+   static constexpr uint32_t gps_telem_port= 2;
+   static constexpr uint32_t channel_port = 1;
+   static constexpr uint32_t led_sequence = 0;
 };
 
 #endif // FSK_TX_RESOURCES_HPP_INCLUDED
