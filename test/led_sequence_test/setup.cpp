@@ -33,9 +33,10 @@ namespace {
 
    void setup_usarts()
    {
+     link_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
      link_sp::serial_port::init();
      link_sp::serial_port::set_baudrate<115200,true>();
-     link_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
+     
 
    }
 }

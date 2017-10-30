@@ -53,7 +53,7 @@ int main()
 //   }
 
 
- #if 1
+ #if 0
 //   uint32_t c = 0;
 //   
    rgb_value red = {12,0,0};
@@ -200,13 +200,13 @@ int main()
   #else
     uint32_t pos = 0U;
    rgb_value red = {12,0,0};
-   rgb_value blue = {3,3,6};
+   rgb_value blue = {0,0,12};
    rgb_value white = {4,4,4};
    rgb_value green = {0,12,0};
     for ( ;;){
-       led_sequence::put(pos,red);
+       led_sequence::put(pos,green);
         pos = (pos +1) % 8;
-        led_sequence::put(pos,green);
+        led_sequence::put(pos,blue);
 
        led_sequence::send();
        delay(125_ms);
