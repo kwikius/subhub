@@ -8,8 +8,8 @@ extern "C" void DMA1_Channel2_3_IRQHandler() __attribute__ ( (interrupt ("IRQ"))
 extern "C" void  TIM16_IRQHandler() __attribute__ ( (interrupt ("IRQ")));
 
 struct rgb_value{
-   rgb_value(): red{0U},green{0U},blue{0U}{}
-   rgb_value(uint8_t red_in,uint8_t green_in, uint8_t blue_in) : red{red_in},green{green_in},blue{blue_in}{}
+   constexpr rgb_value(): red{0U},green{0U},blue{0U}{}
+   constexpr rgb_value(uint8_t red_in,uint8_t green_in, uint8_t blue_in) : red{red_in},green{green_in},blue{blue_in}{}
    uint8_t red;
    uint8_t green;
    uint8_t blue;

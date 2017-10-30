@@ -9,4 +9,8 @@ void walking_led(
       quan::time_<uint32_t>::ms const & delay_duration,
       quan::time_<uint32_t>::ms const & demo_duration);
 
+void blend(quan::time_<uint32_t>::ms const & demo_duration);
+
+void pulse(quan::time_<uint32_t>::ms const & demo_duration);
+
 #endif // LIGHT_SHOW_EXAMPLES_HPP_INCLUDED

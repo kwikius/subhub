@@ -32,15 +32,7 @@ namespace{
 
 }
 
-rgb_value add_colours(rgb_value const & c1,rgb_value const & c2, float ratio)
-{
-     
-     rgb_value result;
-      result.red = c1.red* ratio + c2.red * (1-ratio);
-      result.green = c1.green* ratio + c2.green * (1-ratio);
-      result.blue = c1.blue* ratio + c2.blue * (1-ratio);
-     return result;
-}
+
 
 int main()
 {
@@ -58,11 +50,16 @@ int main()
    rgb_value green = {0,12,0};
 
 for (;;){
-    walking_led(white, blue,250_ms, 10000_ms);
-    walking_led(green, blue,100_ms, 10000_ms);
-    walking_led(green, red,50_ms, 10000_ms);
-    walking_led(red,blue,25_ms, 10000_ms);
-    walking_led(red,white,50_ms, 10000_ms);
+    walking_led(white, blue,250_ms, 8000_ms);
+    blend(10000_ms);
+    pulse(10000_ms);
+    walking_led(green, blue,100_ms, 5000_ms);
+    blend(10000_ms);
+    walking_led(green, red,50_ms, 6000_ms);
+    pulse(10000_ms);
+    walking_led(red,blue,25_ms, 5000_ms);
+    walking_led(red,white,50_ms, 4000_ms);
+    blend(20000_ms);
 }
 
 #if 0
