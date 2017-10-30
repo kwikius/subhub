@@ -6,6 +6,7 @@
 #include "../../usarts.hpp"
 #include "../../led_sequence.hpp"
 #include "led.hpp"
+#include "light_show_examples.hpp"
 
 extern "C" void setup();
 
@@ -51,8 +52,20 @@ int main()
 //   for ( uint8_t i = 0U; i < 8U;++i){
 //     led_sequence::put(i,{0x8,0x1F,0x0});
 //   }
+   rgb_value red = {12,0,0};
+   rgb_value blue = {0,0,12};
+   rgb_value white = {4,4,4};
+   rgb_value green = {0,12,0};
 
+for (;;){
+    walking_led(white, blue,250_ms, 10000_ms);
+    walking_led(green, blue,100_ms, 10000_ms);
+    walking_led(green, red,50_ms, 10000_ms);
+    walking_led(red,blue,25_ms, 10000_ms);
+    walking_led(red,white,50_ms, 10000_ms);
+}
 
+#if 0
  #if 0
 //   uint32_t c = 0;
 //   
@@ -123,7 +136,7 @@ int main()
  // }
 
   #else
- #if 0
+ #if 1
    rgb_value color = {0,0,0};
    int state = 0;
    uint32_t pos = 0;
@@ -214,6 +227,7 @@ int main()
   #endif
    
    
+#endif
 #endif
 
    xout::write("Led sequence test completed\n");
