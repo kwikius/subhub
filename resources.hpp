@@ -47,12 +47,8 @@ typedef quan::mcu::pin<quan::stm32::gpioa,2>    analog_rssi_in_pin;
 typedef quan::mcu::pin<quan::stm32::gpioa,5>    servo1_out_pin;
 
 
-// TODO move neopixel_pin to PB8
-//typedef quan::mcu::pin<quan::stm32::gpioa,6>    touch_electrode_pin;
-//typedef quan::mcu::pin<quan::stm32::gpioa,7>    touch_cap_pin;
-
-typedef quan::mcu::pin<quan::stm32::gpioa,6>    neopixel_pin;
-
+typedef quan::mcu::pin<quan::stm32::gpioa,6>    touch_electrode_pin;
+typedef quan::mcu::pin<quan::stm32::gpioa,7>    touch_cap_pin;
 
 typedef quan::mcu::pin<quan::stm32::gpioa,9>    link_txo_pin; 
 typedef quan::mcu::pin<quan::stm32::gpioa,10>   link_rxi_pin; 
@@ -66,6 +62,7 @@ typedef quan::mcu::pin<quan::stm32::gpiob,1>    ppm_in_pin;
 typedef quan::mcu::pin<quan::stm32::gpiob,5>    digital_rssi_in_pin;
 typedef quan::mcu::pin<quan::stm32::gpiob,6>    i2c_scl;
 typedef quan::mcu::pin<quan::stm32::gpiob,7>    i2c_sda;
+typedef quan::mcu::pin<quan::stm32::gpiob,8>    neopixel_pin;
 
 // N.B 5V tolerant for connect via res to base of PNP transistor to 5V for LEDs
 typedef quan::mcu::pin<quan::stm32::gpiob,11>    led_pwm_pin;

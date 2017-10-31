@@ -1,5 +1,6 @@
 
 /*
+Copyright (C) 2017 Andy Little
 based on
 https://github.com/bitcraze/crazyflie-firmware/blob/master/src/drivers/src/ws2812_cf2.c
 
@@ -31,11 +32,15 @@ which is
 #include <quan/stm32/millis.hpp>
 #include "../../led_sequence.hpp"
 #include "../../usarts.hpp"
+#include "../../resources.hpp"
 #include "led.hpp"
 
 /*
-use pa6 as neo_pixel_pin 
- use TIM16_CH1  ( AF5 for pa6)
+
+ use TIM16_CH1  
+choose pin as neo_pixel_pin 
+     PA6 AF5
+ or  PB8 AF2 
 */
 
 uint8_t led_sequence::dma_buffer[ 8U * bytes_per_led * 2U] = {0U};
@@ -65,7 +70,7 @@ namespace{
 
 namespace {
    typedef quan::stm32::tim16 led_seq_timer;
-   typedef quan::mcu::pin<quan::stm32::gpioa,6> neopixel_out_pin;
+   //typedef quan::mcu::pin<quan::stm32::gpiob,8> neopixel_out_pin;
 
    constexpr uint32_t raw_timer_freq = quan::stm32::get_raw_timer_frequency<led_seq_timer>();
    static_assert(raw_timer_freq == 48000000,"unexpected raw freq");
@@ -87,10 +92,10 @@ void led_sequence::initialise()
    quan::stm32::module_enable<led_seq_timer>();
 
    // set up pin as af5
-   quan::stm32::module_enable<neopixel_out_pin::port_type>();
+   quan::stm32::module_enable<neopixel_pin::port_type>();
    quan::stm32::apply<
-      neopixel_out_pin,
-      quan::stm32::gpio::mode::af5,  
+      neopixel_pin,
+      quan::stm32::gpio::mode::af2,  
       quan::stm32::gpio::pupd::pull_down,
       quan::stm32::gpio::ospeed::medium_fast
    >();
@@ -306,7 +311,7 @@ inline void led_sequence::refill(uint32_t dma_buf_id, uint32_t data_idx)
 /*
  called every 30 usec when transmitting
  Needs high prio else wrong bit value can be sent
- Total calls = 2 * num_leds
+ Total calls =  num_leds
 */
 extern "C" void DMA1_Channel2_3_IRQHandler() 
 {
@@ -348,6 +353,13 @@ extern "C" void  TIM16_IRQHandler()
    led_seq_timer::get()->ccer = (led_seq_timer::get()->ccer.get() & ~(0b1 << 0U) ) | ( 0b1 << 2U);
    led_seq_timer::get()->bdtr.clearbit<15U>(); // (MOE)
    led_seq_timer::get()->cr1.clearbit<0U>(); // (CEN)
+
+   /*
+     todo
+      set period to give a timing to reset the led sequence. Either 50 usec or 125 usec or whatever
+      set cnt = 0;
+      enable the overflow irq and start the timer, then stop it in the next interrupt and set in_progress = false;
+   */
 
    in_progress = false;
 }
