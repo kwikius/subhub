@@ -5,7 +5,7 @@
 #include <quan/stm32/millis.hpp>
 #include <quan/constrain.hpp>
 #include "../../usarts.hpp"
-#include "../../led_sequence.hpp"
+#include "../../neopixel.hpp"
 #include "led.hpp"
 
 using quan::stm32::millis;
@@ -40,10 +40,10 @@ void walking_led(
      uint8_t pos = 0;
      auto now = millis();
      while ( (millis() - now) < demo_duration){
-        led_sequence::put(pos,background_colour);
+        neopixel::put(pos,background_colour);
         pos = (pos +1) % 8;
-        led_sequence::put(pos,walk_colour);
-        led_sequence::send();
+        neopixel::put(pos,walk_colour);
+        neopixel::send();
         delay(delay_duration);
     }
 
@@ -94,10 +94,10 @@ void blend(ms const & demo_duration)
        }
        for (uint32_t i = 0; i < 8; ++i){
          rgb_value blend = blend_colours(colours1[i],colours2[i],ratio);
-         led_sequence::put(i,blend);
+         neopixel::put(i,blend);
        }
       
-       led_sequence::send();
+       neopixel::send();
        delay(100_ms);
   }
 }
@@ -171,11 +171,11 @@ void pulse(ms const & demo_duration)
         }
 
           for ( uint32_t i = 0; i < 8; ++i){
-           led_sequence::put((pos + i) % 8U,color);
+           neopixel::put((pos + i) % 8U,color);
           }
      pos = (pos + 1U) % 8U;
 
-     led_sequence::send();
+     neopixel::send();
      delay (30_ms);
      
      }

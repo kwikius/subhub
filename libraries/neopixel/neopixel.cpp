@@ -30,10 +30,10 @@ which is
 #include <quan/stm32/tim/temp_reg.hpp>
 #include <quan/stm32/get_raw_timer_frequency.hpp>
 #include <quan/stm32/millis.hpp>
-#include "../../led_sequence.hpp"
+#include "../../neopixel.hpp"
 #include "../../usarts.hpp"
 #include "../../resources.hpp"
-#include "led.hpp"
+
 
 /*
 
@@ -43,8 +43,8 @@ choose pin as neo_pixel_pin
  or  PB8 AF2 
 */
 
-uint8_t led_sequence::dma_buffer[ 8U * bytes_per_led * 2U] = {0U};
-rgb_value led_sequence::led_data [num_leds];
+uint8_t neopixel::dma_buffer[ 8U * bytes_per_led * 2U] = {0U};
+rgb_value neopixel::led_data [num_leds];
 
 using quan::stm32::millis;
 
@@ -82,7 +82,7 @@ namespace {
    static constexpr uint32_t one_pwm  = (2 * period) / 3U -1U;
 }
 
-void led_sequence::initialise()
+void neopixel::initialise()
 {
    // turn on pwm timer in rcc
    // turn on dma in rcc
@@ -163,10 +163,10 @@ void led_sequence::initialise()
       led_seq_timer::get()->dier.set(dier.value);
    }
 
-   NVIC_SetPriority(DMA1_Channel2_3_IRQn,interrupt_priority::led_sequence);
+   NVIC_SetPriority(DMA1_Channel2_3_IRQn,interrupt_priority::neopixel);
    NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
 
-   NVIC_SetPriority(TIM16_IRQn,interrupt_priority::led_sequence);
+   NVIC_SetPriority(TIM16_IRQn,interrupt_priority::neopixel);
    NVIC_EnableIRQ(TIM16_IRQn);
    
    // memory 8 bit default
@@ -180,7 +180,7 @@ void led_sequence::initialise()
     | (0b1 << 1U)     // (TCIE)
    ;
    DMA1_Channel3->CPAR = (uint32_t)&TIM16->CCR1;
-   DMA1_Channel3->CMAR = (uint32_t)led_sequence::dma_buffer;
+   DMA1_Channel3->CMAR = (uint32_t)neopixel::dma_buffer;
 }
 
 namespace {
@@ -188,7 +188,7 @@ namespace {
    bool in_progress = false;
 }
 
-bool led_sequence::put(uint32_t index, rgb_value const & v)
+bool neopixel::put(uint32_t index, rgb_value const & v)
 {
    if ( index < num_leds){
       led_data[index] = v;
@@ -205,7 +205,7 @@ Todo
 Otherwise acts as if a much longer chain
 */
 
-void led_sequence::send()
+void neopixel::send()
 {
     while (in_progress == true){
       asm volatile ("nop":::);
@@ -214,9 +214,9 @@ void led_sequence::send()
     led_data_idx = 0U;
 
    // load the first 2 leds in the buffer
-    led_sequence::refill(0U, led_data_idx);
+    neopixel::refill(0U, led_data_idx);
     ++led_data_idx;
-    led_sequence::refill(1U, led_data_idx);
+    neopixel::refill(1U, led_data_idx);
     ++led_data_idx;
 
     led_seq_timer::get()->ccr1 = 0U;
@@ -248,7 +248,7 @@ void led_sequence::send()
 /*
 since this is called in an interrupt try to make it as fast as possible
 */
-inline void led_sequence::refill(uint32_t dma_buf_id, uint32_t data_idx)
+inline void neopixel::refill(uint32_t dma_buf_id, uint32_t data_idx)
 {
    uint32_t const dma_idx = dma_buf_id * 8U * bytes_per_led;
    // green, red, blue
@@ -318,16 +318,16 @@ extern "C" void DMA1_Channel2_3_IRQHandler()
    // half transfer complete
    if ( DMA1->ISR & (0b1 << 10U)/* (HTIF3) */ ){
       DMA1->IFCR = (0b1 << 10U);
-      if (led_data_idx < (led_sequence::num_leds) ){
-         led_sequence::refill(0U, led_data_idx);
+      if (led_data_idx < (neopixel::num_leds) ){
+         neopixel::refill(0U, led_data_idx);
          ++led_data_idx;
       }
    }
     // full transfer complete
    if ( DMA1->ISR & ( 0b1 << 9U)/* (TCIF3) */ ){
       DMA1->IFCR = ( 0b1 << 9U);
-      if ( led_data_idx < led_sequence::num_leds){
-         led_sequence::refill(1U, led_data_idx);
+      if ( led_data_idx < neopixel::num_leds){
+         neopixel::refill(1U, led_data_idx);
          ++led_data_idx;
       }else{
          DMA1_Channel3->CCR &= ~(0b1 << 0U); // (OE)

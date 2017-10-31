@@ -19,7 +19,7 @@
 #include <stm32f0xx.h>
 #include "../../resources.hpp"
 #include "../../usarts.hpp"
-#include "../../led_sequence.hpp"
+#include "../../neopixel.hpp"
 #include "led.hpp"
 
 void setup_pwm();
@@ -46,7 +46,7 @@ extern "C" void setup()
    led::initialise();
    setup_events();
    setup_usarts();
-   led_sequence::initialise();
+   neopixel::initialise();
 
 }
 

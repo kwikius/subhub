@@ -28,7 +28,7 @@
    TIM2   servos out
    TIM14  for PPM in
    TIM15 for ADC timer
-   TIM16  for led_sequence timer
+   TIM16  for neopixel timer
 
 available
   TIM1
@@ -77,7 +77,7 @@ struct interrupt_priority{
    static constexpr uint32_t systick_timer = 3;
    static constexpr uint32_t gps_telem_port= 2;
    static constexpr uint32_t channel_port = 1;
-   static constexpr uint32_t led_sequence = 0;
+   static constexpr uint32_t neopixel = 0;
 };
 
 #endif // FSK_TX_RESOURCES_HPP_INCLUDED

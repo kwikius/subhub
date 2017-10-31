@@ -1,6 +1,5 @@
-#ifndef SUBHUB_TEST_LED_SEQUENCE_HPP_INCLUDED
-#define SUBHUB_TEST_LED_SEQUENCE_HPP_INCLUDED
-
+#ifndef SUBHUB_NEOPIXEL_HPP_INCLUDED
+#define SUBHUB_NEOPIXEL_HPP_INCLUDED
 
 #include <cstdint>
 
@@ -16,7 +15,7 @@ struct rgb_value{
    uint8_t blue;
 };
 
-struct led_sequence{
+struct neopixel{
 
    static constexpr uint32_t num_leds = 8U;
    static_assert (num_leds %2 == 0 ,"num leds must be even");
@@ -39,4 +38,4 @@ private:
    static uint8_t dma_buffer[ 8U * bytes_per_led * 2U];
 };
 
-#endif // SUBHUB_TEST_LED_SEQUENCE_HPP_INCLUDED
+#endif // SUBHUB_NEOPIXEL_HPP_INCLUDED

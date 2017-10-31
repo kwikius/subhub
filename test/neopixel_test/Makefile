@@ -1,8 +1,11 @@
 
 include ../../common/mk/stm32f0_make_flags.mk
 
-object_files = main.o setup.o led.o led_sequence.o light_show_examples.o
-objects = $(patsubst %.o,obj/%.o,$(object_files))
+local_object_files = main.o setup.o led.o light_show_examples.o
+
+local_objects = $(patsubst %.o,obj/%.o,$(local_object_files))
+
+objects = $(local_objects) obj/neopixel.o 
 
 lib_files =  system.a 
 libs = $(patsubst %.a,../../lib/%.a,$(lib_files))
@@ -20,13 +23,12 @@ bin/main.elf:  $(objects) $(libs)
 	@ echo "..linking"
 	$(LD) $(LFLAGS) -o bin/main.elf $(objects) $(libs)
 
-$(objects): obj/%.o : %.cpp  
+$(local_objects): obj/%.o : %.cpp  
 	mkdir -p obj
 	$(CC) $(CFLAGS) $< -o $@
-
-obj/startup.o: $(STARTUP)
-	mkdir -p obj
-	$(CC) $(CFLAGS) $< -o $@ 
+ 
+obj/neopixel.o  : ../../libraries/neopixel/neopixel.cpp  
+	$(CC) $(CFLAGS) $< -o $@
 
 $(libs) : ../../lib/%.a : ../../libraries/%/src
 	make -C $<
@@ -45,7 +47,3 @@ upload_st : test
 
 upload: test
 	st-flash write bin/main.bin 0x8000000
-
-#upload : test
-#	st-flash write bin/main.bin 0x8000000 
-
