@@ -1,11 +1,15 @@
 
 include ../../common/mk/stm32f0_make_flags.mk
 
-local_object_files = main.o setup.o led.o light_show_examples.o
+local_object_files = main.o setup.o light_show_examples.o
 
 local_objects = $(patsubst %.o,obj/%.o,$(local_object_files))
 
-objects = $(local_objects) obj/neopixel.o 
+library_object_files = neopixel.o usart.o systick.o
+
+library_objects = $(patsubst %.o,obj/%.o,$(library_object_files))
+
+objects = $(local_objects) $(library_objects)
 
 lib_files =  system.a 
 libs = $(patsubst %.a,../../lib/%.a,$(lib_files))
@@ -26,8 +30,14 @@ bin/main.elf:  $(objects) $(libs)
 $(local_objects): obj/%.o : %.cpp  
 	mkdir -p obj
 	$(CC) $(CFLAGS) $< -o $@
- 
+
 obj/neopixel.o  : ../../libraries/neopixel/neopixel.cpp  
+	$(CC) $(CFLAGS) $< -o $@
+
+obj/usart.o  : ../../libraries/usart/usart.cpp  
+	$(CC) $(CFLAGS) $< -o $@
+
+obj/systick.o  : ../../libraries/systick/systick.cpp  
 	$(CC) $(CFLAGS) $< -o $@
 
 $(libs) : ../../lib/%.a : ../../libraries/%/src

@@ -20,7 +20,7 @@
 #include "../../resources.hpp"
 #include "../../usarts.hpp"
 #include "../../neopixel.hpp"
-#include "led.hpp"
+
 
 void setup_pwm();
 
@@ -36,14 +36,11 @@ namespace {
      link_sp::serial_port::set_irq_priority(interrupt_priority::channel_port);
      link_sp::serial_port::init();
      link_sp::serial_port::set_baudrate<115200,true>();
-     
-
    }
 }
 
 extern "C" void setup()
 {
-   led::initialise();
    setup_events();
    setup_usarts();
    neopixel::initialise();
