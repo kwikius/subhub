@@ -1,8 +1,14 @@
 
 include ../../common/mk/stm32f0_make_flags.mk
 
-object_files = main.o touch.o led.o pwm.o setup.o 
-objects = $(patsubst %.o,obj/%.o,$(object_files))
+local_object_files = main.o touch.o pwm.o setup.o 
+local_objects = $(patsubst %.o,obj/%.o,$(local_object_files))
+
+library_object_files = led.o usart.o systick.o neopixel.o
+
+library_objects  =  $(patsubst %.o,obj/%.o,$(library_object_files))
+
+objects = $(local_objects) $(library_objects)
 
 lib_files =  system.a 
 libs = $(patsubst %.a,../../lib/%.a,$(lib_files))
@@ -20,13 +26,21 @@ bin/main.elf:  $(objects) $(libs)
 	@ echo "..linking"
 	$(LD) $(LFLAGS) -o bin/main.elf $(objects) $(libs)
 
-$(objects): obj/%.o : %.cpp  
+$(local_objects): obj/%.o : %.cpp  
 	mkdir -p obj
 	$(CC) $(CFLAGS) $< -o $@
 
-obj/startup.o: $(STARTUP)
-	mkdir -p obj
-	$(CC) $(CFLAGS) $< -o $@ 
+obj/led.o : ../../libraries/led/led.cpp
+	$(CC) $(CFLAGS) $< -o $@
+
+obj/usart.o  : ../../libraries/usart/usart.cpp  
+	$(CC) $(CFLAGS) $< -o $@
+
+obj/systick.o  : ../../libraries/systick/systick.cpp  
+	$(CC) $(CFLAGS) $< -o $@
+
+obj/neopixel.o  : ../../libraries/neopixel/neopixel.cpp  
+	$(CC) $(CFLAGS) $< -o $@
 
 $(libs) : ../../lib/%.a : ../../libraries/%/src
 	make -C $<
@@ -45,7 +59,4 @@ upload_st : test
 
 upload: test
 	st-flash write bin/main.bin 0x8000000
-
-#upload : test
-#	st-flash write bin/main.bin 0x8000000 
 

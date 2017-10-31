@@ -20,7 +20,8 @@
 #include "../../resources.hpp"
 #include "../../usarts.hpp"
 #include "../../touch.hpp"
-#include "led.hpp"
+#include "../../neopixel.hpp"
+#include "../../led.hpp"
 
 void setup_pwm();
 
@@ -46,6 +47,7 @@ extern "C" void setup()
    touch::initialise();
    setup_events();
    setup_usarts();
+   neopixel::initialise();
    setup_pwm();
 }
 

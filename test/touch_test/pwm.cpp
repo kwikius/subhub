@@ -22,7 +22,7 @@ namespace {
 // value of 0 to 100
 void set_pwm(uint32_t val)
 {
-   led_timer::get()->ccr4 = quan::constrain(val * 100UL,0UL,9999UL);
+   led_timer::get()->ccr4 = quan::constrain(static_cast<uint32_t>(val * 100U),static_cast<uint32_t>(0U),static_cast<uint32_t>(9999U));
 }
 
 void setup_pwm()

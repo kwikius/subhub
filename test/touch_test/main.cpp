@@ -2,10 +2,13 @@
 #include <stm32f0xx.h>
 #include <quan/stm32/usart/irq_handler.hpp>
 #include <quan/conversion/itoa.hpp>
+#include <quan/constrain.hpp>
 #include <quan/stm32/millis.hpp>
 #include "../../usarts.hpp"
 #include "../../touch.hpp"
-#include "led.hpp"
+#include "../../neopixel.hpp"
+#include "../../led.hpp"
+#include "../../delay.hpp"
 
 extern "C" void setup();
 void set_pwm(uint32_t val);
@@ -21,11 +24,30 @@ namespace{
    {
       return static_cast<ms>(v);
    }
-   constexpr auto count_on_threshold = 210U;
+   constexpr auto count_on_threshold = 125U;
 
-   constexpr auto count_idle = 210.f;
-   constexpr auto count_saturated = 145.f;
+   constexpr auto count_idle = 176.f;
+   constexpr auto count_saturated = 76.f;
    constexpr auto count_diff = count_idle - count_saturated;
+
+   void neopixels_off(uint32_t n)
+   {
+
+      rgb_value off_value{4,0,4};
+      for (uint8_t i = 0; i < neopixel::num_leds;++i){
+         neopixel::put(i,off_value);
+      }
+      neopixel::send();
+   }
+
+   void neopixels_on()
+   {
+      rgb_value on_value{0,20,0};
+      for (uint8_t i = 0; i < neopixel::num_leds;++i){
+         neopixel::put(i,on_value);
+      }
+      neopixel::send();
+   }
 
    void do_pwm(uint32_t n)
    {
@@ -36,34 +58,39 @@ namespace{
          set_pwm(0U);
       }
    }
+   
+   template <typename IntType>
+   void xout_write( IntType v)
+   {
+      char buf[sizeof(IntType)*8 + 3];
+      quan::itoasc(v,buf,10);
+      xout::write(buf);
+   }
 }
 
 int main()
 {
    setup();
-
    xout::write("Touch Test\n");
+   delay(100_ms);
+
+   xout::write("Touch Test 1\n");
    auto last_out = millis();
 
-   ms elapsed = millis();
-
    for(;;) {
-
+      delay(10_ms);
       if ( !touch::start_conversion()){
          xout::write("start touch conv failed\n");
          break;
       }
-
+      auto conv_start_time = millis();
+      
       while (!touch::conversion_complete()){
 
-         auto now1 = millis();
-         if ( (now1 - elapsed) > 10_ms ) {
-            elapsed = now1;
+         if ( (millis() - conv_start_time ) > 100_ms ){
             xout::write("stalled, got touch count of ");
             uint32_t const n = touch::get_count();
-            char buf[sizeof(uint32_t)*8 + 3];
-            quan::itoasc(n,buf,10);
-            xout::write(buf);
+            xout_write(n);
             xout::write("\n");
             if ( touch::timeout()){
                xout::write("touch timed out\n");
@@ -78,54 +105,23 @@ int main()
          uint32_t const n = touch::get_count();
          do_pwm(n);
          if ( n < count_on_threshold){
+            neopixels_on();
             led::on();
          }else{
+            neopixels_off(n);
             led::off();
          }
          auto now = millis();
-         if ( (now - last_out) > 100_ms){
+         if ( (now - last_out) > 50_ms){
              last_out = now;
-             xout::printf<100>("count = %u\n",n);
-             
+             xout::write("count = ");
+             xout_write(n);
+             xout::write("\n");
          }
       }else{
          xout::write("touch conv failed\n");
       }
-
-      while (!xout::tx_reg_empty()){
-        asm volatile ("nop":::);
-      }
+      xout::flush_tx();
    }
-}
 
-extern "C" void USART2_IRQHandler() __attribute__ ((interrupt ("IRQ")));
-extern "C" void USART2_IRQHandler()
-{
-   static_assert(
-      std::is_same<
-         aux_sp::serial_port::usart_type,quan::stm32::usart2
-      >::value
-   ,"invalid usart for serial_port irq");
-
-   quan::stm32::usart::irq_handler<aux_sp::serial_port>();
-}
-
-extern "C" void USART1_IRQHandler() __attribute__ ((interrupt ("IRQ")));
-extern "C" void USART1_IRQHandler()
-{
-   static_assert(
-      std::is_same<
-         link_sp::serial_port::usart_type,quan::stm32::usart1
-      >::value
-   ,"invalid usart for serial_port irq");
-
-   quan::stm32::usart::irq_handler<link_sp::serial_port>();
-}
-
-//volatile uint32_t quan::stm32::detail::systick_tick::current = 0;
-
-extern "C" void SysTick_Handler()
-{
-   ++quan::stm32::detail::systick_tick::current;
-   
 }
