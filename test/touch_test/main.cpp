@@ -24,13 +24,19 @@ namespace{
    {
       return static_cast<ms>(v);
    }
-   constexpr auto count_on_threshold = 125U;
+   constexpr auto count_on_threshold = 150U;
+   constexpr auto count_off_threshold = 160U;
 
    constexpr auto count_idle = 176.f;
    constexpr auto count_saturated = 76.f;
    constexpr auto count_diff = count_idle - count_saturated;
 
-   void neopixels_off(uint32_t n)
+   constexpr rgb_value red = {255,0,0};
+   constexpr rgb_value green = {0,255,0};
+   constexpr rgb_value blue = {0,0,255};
+   constexpr rgb_value white = {4,4,4};
+
+   void neopixels_off()
    {
 
       rgb_value off_value{4,0,4};
@@ -42,7 +48,7 @@ namespace{
 
    void neopixels_on()
    {
-      rgb_value on_value{0,20,0};
+      rgb_value on_value = green;
       for (uint8_t i = 0; i < neopixel::num_leds;++i){
          neopixel::put(i,on_value);
       }
@@ -66,6 +72,27 @@ namespace{
       quan::itoasc(v,buf,10);
       xout::write(buf);
    }
+   bool switch_on = false;
+
+   void walking_led(
+         rgb_value const & background_colour, 
+         rgb_value const & walk_colour,
+         ms const & delay_duration,
+         ms const & demo_duration)
+   {
+
+      uint8_t pos = 0;
+      auto now = millis();
+      while ( (millis() - now) < demo_duration){
+           neopixel::put(pos,background_colour);
+           pos = (pos +1) % 8;
+           neopixel::put(pos,walk_colour);
+           neopixel::send();
+           delay(delay_duration);
+      }
+   }
+
+   
 }
 
 int main()
@@ -76,9 +103,11 @@ int main()
 
    xout::write("Touch Test 1\n");
    auto last_out = millis();
-
+   
+   neopixels_off();
+   ms on_start = 0_ms;
    for(;;) {
-      delay(10_ms);
+      delay(5_ms);
       if ( !touch::start_conversion()){
          xout::write("start touch conv failed\n");
          break;
@@ -104,13 +133,27 @@ int main()
          
          uint32_t const n = touch::get_count();
          do_pwm(n);
-         if ( n < count_on_threshold){
-            neopixels_on();
-            led::on();
-         }else{
-            neopixels_off(n);
-            led::off();
+         if ( switch_on == false){
+            if ( n < count_on_threshold){
+               on_start = millis();
+              // neopixels_on();
+               led::on();
+               switch_on = true;
+               walking_led(green,blue,31_ms, 2500_ms);
+               delay(3_ms);
+               neopixels_on();
+               delay(2_ms);
+            }
+         } else{ // switch is on
+            if ( n > count_off_threshold){
+               if ( (millis() - on_start) > 200_ms){
+                  neopixels_off();
+                  led::off();
+                  switch_on = false;
+               }
+            }
          }
+
          auto now = millis();
          if ( (now - last_out) > 50_ms){
              last_out = now;
