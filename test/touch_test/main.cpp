@@ -31,10 +31,11 @@ namespace{
    constexpr auto count_saturated = 76.f;
    constexpr auto count_diff = count_idle - count_saturated;
 
-   constexpr rgb_value red = {255,0,0};
-   constexpr rgb_value green = {0,255,0};
-   constexpr rgb_value blue = {0,0,255};
-   constexpr rgb_value white = {4,4,4};
+   //constexpr rgb_value red = {255,0,0};
+   constexpr rgb_value off_colour{4,0,4};
+   constexpr rgb_value on_colour1 = {6,0,12};
+   constexpr rgb_value on_colour2 = {12,0,6};
+   constexpr rgb_value on_colour{4,12,4};
 
    void neopixels_off()
    {
@@ -48,7 +49,7 @@ namespace{
 
    void neopixels_on()
    {
-      rgb_value on_value = green;
+      rgb_value on_value = on_colour;
       for (uint8_t i = 0; i < neopixel::num_leds;++i){
          neopixel::put(i,on_value);
       }
@@ -84,10 +85,17 @@ namespace{
       uint8_t pos = 0;
       auto now = millis();
       while ( (millis() - now) < demo_duration){
-           neopixel::put(pos,background_colour);
-           pos = (pos +1) % 8;
-           neopixel::put(pos,walk_colour);
+  
+           neopixel::put((pos +0) % 8,walk_colour);
+           neopixel::put((pos +1) % 8,background_colour);
+           neopixel::put((pos +2) % 8,walk_colour);
+           neopixel::put((pos +3) % 8,background_colour);
+           neopixel::put((pos +4) % 8,walk_colour);
+           neopixel::put((pos +5) % 8,background_colour);
+           neopixel::put((pos +6) % 8,walk_colour);
+           neopixel::put((pos +7) % 8,background_colour);
            neopixel::send();
+           pos = (pos +1) % 8;
            delay(delay_duration);
       }
    }
@@ -136,13 +144,9 @@ int main()
          if ( switch_on == false){
             if ( n < count_on_threshold){
                on_start = millis();
-              // neopixels_on();
                led::on();
                switch_on = true;
-               walking_led(green,blue,31_ms, 2500_ms);
-               delay(3_ms);
-               neopixels_on();
-               delay(2_ms);
+               walking_led(on_colour,on_colour2,250_ms, 2500_ms);
             }
          } else{ // switch is on
             if ( n > count_off_threshold){
@@ -151,6 +155,8 @@ int main()
                   led::off();
                   switch_on = false;
                }
+            }else{
+               neopixels_on();
             }
          }
 
