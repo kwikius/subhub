@@ -33,7 +33,7 @@ void setup_pwm()
    quan::stm32::apply<
       led_pwm_pin
       ,quan::stm32::gpio::mode::af2
-      , quan::stm32::gpio::otype::open_drain
+      , quan::stm32::gpio::otype::push_pull
       , quan::stm32::gpio::pupd::none
       , quan::stm32::gpio::ospeed::slow
      // , quan::stm32::gpio::ostate::high
@@ -63,7 +63,7 @@ void setup_pwm()
 
    // output polarity
    led_timer::get()->ccr4 = 0;
-   led_timer::get()->ccer |= (1 << 13); // (CC4P)
+   led_timer::get()->ccer &= ~(1 << 13); // (CC4P) active high
    led_timer::get()->ccer |= (1 << 12); // (CC4E)
    led_timer::get()->sr = 0;
    led_timer::get()->cr1.setbit<0>(); // (CEN)

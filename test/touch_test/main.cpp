@@ -114,6 +114,9 @@ int main()
    
    neopixels_off();
    ms on_start = 0_ms;
+//   set_pwm(100U);
+//   delay(500_ms);
+   set_pwm(0U);
    for(;;) {
       delay(5_ms);
       if ( !touch::start_conversion()){
@@ -140,13 +143,17 @@ int main()
       if ( touch::conversion_good()){
          
          uint32_t const n = touch::get_count();
-         do_pwm(n);
+         //do_pwm(n);
          if ( switch_on == false){
             if ( n < count_on_threshold){
                on_start = millis();
                led::on();
                switch_on = true;
-               walking_led(on_colour,on_colour2,250_ms, 2500_ms);
+               set_pwm(70);
+               delay(100_ms);
+               set_pwm(0);
+               
+               walking_led(on_colour,on_colour2,100_ms, 1000_ms);
             }
          } else{ // switch is on
             if ( n > count_off_threshold){
