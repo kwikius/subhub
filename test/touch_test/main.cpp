@@ -20,7 +20,7 @@ namespace{
    typedef  link_sp::serial_port xout;
 
    typedef decltype(millis()) ms;
-   ms operator "" _ms(unsigned long long int v)
+   constexpr ms operator "" _ms(unsigned long long int v)
    {
       return static_cast<ms>(v);
    }
@@ -32,26 +32,28 @@ namespace{
    constexpr auto count_diff = count_idle - count_saturated;
 
    //constexpr rgb_value red = {255,0,0};
-   constexpr rgb_value off_colour{4,0,4};
-   constexpr rgb_value on_colour1 = {6,0,12};
-   constexpr rgb_value on_colour2 = {12,0,6};
-   constexpr rgb_value on_colour{4,12,4};
+   constexpr rgb_value off_colour{12,2,2};
+
+   constexpr rgb_value on_colour{2,12,2};
+   constexpr rgb_value on_colour1 = {2,2,12};
+   constexpr rgb_value on_colour2 = {12,2,2};
+   
 
    void neopixels_off()
    {
 
-      rgb_value off_value{4,0,4};
+      
       for (uint8_t i = 0; i < neopixel::num_leds;++i){
-         neopixel::put(i,off_value);
+         neopixel::put(i,off_colour);
       }
       neopixel::send();
    }
 
    void neopixels_on()
    {
-      rgb_value on_value = on_colour;
+
       for (uint8_t i = 0; i < neopixel::num_leds;++i){
-         neopixel::put(i,on_value);
+         neopixel::put(i,on_colour);
       }
       neopixel::send();
    }
@@ -77,7 +79,8 @@ namespace{
 
    void walking_led(
          rgb_value const & background_colour, 
-         rgb_value const & walk_colour,
+         rgb_value const & walk_colour1,
+         rgb_value const & walk_colour2,
          ms const & delay_duration,
          ms const & demo_duration)
    {
@@ -86,37 +89,183 @@ namespace{
       auto now = millis();
       while ( (millis() - now) < demo_duration){
   
-           neopixel::put((pos +0) % 8,walk_colour);
-           neopixel::put((pos +1) % 8,background_colour);
-           neopixel::put((pos +2) % 8,walk_colour);
-           neopixel::put((pos +3) % 8,background_colour);
-           neopixel::put((pos +4) % 8,walk_colour);
+           neopixel::put((pos +0) % 8,walk_colour1);
+           neopixel::put((pos +1) % 8,walk_colour2);
+           neopixel::put((pos +2) % 8,background_colour);
+           neopixel::put((pos +3) % 8,walk_colour1);
+           neopixel::put((pos +4) % 8,walk_colour2);
            neopixel::put((pos +5) % 8,background_colour);
-           neopixel::put((pos +6) % 8,walk_colour);
-           neopixel::put((pos +7) % 8,background_colour);
+           neopixel::put((pos +6) % 8,walk_colour1);
+           neopixel::put((pos +7) % 8,walk_colour2);
+//           neopixel::put((pos +5) % 8,background_colour);
+//           neopixel::put((pos +6) % 8,walk_colour);
+//           neopixel::put((pos +7) % 8,background_colour);
            neopixel::send();
            pos = (pos +1) % 8;
            delay(delay_duration);
       }
    }
 
-   
 }
+
+void momentary();
+void simple();
+void toggle();
 
 int main()
 {
    setup();
    xout::write("Touch Test\n");
    delay(100_ms);
-
-   xout::write("Touch Test 1\n");
-   auto last_out = millis();
-   
    neopixels_off();
-   ms on_start = 0_ms;
-//   set_pwm(100U);
-//   delay(500_ms);
    set_pwm(0U);
+
+   momentary();
+  // simple();
+   //toggle();
+}
+
+namespace {
+ bool toggled_on = false;
+}
+
+void toggle()
+{
+   xout::write("Toggle mode\n");
+
+   auto last_out = millis();
+   ms on_start = 0_ms;
+
+   for(;;) {
+      delay(5_ms);
+      if ( !touch::start_conversion()){
+         xout::write("start touch conv failed\n");
+         break;
+      }
+      auto conv_start_time = millis();
+      
+      while (!touch::conversion_complete()){
+
+         if ( (millis() - conv_start_time ) > 100_ms ){
+            xout::write("stalled, got touch count of ");
+            uint32_t const n = touch::get_count();
+            xout_write(n);
+            xout::write("\n");
+            if ( touch::timeout()){
+               xout::write("touch timed out\n");
+               break;
+            }
+            break;
+         }
+      }
+      // conv completed
+      if ( touch::conversion_good()){
+         
+         uint32_t const n = touch::get_count();
+
+         if ( n > count_off_threshold){
+               if ( toggled_on){
+                  neopixels_off();
+                  led::off();
+                  toggled_on = false;
+                  set_pwm(40);
+                  delay(100_ms);
+                  set_pwm(0);
+               }
+         }else{
+            if (toggled_on == false){
+               neopixels_on();
+               led::on();
+               toggled_on = true;
+               set_pwm(40);
+               delay(120_ms);
+               set_pwm(0);
+               
+            }
+         }
+
+         auto now = millis();
+         if ( (now - last_out) > 50_ms){
+             last_out = now;
+             xout::write("count = ");
+             xout_write(n);
+             xout::write("\n");
+         }
+      }else{
+         xout::write("touch conv failed\n");
+      }
+      xout::flush_tx();
+   }
+
+}
+
+
+void simple()
+{
+   xout::write("Momentary mode\n");
+
+   auto last_out = millis();
+   ms on_start = 0_ms;
+
+   for(;;) {
+      delay(5_ms);
+      if ( !touch::start_conversion()){
+         xout::write("start touch conv failed\n");
+         break;
+      }
+      auto conv_start_time = millis();
+      
+      while (!touch::conversion_complete()){
+
+         if ( (millis() - conv_start_time ) > 100_ms ){
+            xout::write("stalled, got touch count of ");
+            uint32_t const n = touch::get_count();
+            xout_write(n);
+            xout::write("\n");
+            if ( touch::timeout()){
+               xout::write("touch timed out\n");
+               break;
+            }
+            break;
+         }
+      }
+      // conv completed
+      if ( touch::conversion_good()){
+         
+         uint32_t const n = touch::get_count();
+
+         if ( n > count_off_threshold){
+               neopixels_off();
+               led::off();
+               set_pwm(0);
+         }else{
+            set_pwm(50);
+            neopixels_on();
+            led::on();
+         }
+
+         auto now = millis();
+         if ( (now - last_out) > 50_ms){
+             last_out = now;
+             xout::write("count = ");
+             xout_write(n);
+             xout::write("\n");
+         }
+      }else{
+         xout::write("touch conv failed\n");
+      }
+      xout::flush_tx();
+   }
+
+}
+
+void momentary()
+{
+   xout::write("Momentary mode\n");
+
+   auto last_out = millis();
+   ms on_start = 0_ms;
+
    for(;;) {
       delay(5_ms);
       if ( !touch::start_conversion()){
@@ -149,11 +298,18 @@ int main()
                on_start = millis();
                led::on();
                switch_on = true;
-               set_pwm(70);
-               delay(100_ms);
-               set_pwm(0);
+               auto period = 120_ms;
+               auto dt = 5_ms;
+               int32_t constexpr max_pwm = 80;
+               auto n_steps = period / dt;
+               uint32_t decay_decr = max_pwm / n_steps;
                
-               walking_led(on_colour,on_colour2,100_ms, 1000_ms);
+               for ( int32_t i = max_pwm; i >= 0; i -= decay_decr){
+                  set_pwm(static_cast<uint32_t>(i));
+                  delay(dt);
+               }
+               set_pwm(0);
+               walking_led(on_colour,on_colour1,on_colour2,70_ms, 560_ms);
             }
          } else{ // switch is on
             if ( n > count_off_threshold){
@@ -161,9 +317,11 @@ int main()
                   neopixels_off();
                   led::off();
                   switch_on = false;
+                  set_pwm(0);
                }
             }else{
                neopixels_on();
+               set_pwm(50);
             }
          }
 
