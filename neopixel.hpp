@@ -4,8 +4,15 @@
 #include <cstdint>
 
 extern "C" void setup();
+
+#if defined (NEOPIXEL_USE_TIM2)
+// note both options use same dma channel
+extern "C" void DMA1_Channel2_3_IRQHandler() __attribute__ ( (interrupt ("IRQ")));
+extern "C" void  TIM2_IRQHandler() __attribute__ ( (interrupt ("IRQ")));
+#else
 extern "C" void DMA1_Channel2_3_IRQHandler() __attribute__ ( (interrupt ("IRQ")));
 extern "C" void  TIM16_IRQHandler() __attribute__ ( (interrupt ("IRQ")));
+#endif
 
 struct rgb_value{
    constexpr rgb_value(): red{0U},green{0U},blue{0U}{}
@@ -32,6 +39,7 @@ private:
    static void copy_user_to_dma();
    static inline void refill(uint32_t dma_buf_id, uint32_t data_idx);
    friend void ::setup();
+// ok used for both timer options
    friend void ::DMA1_Channel2_3_IRQHandler();
    static void initialise();
    static rgb_value user_led_data[num_leds];  

@@ -14,6 +14,8 @@ objects = $(local_objects) $(library_objects)
 lib_files =  system.a 
 libs = $(patsubst %.a,../../lib/%.a,$(lib_files))
 
+EXTRA_DEFINES = -DNEOPIXEL_USE_TIM2
+
 all: test
 
 test: bin/main.elf
@@ -29,10 +31,10 @@ bin/main.elf:  $(objects) $(libs)
 
 $(local_objects): obj/%.o : %.cpp  
 	mkdir -p obj
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< -o $@
 
 obj/neopixel.o  : ../../libraries/neopixel/neopixel.cpp  
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< -o $@
 
 obj/usart.o  : ../../libraries/usart/usart.cpp  
 	$(CC) $(CFLAGS) $< -o $@

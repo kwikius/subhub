@@ -70,7 +70,11 @@ namespace{
 }
 
 namespace {
+#if defined (NEOPIXEL_USE_TIM2)
+   typedef quan::stm32::tim2 led_seq_timer;
+#else
    typedef quan::stm32::tim16 led_seq_timer;
+#endif
  
    constexpr uint32_t raw_timer_freq = quan::stm32::get_raw_timer_frequency<led_seq_timer>();
    static_assert(raw_timer_freq == 48000000,"unexpected raw freq");
@@ -98,11 +102,11 @@ void neopixel::initialise()
 
    quan::stm32::module_enable<led_seq_timer>();
 
-   // set up pin as af5
+   // set up pin as af2
    quan::stm32::module_enable<neopixel_pin::port_type>();
    quan::stm32::apply<
       neopixel_pin,
-      quan::stm32::gpio::mode::af2,  
+      quan::stm32::gpio::mode::af2,  // ok for both pin options
       quan::stm32::gpio::pupd::pull_down,
       quan::stm32::gpio::ospeed::medium_fast
    >();
@@ -121,24 +125,34 @@ void neopixel::initialise()
 
    {
       quan::stm32::tim::cr2_t cr2 = 0;
-
+#if !defined (NEOPIXEL_USE_TIM2)
       cr2.ois1 = false; //inactive state of output
+#endif
       cr2.ccds = false; // dma from compare not update
 
       led_seq_timer::get()->cr1.set(cr2.value);
    }
 
+
    {
       // set timer to pwm mode
       quan::stm32::tim::ccmr1_t ccmr1 = 0;
 
+#if !defined (NEOPIXEL_USE_TIM2)
       ccmr1.cc1s = 0b00;  // output
       ccmr1.oc1m = 0b110; // PWM mode 1
       ccmr1.oc1pe = true; // want preload
+#else
+      ccmr1.cc2s = 0b00;  // output
+      ccmr1.oc2m = 0b110; // PWM mode 1
+      ccmr1.oc2pe = true; // want preload
+#endif
 
       led_seq_timer::get()->ccmr1.set(ccmr1.value);
    }
 
+
+#if !defined (NEOPIXEL_USE_TIM2)
    {
       quan::stm32::tim::bdtr_t bdtr = 0;
 
@@ -148,14 +162,19 @@ void neopixel::initialise()
 
       led_seq_timer::get()->bdtr.set(bdtr.value);
    }
+#endif
 
     // ccer 
    {
       quan::stm32::tim::ccer_t ccer = 0;
-
+#if !defined (NEOPIXEL_USE_TIM2)
       ccer.cc1e = true;
       ccer.cc1p = false;
       ccer.cc1ne = false;
+#else
+      ccer.cc2e = true;
+      ccer.cc2p = false;
+#endif
 
       led_seq_timer::get()->ccer.set(ccer.value);
    }
@@ -164,32 +183,52 @@ void neopixel::initialise()
    // set up timer dma on cc1 compare
    {
       quan::stm32::tim::dier_t dier = 0;
-
+#if !defined (NEOPIXEL_USE_TIM2)
       dier.cc1de = true;
-
+#else
+      dier.cc2de = true;
+#endif
       led_seq_timer::get()->dier.set(dier.value);
    }
 
    NVIC_SetPriority(DMA1_Channel2_3_IRQn,interrupt_priority::neopixel);
    NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
 
+#if !defined (NEOPIXEL_USE_TIM2)
    NVIC_SetPriority(TIM16_IRQn,interrupt_priority::neopixel);
    NVIC_EnableIRQ(TIM16_IRQn);
+#else
+   NVIC_SetPriority(TIM2_IRQn,interrupt_priority::neopixel);
+   NVIC_EnableIRQ(TIM2_IRQn);
+#endif
    
    // memory 8 bit default
    DMA1_Channel3->CCR  =
      (0b1 << 4U)      // (DIR) read from memory 
     | (0b1 << 7U)     // (MINC)
+#if !defined (NEOPIXEL_USE_TIM2)
     | (0b01 << 8U)    // (PSIZE[0:1])  16 bit
+#else
+    | (0b10 << 8U)    // (PSIZE[0:1])  32 bit
+#endif
     | (0b1 << 5U)     // (CIRC)
     | (0b11 << 12U)   // highest priority
     | (0b1 << 2U)     // (HTIE)
     | (0b1 << 1U)     // (TCIE)
    ;
+
+#if !defined (NEOPIXEL_USE_TIM2)
    DMA1_Channel3->CPAR = (uint32_t)&led_seq_timer::get()->ccr1;
+#else
+   DMA1_Channel3->CPAR = (uint32_t)&led_seq_timer::get()->ccr2;
+#endif
    DMA1_Channel3->CMAR = (uint32_t)neopixel::dma_buffer;
 
+#if !defined (NEOPIXEL_USE_TIM2)
    led_seq_timer::get()->ccr1 = 0U;
+#else
+   led_seq_timer::get()->ccr2 = 0U;
+#endif
 
    led_seq_timer::get()->cr1.setbit<0>(); // (CEN)
 }
@@ -237,7 +276,11 @@ void neopixel::send()
 
     DMA1_Channel3->CNDTR = 2U * 8U * bytes_per_led;
     // force cc1 event
+#if !defined (NEOPIXEL_USE_TIM2)
     timer->egr.setbit<1>(); // (CC1G)
+#else
+    timer->egr.setbit<2>(); // (CC2G)
+#endif
     // start  dma
     DMA1_Channel3->CCR |= (0b1 << 0U); // (OE)
     while ((DMA1_Channel3->CCR & (0b1 << 0U)) == 0U){
@@ -318,10 +361,15 @@ extern "C" void DMA1_Channel2_3_IRQHandler()
          neopixel::refill(1U, led_data_idx++);
       }else{
          DMA1_Channel3->CCR &= ~(0b1 << 0U); // (OE)
+#if !defined (NEOPIXEL_USE_TIM2)
          // catch the next cc1 interrupt to stop the process
-         static constexpr uint8_t cc1_interrupt_flag = 1U;
-         led_seq_timer::get()->sr.clearbit<cc1_interrupt_flag>();
-         led_seq_timer::get()->dier.setbit<cc1_interrupt_flag>();
+         static constexpr uint8_t cc_interrupt_flag = 1U;
+#else
+         static constexpr uint8_t cc_interrupt_flag = 2U;
+#endif
+         // catch the next cc interrupt to stop the process
+         led_seq_timer::get()->sr.clearbit<cc_interrupt_flag>();
+         led_seq_timer::get()->dier.setbit<cc_interrupt_flag>();
       }
    }
 }
@@ -329,15 +377,27 @@ extern "C" void DMA1_Channel2_3_IRQHandler()
 /*
  called 3x at end of transmission
 */
+#if !defined (NEOPIXEL_USE_TIM2)
 extern "C" void  TIM16_IRQHandler()
+#else
+extern "C" void  TIM2_IRQHandler()
+#endif
 {
-   static constexpr uint8_t cc1_interrupt_flag = 1U;
+#if !defined (NEOPIXEL_USE_TIM2)
+   static constexpr uint8_t cc_interrupt_flag = 1U;
+#else
+   static constexpr uint8_t cc_interrupt_flag = 2U;
+#endif
    static constexpr uint8_t update_interrupt_flag = 0U;
    auto * const timer = led_seq_timer::get();
-   if (timer->dier.getbit<cc1_interrupt_flag>()){
+   if (timer->dier.getbit<cc_interrupt_flag>()){
+#if !defined (NEOPIXEL_USE_TIM2)
       timer->ccr1 = 0U;
+#else
+      timer->ccr2 = 0U;
+#endif
       timer->psc = reset_prescaler - 1U;
-      timer->dier.clearbit<cc1_interrupt_flag>();
+      timer->dier.clearbit<cc_interrupt_flag>();
       timer->sr = 0U;
       timer->dier.setbit<update_interrupt_flag>();
    }else{

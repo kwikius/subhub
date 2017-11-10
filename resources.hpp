@@ -25,6 +25,7 @@
 /*
   timers
    Systick for millis() fun
+   // also used for neopixels
    TIM2   servos out
    TIM14  for PPM in
    TIM15 for ADC timer
@@ -62,7 +63,12 @@ typedef quan::mcu::pin<quan::stm32::gpiob,1>    ppm_in_pin;
 typedef quan::mcu::pin<quan::stm32::gpiob,5>    digital_rssi_in_pin;
 typedef quan::mcu::pin<quan::stm32::gpiob,6>    i2c_scl;
 typedef quan::mcu::pin<quan::stm32::gpiob,7>    i2c_sda;
+
+#if defined (NEOPIXEL_USE_TIM2)
+typedef quan::mcu::pin<quan::stm32::gpiob,3>    neopixel_pin;
+#else
 typedef quan::mcu::pin<quan::stm32::gpiob,8>    neopixel_pin;
+#endif
 
 // N.B 5V tolerant for connect via res to base of PNP transistor to 5V for LEDs
 typedef quan::mcu::pin<quan::stm32::gpiob,11>    led_pwm_pin;
