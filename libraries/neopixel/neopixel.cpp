@@ -181,6 +181,12 @@ void neopixel::initialise()
    ;
    DMA1_Channel3->CPAR = (uint32_t)&TIM16->CCR1;
    DMA1_Channel3->CMAR = (uint32_t)neopixel::dma_buffer;
+
+   led_seq_timer::get()->ccr1 = 0U;
+
+   led_seq_timer::get()->bdtr.setbit<15>(); //(MOE)
+   led_seq_timer::get()->ccer = (led_seq_timer::get()->ccer.get() & ~(0b1 << 2) ) | ( 0b1 << 0U);
+   led_seq_timer::get()->cr1.setbit<0>(); // (CEN)
 }
 
 namespace {
@@ -219,14 +225,14 @@ void neopixel::send()
     neopixel::refill(1U, led_data_idx);
     ++led_data_idx;
 
-    led_seq_timer::get()->ccr1 = 0U;
+   // led_seq_timer::get()->ccr1 = 0U;
     led_seq_timer::get()->cnt = one_pwm;
     led_seq_timer::get()->sr.set(0U);
 
     DMA1_Channel3->CNDTR = 2U * 8U * bytes_per_led;
 
-    led_seq_timer::get()->bdtr.setbit<15>(); //(MOE)
-    led_seq_timer::get()->ccer = (led_seq_timer::get()->ccer.get() & ~(0b1 << 2) ) | ( 0b1 << 0U);
+   // led_seq_timer::get()->bdtr.setbit<15>(); //(MOE)
+   // led_seq_timer::get()->ccer = (led_seq_timer::get()->ccer.get() & ~(0b1 << 2) ) | ( 0b1 << 0U);
 
     // force cc1 event
     led_seq_timer::get()->egr = (0b1 << 1U); // (CC1G)
@@ -239,7 +245,7 @@ void neopixel::send()
     }
 
    // start timer
-    led_seq_timer::get()->cr1.setbit<0>(); // (CEN)
+   // led_seq_timer::get()->cr1.setbit<0>(); // (CEN)
 
     in_progress = true;
 
@@ -350,9 +356,10 @@ extern "C" void  TIM16_IRQHandler()
    led_seq_timer::get()->dier.clearbit<cc1_interrupt_flag>();
    led_seq_timer::get()->sr.clearbit<cc1_interrupt_flag>(); //(UIF)
 
-   led_seq_timer::get()->ccer = (led_seq_timer::get()->ccer.get() & ~(0b1 << 0U) ) | ( 0b1 << 2U);
-   led_seq_timer::get()->bdtr.clearbit<15U>(); // (MOE)
-   led_seq_timer::get()->cr1.clearbit<0U>(); // (CEN)
+   led_seq_timer::get()->ccr1 = 0U;
+//   led_seq_timer::get()->ccer = (led_seq_timer::get()->ccer.get() & ~(0b1 << 0U) ) | ( 0b1 << 2U);
+//   led_seq_timer::get()->bdtr.clearbit<15U>(); // (MOE)
+//   led_seq_timer::get()->cr1.clearbit<0U>(); // (CEN)
 
    /*
      todo
