@@ -29,12 +29,13 @@ struct neopixel{
    static uint32_t transfer_bytes_left();
 private:
    static void putbit(uint32_t bit_idx, bool val);
-
+   static void copy_user_to_dma();
    static inline void refill(uint32_t dma_buf_id, uint32_t data_idx);
    friend void ::setup();
    friend void ::DMA1_Channel2_3_IRQHandler();
    static void initialise();
-   static rgb_value led_data[num_leds];   
+   static rgb_value user_led_data[num_leds];  
+   static rgb_value dma_led_data[num_leds];
    static uint8_t dma_buffer[ 8U * bytes_per_led * 2U];
 };
 

@@ -44,7 +44,8 @@ choose pin as neo_pixel_pin
 */
 
 uint8_t neopixel::dma_buffer[ 8U * bytes_per_led * 2U] = {0U};
-rgb_value neopixel::led_data [num_leds];
+rgb_value neopixel::user_led_data [num_leds];
+rgb_value neopixel::dma_led_data [num_leds];
 
 using quan::stm32::millis;
 
@@ -70,16 +71,22 @@ namespace{
 
 namespace {
    typedef quan::stm32::tim16 led_seq_timer;
-   //typedef quan::mcu::pin<quan::stm32::gpiob,8> neopixel_out_pin;
-
+ 
    constexpr uint32_t raw_timer_freq = quan::stm32::get_raw_timer_frequency<led_seq_timer>();
    static_assert(raw_timer_freq == 48000000,"unexpected raw freq");
-   constexpr uint32_t reqd_freq = 800000U;
+   constexpr uint32_t reqd_freq = 800000U; // 800 kHz
 
-   constexpr uint32_t period = (raw_timer_freq / reqd_freq) ;
+   constexpr uint32_t arr_value = (raw_timer_freq / reqd_freq) ;
 
-   static constexpr uint32_t zero_pwm = (period) / 3U -1U;
-   static constexpr uint32_t one_pwm  = (2 * period) / 3U -1U;
+   static constexpr uint32_t zero_pwm = (arr_value) / 3U -1U;
+   static constexpr uint32_t one_pwm  = (2 * arr_value) / 3U -1U;
+
+   static constexpr uint32_t reset_period_us = 50U;
+
+   static constexpr float timer_period_us = 1000000.f / reqd_freq;
+   
+   static constexpr uint16_t reset_prescaler = static_cast<uint16_t>( reset_period_us / timer_period_us) + 1U;
+   
 }
 
 void neopixel::initialise()
@@ -101,7 +108,7 @@ void neopixel::initialise()
    >();
    
    led_seq_timer::get()->psc = 0;
-   led_seq_timer::get()->arr = period - 1U;
+   led_seq_timer::get()->arr = arr_value - 1U;
 
    {
       // enable preload
@@ -135,9 +142,9 @@ void neopixel::initialise()
    {
       quan::stm32::tim::bdtr_t bdtr = 0;
 
-      bdtr.moe = false;
-      bdtr.ossr = true;
-      bdtr.ossi = true;
+      bdtr.moe = true;
+      bdtr.ossr = false;
+      bdtr.ossi = false;
 
       led_seq_timer::get()->bdtr.set(bdtr.value);
    }
@@ -146,9 +153,9 @@ void neopixel::initialise()
    {
       quan::stm32::tim::ccer_t ccer = 0;
 
-      ccer.cc1e = false;
+      ccer.cc1e = true;
       ccer.cc1p = false;
-      ccer.cc1ne = true;
+      ccer.cc1ne = false;
 
       led_seq_timer::get()->ccer.set(ccer.value);
    }
@@ -179,25 +186,24 @@ void neopixel::initialise()
     | (0b1 << 2U)     // (HTIE)
     | (0b1 << 1U)     // (TCIE)
    ;
-   DMA1_Channel3->CPAR = (uint32_t)&TIM16->CCR1;
+   DMA1_Channel3->CPAR = (uint32_t)&led_seq_timer::get()->ccr1;
    DMA1_Channel3->CMAR = (uint32_t)neopixel::dma_buffer;
 
    led_seq_timer::get()->ccr1 = 0U;
 
-   led_seq_timer::get()->bdtr.setbit<15>(); //(MOE)
-   led_seq_timer::get()->ccer = (led_seq_timer::get()->ccer.get() & ~(0b1 << 2) ) | ( 0b1 << 0U);
    led_seq_timer::get()->cr1.setbit<0>(); // (CEN)
 }
 
 namespace {
-   uint32_t led_data_idx = 0U;
-   bool in_progress = false;
+   volatile uint32_t led_data_idx = 0U;
+   volatile bool in_progress = false;
+   volatile bool in_reset_timing = false;
 }
 
 bool neopixel::put(uint32_t index, rgb_value const & v)
 {
    if ( index < num_leds){
-      led_data[index] = v;
+      user_led_data[index] = v;
       return true;
    }else{
       return false;
@@ -217,38 +223,36 @@ void neopixel::send()
       asm volatile ("nop":::);
     }
 
+    copy_user_to_dma();
+
     led_data_idx = 0U;
+    auto * const timer = led_seq_timer::get();
 
    // load the first 2 leds in the buffer
-    neopixel::refill(0U, led_data_idx);
-    ++led_data_idx;
-    neopixel::refill(1U, led_data_idx);
-    ++led_data_idx;
+    neopixel::refill(0U, led_data_idx++);
+    neopixel::refill(1U, led_data_idx++);
 
-   // led_seq_timer::get()->ccr1 = 0U;
-    led_seq_timer::get()->cnt = one_pwm;
-    led_seq_timer::get()->sr.set(0U);
+    timer->cnt = one_pwm;
+    timer->sr.set(0U);
 
     DMA1_Channel3->CNDTR = 2U * 8U * bytes_per_led;
-
-   // led_seq_timer::get()->bdtr.setbit<15>(); //(MOE)
-   // led_seq_timer::get()->ccer = (led_seq_timer::get()->ccer.get() & ~(0b1 << 2) ) | ( 0b1 << 0U);
-
     // force cc1 event
-    led_seq_timer::get()->egr = (0b1 << 1U); // (CC1G)
-    led_seq_timer::get()->egr = 0U;
- 
+    timer->egr.setbit<1>(); // (CC1G)
     // start  dma
     DMA1_Channel3->CCR |= (0b1 << 0U); // (OE)
     while ((DMA1_Channel3->CCR & (0b1 << 0U)) == 0U){
       asm volatile ("nop":::);
     }
 
-   // start timer
-   // led_seq_timer::get()->cr1.setbit<0>(); // (CEN)
-
     in_progress = true;
 
+}
+
+void neopixel::copy_user_to_dma()
+{
+  for (uint32_t i = 0U; i < num_leds; ++i){
+     dma_led_data[i] = user_led_data[i];
+  }
 }
 
 /*
@@ -258,7 +262,7 @@ inline void neopixel::refill(uint32_t dma_buf_id, uint32_t data_idx)
 {
    uint32_t const dma_idx = dma_buf_id * 8U * bytes_per_led;
    // green, red, blue
-   auto const & led = led_data[data_idx];
+   auto const & led = dma_led_data[data_idx];
 
    uint8_t* ptr = dma_buffer + dma_idx;
 
@@ -317,7 +321,7 @@ inline void neopixel::refill(uint32_t dma_buf_id, uint32_t data_idx)
 /*
  called every 30 usec when transmitting
  Needs high prio else wrong bit value can be sent
- Total calls =  num_leds
+ Total calls =  num_leds 
 */
 extern "C" void DMA1_Channel2_3_IRQHandler() 
 {
@@ -325,16 +329,14 @@ extern "C" void DMA1_Channel2_3_IRQHandler()
    if ( DMA1->ISR & (0b1 << 10U)/* (HTIF3) */ ){
       DMA1->IFCR = (0b1 << 10U);
       if (led_data_idx < (neopixel::num_leds) ){
-         neopixel::refill(0U, led_data_idx);
-         ++led_data_idx;
+         neopixel::refill(0U, led_data_idx++);
       }
    }
     // full transfer complete
    if ( DMA1->ISR & ( 0b1 << 9U)/* (TCIF3) */ ){
       DMA1->IFCR = ( 0b1 << 9U);
       if ( led_data_idx < neopixel::num_leds){
-         neopixel::refill(1U, led_data_idx);
-         ++led_data_idx;
+         neopixel::refill(1U, led_data_idx++);
       }else{
          DMA1_Channel3->CCR &= ~(0b1 << 0U); // (OE)
          // catch the next cc1 interrupt to stop the process
@@ -346,28 +348,33 @@ extern "C" void DMA1_Channel2_3_IRQHandler()
 }
 
 /*
- called once per transmission
- Needs high prio else wrong bit value can be sent
+ called 3x at end of transmission
 */
 extern "C" void  TIM16_IRQHandler()
 {
-    // disable cc1 interrupt and  turn off the timer 
    static constexpr uint8_t cc1_interrupt_flag = 1U;
-   led_seq_timer::get()->dier.clearbit<cc1_interrupt_flag>();
-   led_seq_timer::get()->sr.clearbit<cc1_interrupt_flag>(); //(UIF)
-
-   led_seq_timer::get()->ccr1 = 0U;
-//   led_seq_timer::get()->ccer = (led_seq_timer::get()->ccer.get() & ~(0b1 << 0U) ) | ( 0b1 << 2U);
-//   led_seq_timer::get()->bdtr.clearbit<15U>(); // (MOE)
-//   led_seq_timer::get()->cr1.clearbit<0U>(); // (CEN)
-
-   /*
-     todo
-      set period to give a timing to reset the led sequence. Either 50 usec or 125 usec or whatever
-      set cnt = 0;
-      enable the overflow irq and start the timer, then stop it in the next interrupt and set in_progress = false;
-   */
-
-   in_progress = false;
+   static constexpr uint8_t update_interrupt_flag = 0U;
+   auto * const timer = led_seq_timer::get();
+   if (timer->dier.getbit<cc1_interrupt_flag>()){
+      timer->ccr1 = 0U;
+      timer->psc = reset_prescaler - 1U;
+      timer->dier.clearbit<cc1_interrupt_flag>();
+      timer->sr = 0U;
+      timer->dier.setbit<update_interrupt_flag>();
+   }else{
+      // 1st update interrupt
+      if ( in_reset_timing == false){
+         in_reset_timing = true;
+         timer->psc = 0U;
+         timer->sr = 0U;
+      }else{
+         // 2nd update interrupt
+         timer->dier.clearbit<update_interrupt_flag>(); // (
+         timer->sr = 0U;
+         // signal to main process that send sequence is complete
+         in_reset_timing = false;
+         in_progress = false;
+      }
+   }
 }
 
