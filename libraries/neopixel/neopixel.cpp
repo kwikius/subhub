@@ -268,54 +268,33 @@ inline void neopixel::refill(uint32_t dma_buf_id, uint32_t data_idx)
 
    uint8_t colour = led.green;
    *ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x40) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x20) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x10) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x08) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x04) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x02) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x01) == 0U)?zero_pwm:one_pwm;
    
    colour = led.red;
    *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x40) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x20) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x10) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x08) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x04) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x02) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x01) == 0U)?zero_pwm:one_pwm;
 
    colour = led.blue;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
-   colour <<= 1U;
-   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x80) == 0U)?zero_pwm:one_pwm;;
+   *++ptr = ((colour & 0x40) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x20) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x10) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x08) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x04) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x02) == 0U)?zero_pwm:one_pwm;
+   *++ptr = ((colour & 0x01) == 0U)?zero_pwm:one_pwm;
 }
 
 /*
