@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <quan/time.hpp>
 #include <quan/two_d/vect.hpp>
+#include "gfxfont.h"
 
 extern "C" void setup();
 
@@ -12,7 +13,7 @@ struct sh1106_oled{
     static constexpr uint32_t columns = 132;
     static constexpr uint32_t rows = 64;
     static constexpr uint8_t i2c_address = (0x3C << 1U); // n.b the 7 bits of the address shifted by 1
-    typedef quan::two_d::vect<uint32_t> point;
+    typedef quan::two_d::vect<int32_t> point;
     enum class cmd : uint8_t {
        set_charge_pump = 0xAD
        ,set_memory_addressing_mode = 0x20
@@ -49,6 +50,9 @@ struct sh1106_oled{
     static bool apply(cmd c, uint8_t arg);
 
    static void set_pixel(point const & p, bool colour);
+   static void draw_line(point const & p0, point const & p1, bool colour);
+   static void fill_rect(point const & corner0, point const & corner1, bool colour);
+   static void draw_char(point const & p, unsigned char c,GFXfont const * font,uint16_t color );
    static void set_buffer_to(int val);
    static void write_buffer();
    private:

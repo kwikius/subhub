@@ -58,15 +58,19 @@ int main()
 {
    setup();
 
+   typedef sh1106_oled::point point;
+
    for (;;){
       sh1106_oled::set_buffer_to(0xFF);
-      draw_line(false);
+     // sh1106_oled::draw_line({10,10},{100,20},false);
+
+      sh1106_oled::draw_char({5,30},'H',get_font(),false);
       sh1106_oled::write_buffer();
 
       delay(500_ms);
 
       sh1106_oled::set_buffer_to(0x00);
-      draw_line(true);
+      sh1106_oled::fill_rect({100,10},{10,20},true);
       sh1106_oled::write_buffer();
 
       delay(500_ms);
