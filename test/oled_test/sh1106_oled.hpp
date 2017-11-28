@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <quan/time.hpp>
+#include <quan/two_d/vect.hpp>
 
 extern "C" void setup();
 
@@ -11,6 +12,7 @@ struct sh1106_oled{
     static constexpr uint32_t columns = 132;
     static constexpr uint32_t rows = 64;
     static constexpr uint8_t i2c_address = (0x3C << 1U); // n.b the 7 bits of the address shifted by 1
+    typedef quan::two_d::vect<uint32_t> point;
     enum class cmd : uint8_t {
        set_charge_pump = 0xAD
        ,set_memory_addressing_mode = 0x20
@@ -46,7 +48,7 @@ struct sh1106_oled{
     static bool apply(or_cmd c, uint8_t v);
     static bool apply(cmd c, uint8_t arg);
 
-   static void set_pixel(uint32_t x, uint32_t y, bool colour);
+   static void set_pixel(point const & p, bool colour);
    static void set_buffer_to(int val);
    static void write_buffer();
    private:

@@ -39,29 +39,34 @@ using quan::stm32::millis;
 
 namespace {
    typedef link_sp::serial_port xout;
+
+   void draw_line(bool colour)
+   {
+       typedef sh1106_oled::point pt;
+       auto const pt0= pt{30,30};
+        
+       for ( uint8_t i = 0; i < 20; ++ i){
+          auto const pt1 = pt0 + pt{i,i};
+          sh1106_oled::set_pixel(pt1,colour);
+       }
+   }
 }
+
+
 
 int main()
 {
    setup();
 
    for (;;){
-      sh1106_oled::set_buffer_to(0x0F);
-      sh1106_oled::write_buffer();
-
-      delay(500_ms);
-
       sh1106_oled::set_buffer_to(0xFF);
+      draw_line(false);
       sh1106_oled::write_buffer();
 
       delay(500_ms);
 
-      sh1106_oled::set_buffer_to(0xF0);
-      sh1106_oled::write_buffer();
-
-      delay(500_ms);
-
-      sh1106_oled::set_buffer_to(0x0);
+      sh1106_oled::set_buffer_to(0x00);
+      draw_line(true);
       sh1106_oled::write_buffer();
 
       delay(500_ms);

@@ -34,19 +34,72 @@ void sh1106_oled::initialise()
     apply(or_cmd::set_display_on,1); // turn on display
 }
 
-void sh1106_oled::set_pixel(uint32_t x, uint32_t y, bool colour)
-{
-   if ( (x < columns) && ( y < rows)){
-       uint32_t const buffer_bit_pos = y * columns + x;
-       uint32_t const buffer_byte = buffer_bit_pos / 8U;
-       uint32_t const buffer_bit = buffer_bit_pos % 8U;
-       uint32_t const mask = (1U << buffer_bit);
-       if (colour){
-           buffer[buffer_byte] |= mask;
-       }else{
-          buffer[buffer_byte] &= ~mask;
-       }
+namespace {
+
+ //  constexpr int num_columns = 132;
+//   constexpr int num_rows = 64;
+
+   typedef quan::two_d::vect<int16_t> point;
+
+   bool is_in_range(point const & p)
+   {
+      return (p.x >= 0) && (p.x < sh1106_oled::columns) && (p.y >= 0) && (p.y <  sh1106_oled::rows);
+        
    }
+
+   // requires is_in_range(p)
+   // return a value from 0 to 7
+   constexpr uint8_t get_page(point const & p) 
+   {
+         return p.y / 8;
+   }
+
+   // requires in range(p)
+   // returns a value from 
+   constexpr uint16_t get_byte_index(point const & p)
+   {
+      return sh1106_oled::columns * get_page(p) + p.x;
+   }
+
+   // requires is_in_range(p) 
+   constexpr uint16_t get_bit_pos(point const & p)
+   {
+      return p.y % 8;
+   }
+
+   // convert from an index and bit to a point
+   point get_point_from_index(int16_t idx, uint8_t bitpos)
+   {
+      point result;
+      result.x = idx % sh1106_oled::columns;
+      result.y = (idx / sh1106_oled::columns ) * 8 + bitpos;
+      return result;
+   }
+
+   //uint8_t buffer[132 * 8];
+
+}
+
+void sh1106_oled::set_pixel(point const & p, bool colour)
+{
+//   if ( (x < columns) && ( y < rows)){
+//       uint32_t const buffer_bit_pos = y * columns + x;
+//       uint32_t const buffer_byte = buffer_bit_pos / 8U;
+//       uint32_t const buffer_bit = buffer_bit_pos % 8U;
+//       uint32_t const mask = (1U << buffer_bit);
+//       if (colour){
+//           buffer[buffer_byte] |= mask;
+//       }else{
+//          buffer[buffer_byte] &= ~mask;
+//       }
+//   }
+    if ( is_in_range(p)){
+        if (colour){
+          buffer[get_byte_index(p)] |= (1U << get_bit_pos(p));
+        }else{
+          buffer[get_byte_index(p)] &= ~(1U << get_bit_pos(p));
+        }
+    }
 }
 
 void sh1106_oled::write_buffer()
