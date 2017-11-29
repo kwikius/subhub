@@ -31,77 +31,58 @@ namespace {
 void sh1106_oled::initialise()
 {
     delay(200_ms);
-    apply(or_cmd::set_common_output_scan_direction,8);
+    apply(or_cmd::set_common_output_scan_direction,8); // flip the display vertically
+    apply(or_cmd::set_segment_remap,1);
     apply(or_cmd::set_display_on,1); // turn on display
-   // apply(or_cmd::set_segment_remap,1);
-
 }
 
 namespace {
-
- //  constexpr int num_columns = 132;
-//   constexpr int num_rows = 64;
 
    typedef quan::two_d::vect<int16_t> point;
 
    bool is_in_range(point const & p)
    {
       return (p.x >= 0) && (p.x < sh1106_oled::columns) && (p.y >= 0) && (p.y <  sh1106_oled::rows);
-        
    }
 
    // requires is_in_range(p)
    // return a value from 0 to 7
-   constexpr uint8_t get_page(point const & p) 
+   constexpr inline uint8_t get_page(point const & p) 
    {
          return p.y / 8;
    }
 
    // requires in range(p)
    // returns a value from 
-   constexpr uint16_t get_byte_index(point const & p)
+   constexpr inline uint16_t get_byte_index(point const & p)
    {
       return sh1106_oled::columns * get_page(p) + p.x;
    }
 
    // requires is_in_range(p) 
-   constexpr uint16_t get_bit_pos(point const & p)
+   constexpr inline uint16_t get_bit_pos(point const & p)
    {
       return p.y % 8;
    }
 
    // convert from an index and bit to a point
-   point get_point_from_index(int16_t idx, uint8_t bitpos)
+   constexpr inline point get_point_from_index(int16_t idx, uint8_t bitpos)
    {
-      point result;
-      result.x = idx % sh1106_oled::columns;
-      result.y = (idx / sh1106_oled::columns ) * 8 + bitpos;
-      return result;
+     return { idx % sh1106_oled::columns,(idx / sh1106_oled::columns ) * 8 + bitpos};
    }
-
-   //uint8_t buffer[132 * 8];
 
 }
 
 void sh1106_oled::set_pixel(point const & p, bool colour)
 {
-//   if ( (x < columns) && ( y < rows)){
-//       uint32_t const buffer_bit_pos = y * columns + x;
-//       uint32_t const buffer_byte = buffer_bit_pos / 8U;
-//       uint32_t const buffer_bit = buffer_bit_pos % 8U;
-//       uint32_t const mask = (1U << buffer_bit);
-//       if (colour){
-//           buffer[buffer_byte] |= mask;
-//       }else{
-//          buffer[buffer_byte] &= ~mask;
-//       }
-//   }
     if ( is_in_range(p)){
-        if (colour){
-          buffer[get_byte_index(p)] |= (1U << get_bit_pos(p));
-        }else{
-          buffer[get_byte_index(p)] &= ~(1U << get_bit_pos(p));
-        }
+      auto const byte_idx = get_byte_index(p);
+      auto const bit_pos = get_bit_pos(p);
+      auto & r = buffer[byte_idx];
+      r = colour
+         ?(r | (1U << bit_pos)) 
+         :(r & ~(1U << bit_pos))
+      ;
     }
 }
 
@@ -114,8 +95,8 @@ void sh1106_oled::write_buffer()
       apply(or_cmd::set_lower_column_address, 0);
       apply(or_cmd::set_higher_column_address, 0);
       apply(or_cmd::set_page_address,page);
-      write_data(buffer+buffer_idx,132);
-      buffer_idx += 132U;
+      write_data(buffer+buffer_idx,columns);
+      buffer_idx += columns;
    }
 }
 
