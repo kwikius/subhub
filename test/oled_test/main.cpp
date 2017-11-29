@@ -12,6 +12,9 @@ Test of I2C using a 24LC128 eeprom
  A led is set up on Servo 1 port for diagnostics
 */
 
+//GFXfont const * get_fontGaruda10pt7b();
+GFXfont const * get_font();
+
 extern "C" void setup();
 
 using quan::stm32::millis;
@@ -40,19 +43,25 @@ using quan::stm32::millis;
 namespace {
    typedef link_sp::serial_port xout;
 
-   void draw_line(bool colour)
-   {
-       typedef sh1106_oled::point pt;
-       auto const pt0= pt{30,30};
-        
-       for ( uint8_t i = 0; i < 20; ++ i){
-          auto const pt1 = pt0 + pt{i,i};
-          sh1106_oled::set_pixel(pt1,colour);
-       }
-   }
+   const char* commands[] = {
+       "  Sit."
+      ,"Lie Down."
+      ," Speak."
+      ,"  Beg."
+      ," Treat?"
+      ,"  Paw."
+   };
+
+/*"   wav_map["sit"]      = "sit.wav";    // Sit
+   wav_map["lie down"] = "lie_down.wav";
+   wav_map["speak"]    = "speak.wav";
+   wav_map["beg"]      = "beg.wav";
+   wav_map["treat"]    = "treat.wav";
+   wav_map["paw"]      = "paw.wav";
+*/
+
+  
 }
-
-
 
 int main()
 {
@@ -60,23 +69,17 @@ int main()
 
    typedef sh1106_oled::point point;
 
-   for (;;){
+   uint32_t constexpr num_commands = sizeof(commands) / sizeof(commands[0]);
+   uint32_t cmd_idx = 0U;
+   for ( ;;){
       sh1106_oled::set_buffer_to(0xFF);
-     // sh1106_oled::draw_line({10,10},{100,20},false);
 
-      sh1106_oled::draw_char({5,30},'H',get_font(),false);
+      sh1106_oled::draw_text({30,40},commands[cmd_idx],get_font(),false);
       sh1106_oled::write_buffer();
-
-      delay(500_ms);
-
-      sh1106_oled::set_buffer_to(0x00);
-      sh1106_oled::fill_rect({100,10},{10,20},true);
-      sh1106_oled::write_buffer();
-
-      delay(500_ms);
+      cmd_idx = (cmd_idx +1) % num_commands;
+      delay(2000_ms);
    }
 
-   xout::write("oled Test complete\n");
    while (1){;}
 
 }

@@ -2,7 +2,7 @@
 include ../../common/mk/stm32f0_make_flags.mk
 
 object_files = main.o setup.o led.o i2c.o sh1106_oled.o oled_writer.o draw_line.o \
-fill_rect.o draw_char.o FreeSansBold18pt7b.o
+fill_rect.o draw_char.o draw_text.o FreeSans9pt7b.o
 
 objects = $(patsubst %.o,obj/%.o,$(object_files))
 

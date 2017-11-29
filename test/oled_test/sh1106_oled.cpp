@@ -31,7 +31,10 @@ namespace {
 void sh1106_oled::initialise()
 {
     delay(200_ms);
+    apply(or_cmd::set_common_output_scan_direction,8);
     apply(or_cmd::set_display_on,1); // turn on display
+   // apply(or_cmd::set_segment_remap,1);
+
 }
 
 namespace {

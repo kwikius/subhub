@@ -53,6 +53,7 @@ struct sh1106_oled{
    static void draw_line(point const & p0, point const & p1, bool colour);
    static void fill_rect(point const & corner0, point const & corner1, bool colour);
    static void draw_char(point const & p, unsigned char c,GFXfont const * font,uint16_t color );
+   static void draw_text(point const & p,const char* text,GFXfont const * font,uint16_t color );
    static void set_buffer_to(int val);
    static void write_buffer();
    private:
